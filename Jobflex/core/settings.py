@@ -142,7 +142,7 @@ DATABASES = {
         'ENGINE': 'mssql',
         'NAME': 'django_jobflex',
         'USER': 'admin_jobflex',
-        'PASSWORD': 'Cavernicola1618',
+        'PASSWORD': env('DB_DEFAULT_PASS'),
         'HOST': 'jobflex-sv.database.windows.net',
         'PORT': '1433',
         'OPTIONS': {
@@ -154,7 +154,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'jobflex_sii',
         'USER': 'jobflex',
-        'PASSWORD': 'Jflexpassword123!',
+        'PASSWORD': env('DB_SII_PASS'),
         'HOST': '34.176.162.168',
         'PORT': '3306',
     },
@@ -162,7 +162,7 @@ DATABASES = {
         'ENGINE': 'mssql',
         'NAME': 'jobflex_prod',
         'USER': 'admin_jobflex',
-        'PASSWORD': 'Cavernicola1618',
+        'PASSWORD': env('DB_JFLEX_PASS'),
         'HOST': 'jobflex-sv.database.windows.net',
         'PORT': '1433',
         'OPTIONS': {
@@ -226,7 +226,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/user_index/'
 LOGOUT_REDIRECT_URL = '/'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='')
+EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@jobflex.cl')
 
 AUTHENTICATION_BACKENDS = [
     'JFlex.backends.EmailBackend',
