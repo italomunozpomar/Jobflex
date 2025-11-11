@@ -1,4 +1,5 @@
 import re
+import os
 from urllib.parse import urlparse
 import uuid
 import boto3
@@ -8,7 +9,7 @@ from django.conf import settings as django_settings
 from datetime import datetime, date, timedelta # Added here
 import random
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash, logout
 from django.contrib.auth import views as auth_views
 from django.contrib import messages
@@ -26,7 +27,7 @@ from django.urls import reverse # Import reverse here
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
 def signup(request):
@@ -1606,6 +1607,8 @@ def save_cv(request):
 from django.http import HttpResponse
 from playwright.sync_api import sync_playwright
 import json
+import os
+from django.conf import settings
 
 @login_required
 def download_cv_pdf(request):
@@ -1613,13 +1616,26 @@ def download_cv_pdf(request):
         data = json.loads(request.body)
         html_content = data.get('html_content', '')
 
+        # Path to the CSS file
+        css_file_path = os.path.join(settings.BASE_DIR, 'JFlex', 'static', 'CSS', 'style.css')
+        
+        css_content = ''
+        try:
+            with open(css_file_path, 'r', encoding='utf-8') as f:
+                css_content = f.read()
+        except FileNotFoundError:
+            # Handle case where CSS file is not found, maybe log this
+            pass
+
         full_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="stylesheet" href="http://127.0.0.1:8000/static/CSS/style.css">
+            <style>
+                {css_content}
+            </style>
         </head>
         <body>
             {html_content}
@@ -1647,6 +1663,43 @@ def download_cv_pdf(request):
         return response
 
     return HttpResponse("Invalid request method.", status=405)
+
+@login_required
+def download_s3_cv(request, cv_id):
+    from django.shortcuts import get_object_or_404
+    import boto3
+    from django.conf import settings as django_settings
+    from urllib.parse import urlparse
+
+    cv_subido = get_object_or_404(CVSubido, id_cv_subido=cv_id, id_cv_subido__candidato__id_candidato=request.user)
+    s3_url = cv_subido.ruta_archivo
+
+    # Extract object key from S3 URL
+    parsed_url = urlparse(s3_url)
+    object_key = parsed_url.path.lstrip('/')
+    file_name = os.path.basename(object_key) # Get original filename from S3 key
+
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY,
+        region_name=django_settings.AWS_S3_REGION_NAME # Ensure region is set
+    )
+
+    try:
+        s3_object = s3.get_object(Bucket=django_settings.AWS_STORAGE_BUCKET_NAME, Key=object_key)
+        file_content = s3_object['Body'].read()
+        content_type = s3_object['ContentType'] # Get content type from S3
+
+        response = HttpResponse(file_content, content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        return response
+    except s3.exceptions.NoSuchKey:
+        messages.error(request, "El archivo no se encontró en el almacenamiento.")
+        return redirect('perfiles_profesionales')
+    except Exception as e:
+        messages.error(request, f"Error al descargar el archivo: {e}")
+        return redirect('perfiles_profesionales')
 
 @login_required
 def settings(request):
