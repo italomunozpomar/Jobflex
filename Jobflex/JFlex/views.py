@@ -1,5 +1,6 @@
 import re
 import os
+import json
 from urllib.parse import urlparse
 import uuid
 import boto3
@@ -21,6 +22,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse # Import reverse here
+from playwright.sync_api import sync_playwright
 
 # ... (rest of the imports)
 
@@ -1604,12 +1606,6 @@ def save_cv(request):
     
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-from django.http import HttpResponse
-from playwright.sync_api import sync_playwright
-import json
-import os
-from django.conf import settings
-
 @login_required
 def download_cv_pdf(request):
     if request.method == 'POST':
@@ -1617,7 +1613,7 @@ def download_cv_pdf(request):
         html_content = data.get('html_content', '')
 
         # Path to the CSS file
-        css_file_path = os.path.join(settings.BASE_DIR, 'JFlex', 'static', 'CSS', 'style.css')
+        css_file_path = os.path.join(django_settings.BASE_DIR, 'JFlex', 'static', 'CSS', 'style.css')
         
         css_content = ''
         try:

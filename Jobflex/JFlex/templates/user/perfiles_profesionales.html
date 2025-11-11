@@ -225,7 +225,11 @@
                                         </form>
                                     </div>
                                     <div class="col-span-1 flex justify-center items-center download-column hidden">
-                                        {% if cv.tipo_cv == 'subido' %}
+                                        {% if cv.tipo_cv == 'creado' %}
+                                            <button class="download-creado-btn text-gray-400 hover:text-primary" data-cv-json='{{ cv.cv_data_json|safe }}' title="Descargar CV Creado">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            </button>
+                                        {% elif cv.tipo_cv == 'subido' %}
                                             <a href="{% url 'download_s3_cv' cv.id_cv_user %}" class="text-gray-400 hover:text-primary" title="Descargar CV subido">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                             </a>
@@ -358,6 +362,167 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="{% static 'JS/main.js' %}" defer></script>
     <script>
+    function populateCvPreview(container, cvData) {
+        const spanishMonths = {
+            "January": "Enero", "February": "Febrero", "March": "Marzo", "April": "Abril",
+            "May": "Mayo", "June": "Junio", "July": "Julio", "August": "Agosto",
+            "September": "Septiembre", "October": "Octubre", "November": "Noviembre", "December": "Diciembre"
+        };
+        // This function populates the CV preview modal with data from the database.
+        // It does not reuse the preview from the create_cv page.
+        let html = '';
+        // Header
+        const p = cvData.personalData;
+        const fullName = `${p.firstName || ''} ${p.secondName || ''} ${p.lastName || ''} ${p.motherLastName || ''}`.trim();
+        html += `
+            <header class="text-center border-b-2 border-gray-800 pb-4">
+                <h1 class="text-4xl font-bold tracking-widest uppercase">${fullName || 'Nombre no especificado'}</h1>
+                <p class="text-lg font-medium text-gray-600">${p.title || 'Título no especificado'}</p>
+                <div class="flex justify-center items-center flex-wrap space-x-4 mt-2 text-sm">
+                    <span>${p.phone || ''}</span>
+                    <span class="text-gray-300">•</span>
+                    <span>${p.email || ''}</span>
+                    <span class="text-gray-300">•</span>
+                    <a href="${p.linkedin_link || '#'}" class="text-primary hover:underline">LinkedIn</a>
+                </div>
+            </header>
+        `;
+
+        // Objective
+        if (cvData.objective) {
+            html += `<section class="mt-4">
+                        <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2>
+                        <p>${cvData.objective}</p>
+                     </section>`;
+        }
+
+        // Experience
+        const experience = cvData.experience;
+        if (experience && experience.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>';
+            experience.forEach(exp => {
+                const description = exp.description ? exp.description.split('\n').map(item => `<li>${item}</li>`).join('') : '';
+                const startMonthSpanish = spanishMonths[exp.start_month] || exp.start_month;
+                const endMonthSpanish = spanishMonths[exp.end_month] || exp.end_month;
+                html += `<div class="text-sm mb-3">
+                            <p class="italic font-semibold">${exp.position}</p>
+                            <h3 class="font-bold">${exp.company} - ${exp.location}</h3>
+                            <p class="italic text-xs">${startMonthSpanish} ${exp.start_year} - ${exp.current_job ? 'Presente' : `${endMonthSpanish} ${exp.end_year}`}</p>
+                            <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
+                                ${description}
+                            </ul>
+                        </div>`;
+            });
+            html += '</section>';
+        }
+        
+        // Education
+        const education = cvData.education;
+        if (education && education.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>';
+            education.forEach(edu => {
+                html += `<div class="text-sm mb-2">
+                            <h3 class="font-bold">${edu.institution}</h3>
+                            <p class="italic text-xs">${edu.start_year} - ${edu.currently_studying ? 'Presente' : edu.end_year}</p>
+                            <p class="italic">${edu.degree}</p>
+                            <p class="text-sm mt-1">${edu.notes}</p>
+                        </div>`;
+            });
+            html += '</section>';
+        }
+
+        // Skills
+        if (cvData.skills && (cvData.skills.hard.length > 0 || cvData.skills.soft.length > 0)) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>';
+            if (cvData.skills.hard.length > 0) {
+                html += '<p><strong>Habilidades Técnicas:</strong></p><ul class="list-disc list-inside ml-4">';
+                cvData.skills.hard.forEach(skill => {
+                    html += `<li>${skill}</li>`;
+                });
+                html += '</ul>';
+            }
+            if (cvData.skills.soft.length > 0) {
+                html += '<p><strong>Competencias:</strong></p><ul class="list-disc list-inside ml-4">';
+                cvData.skills.soft.forEach(skill => {
+                    html += `<li>${skill}</li>`;
+                });
+                html += '</ul>';
+            }
+            html += '</section>';
+        }
+
+        // Languages
+        const languages = cvData.languages;
+        if (languages && languages.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2><ul class="list-disc list-inside ml-4">';
+            languages.forEach(lang => {
+                html += `<li>${lang.language} (${lang.level})</li>`;
+            });
+            html += '</ul></section>';
+        }
+
+        // Certifications
+        const certifications = cvData.certifications;
+        if (certifications && certifications.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>';
+            certifications.forEach(cert => {
+                html += `<p><span class="font-bold">${cert.cert_name}</span>, ${cert.issuer} (${cert.year})</p>`;
+            });
+            html += '</section>';
+        }
+
+        // Projects
+        const projects = cvData.projects;
+        if (projects && projects.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>';
+            projects.forEach(proj => {
+                html += `<div class="text-sm mb-3">
+                            <h3 class="font-bold">${proj.project_name}</h3>
+                            <p class="italic text-xs">${proj.period}</p>
+                            ${proj.role ? `<p class="italic font-semibold">${proj.role}</p>` : ''}
+                            <p>${proj.description}</p>
+                            ${proj.link ? `<a href="${proj.link}" class="text-primary hover:underline" target="_blank">Repositorio: ${proj.link}</a>` : ''}
+                        </div>`;
+            });
+            html += '</section>';
+        }
+
+        // Volunteering
+        const volunteering = cvData.volunteering;
+        if (volunteering && volunteering.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>';
+            volunteering.forEach(vol => {
+                const description = vol.description ? vol.description.split('\n').map(item => `<li>${item}</li>`).join('') : '';
+                html += `<div class="text-sm mb-3">
+                            <h3 class="font-bold">${vol.organization}</h3>
+                            <p class="italic">${vol.role}</p>
+                            <p class="italic text-xs">${vol.start_date} - ${vol.current ? 'Presente' : vol.end_date}</p>
+                            <p class="text-sm">${vol.city}, ${vol.region}, ${vol.country}</p>
+                            ${description ? `<ul class="list-disc list-inside mt-1 space-y-1 pl-2">${description}</ul>` : ''}
+                        </div>`;
+            });
+            html += '</section>';
+        }
+
+        // References
+        const references = cvData.references;
+        if (references && references.length > 0) {
+            html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>';
+            references.forEach(ref => {
+                html += `<div class="text-sm mb-3">
+                            <h3 class="font-bold">${ref.name}</h3>
+                            <p class="italic">${ref.position}</p>
+                            <p class="mt-1">Teléfono: ${ref.phone} | Email: ${ref.email}</p>
+                            ${ref.linkedin_url ? `<a href="${ref.linkedin_url}" class="text-primary hover:underline" target="_blank">Perfil de LinkedIn</a>` : ''}
+                        </div>`;
+            });
+            html += '</section>';
+        }
+
+        container.innerHTML = html;
+    }
+</script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         // Dropdown menus logic
         function setupDropdown(buttonId, menuId) {
@@ -550,165 +715,6 @@
             });
         }
 
-        function populateCvPreview(container, cvData) {
-            const spanishMonths = {
-                "January": "Enero", "February": "Febrero", "March": "Marzo", "April": "Abril",
-                "May": "Mayo", "June": "Junio", "July": "Julio", "August": "Agosto",
-                "September": "Septiembre", "October": "Octubre", "November": "Noviembre", "December": "Diciembre"
-            };
-            // This function populates the CV preview modal with data from the database.
-            // It does not reuse the preview from the create_cv page.
-            let html = '';
-            // Header
-            const p = cvData.personalData;
-            const fullName = `${p.firstName || ''} ${p.secondName || ''} ${p.lastName || ''} ${p.motherLastName || ''}`.trim();
-            html += `
-                <header class="text-center border-b-2 border-gray-800 pb-4">
-                    <h1 class="text-4xl font-bold tracking-widest uppercase">${fullName || 'Nombre no especificado'}</h1>
-                    <p class="text-lg font-medium text-gray-600">${p.title || 'Título no especificado'}</p>
-                    <div class="flex justify-center items-center flex-wrap space-x-4 mt-2 text-sm">
-                        <span>${p.phone || ''}</span>
-                        <span class="text-gray-300">•</span>
-                        <span>${p.email || ''}</span>
-                        <span class="text-gray-300">•</span>
-                        <a href="${p.linkedin_link || '#'}" class="text-primary hover:underline">LinkedIn</a>
-                    </div>
-                </header>
-            `;
-
-            // Objective
-            if (cvData.objective) {
-                html += `<section class="mt-4">
-                            <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2>
-                            <p>${cvData.objective}</p>
-                         </section>`;
-            }
-
-            // Experience
-            const experience = cvData.experience;
-            if (experience && experience.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>';
-                experience.forEach(exp => {
-                    const description = exp.description ? exp.description.split('\n').map(item => `<li>${item}</li>`).join('') : '';
-                    const startMonthSpanish = spanishMonths[exp.start_month] || exp.start_month;
-                    const endMonthSpanish = spanishMonths[exp.end_month] || exp.end_month;
-                    html += `<div class="text-sm mb-3">
-                                <p class="italic font-semibold">${exp.position}</p>
-                                <h3 class="font-bold">${exp.company} - ${exp.location}</h3>
-                                <p class="italic text-xs">${startMonthSpanish} ${exp.start_year} - ${exp.current_job ? 'Presente' : `${endMonthSpanish} ${exp.end_year}`}</p>
-                                <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
-                                    ${description}
-                                </ul>
-                            </div>`;
-                });
-                html += '</section>';
-            }
-            
-            // Education
-            const education = cvData.education;
-            if (education && education.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>';
-                education.forEach(edu => {
-                    html += `<div class="text-sm mb-2">
-                                <h3 class="font-bold">${edu.institution}</h3>
-                                <p class="italic text-xs">${edu.start_year} - ${edu.currently_studying ? 'Presente' : edu.end_year}</p>
-                                <p class="italic">${edu.degree}</p>
-                                <p class="text-sm mt-1">${edu.notes}</p>
-                            </div>`;
-                });
-                html += '</section>';
-            }
-
-            // Skills
-            if (cvData.skills && (cvData.skills.hard.length > 0 || cvData.skills.soft.length > 0)) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>';
-                if (cvData.skills.hard.length > 0) {
-                    html += '<p><strong>Habilidades Técnicas:</strong></p><ul class="list-disc list-inside ml-4">';
-                    cvData.skills.hard.forEach(skill => {
-                        html += `<li>${skill}</li>`;
-                    });
-                    html += '</ul>';
-                }
-                if (cvData.skills.soft.length > 0) {
-                    html += '<p><strong>Competencias:</strong></p><ul class="list-disc list-inside ml-4">';
-                    cvData.skills.soft.forEach(skill => {
-                        html += `<li>${skill}</li>`;
-                    });
-                    html += '</ul>';
-                }
-                html += '</section>';
-            }
-
-            // Languages
-            const languages = cvData.languages;
-            if (languages && languages.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2><ul class="list-disc list-inside ml-4">';
-                languages.forEach(lang => {
-                    html += `<li>${lang.language} (${lang.level})</li>`;
-                });
-                html += '</ul></section>';
-            }
-
-            // Certifications
-            const certifications = cvData.certifications;
-            if (certifications && certifications.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>';
-                certifications.forEach(cert => {
-                    html += `<p><span class="font-bold">${cert.cert_name}</span>, ${cert.issuer} (${cert.year})</p>`;
-                });
-                html += '</section>';
-            }
-
-            // Projects
-            const projects = cvData.projects;
-            if (projects && projects.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>';
-                projects.forEach(proj => {
-                    html += `<div class="text-sm mb-3">
-                                <h3 class="font-bold">${proj.project_name}</h3>
-                                <p class="italic text-xs">${proj.period}</p>
-                                ${proj.role ? `<p class="italic font-semibold">${proj.role}</p>` : ''}
-                                <p>${proj.description}</p>
-                                ${proj.link ? `<a href="${proj.link}" class="text-primary hover:underline" target="_blank">Repositorio: ${proj.link}</a>` : ''}
-                            </div>`;
-                });
-                html += '</section>';
-            }
-
-            // Volunteering
-            const volunteering = cvData.volunteering;
-            if (volunteering && volunteering.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>';
-                volunteering.forEach(vol => {
-                    const description = vol.description ? vol.description.split('\n').map(item => `<li>${item}</li>`).join('') : '';
-                    html += `<div class="text-sm mb-3">
-                                <h3 class="font-bold">${vol.organization}</h3>
-                                <p class="italic">${vol.role}</p>
-                                <p class="italic text-xs">${vol.start_date} - ${vol.current ? 'Presente' : vol.end_date}</p>
-                                <p class="text-sm">${vol.city}, ${vol.region}, ${vol.country}</p>
-                                ${description ? `<ul class="list-disc list-inside mt-1 space-y-1 pl-2">${description}</ul>` : ''}
-                            </div>`;
-                });
-                html += '</section>';
-            }
-
-            // References
-            const references = cvData.references;
-            if (references && references.length > 0) {
-                html += '<section class="mt-4"><h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>';
-                references.forEach(ref => {
-                    html += `<div class="text-sm mb-3">
-                                <h3 class="font-bold">${ref.name}</h3>
-                                <p class="italic">${ref.position}</p>
-                                <p class="mt-1">Teléfono: ${ref.phone} | Email: ${ref.email}</p>
-                                ${ref.linkedin_url ? `<a href="${ref.linkedin_url}" class="text-primary hover:underline" target="_blank">Perfil de LinkedIn</a>` : ''}
-                            </div>`;
-                });
-                html += '</section>';
-            }
-
-            container.innerHTML = html;
-        }
     });
 </script>
 <!-- CV Upload Modal -->
@@ -975,6 +981,66 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.error('Could not find toggle button or CV table.');
         }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.download-creado-btn').forEach(btn => {
+            btn.addEventListener('click', function(event) {
+                const button = event.currentTarget;
+                const originalContent = button.innerHTML;
+                // Show spinner
+                button.innerHTML = `<svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                button.disabled = true;
+
+                const cvData = JSON.parse(button.dataset.cvJson);
+                
+                // Create a temporary, non-visible container for the HTML
+                const tempContainer = document.createElement('div');
+                tempContainer.style.display = 'none';
+                document.body.appendChild(tempContainer);
+
+                // Use the existing function to generate the HTML content
+                populateCvPreview(tempContainer, cvData);
+                const cvHtmlContent = tempContainer.innerHTML;
+
+                // Clean up the temporary container
+                document.body.removeChild(tempContainer);
+
+                fetch("{% url 'download_cv_pdf' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ html_content: cvHtmlContent })
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    // Provide a default filename
+                    a.download = `CV_${cvData.personalData.firstName || ''}_${cvData.personalData.lastName || ''}.pdf`.replace(/ /g, '_');
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    // Restore button
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error downloading PDF:', error);
+                    alert('Hubo un error al generar el PDF. Por favor, inténtalo de nuevo.');
+                    // Restore button
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                });
+            });
+        });
     });
 </script>
 </body>
