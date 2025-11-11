@@ -379,8 +379,10 @@ def Profile(request):
 
 class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     def form_valid(self, form):
-        messages.success(self.request, '¡Tu contraseña ha sido actualizada correctamente!')
-        return super().form_valid(form)
+        user = form.save()
+        login(self.request, user)
+        messages.success(self.request, '¡Tu contraseña ha sido actualizada y has iniciado sesión correctamente!')
+        return redirect('user_index')
 
 def social_login_cancelled(request):
     messages.error(request, 'El registro con Google fue cancelado. Por favor, inténtalo de nuevo.')
