@@ -40,13 +40,13 @@ sys.path.insert(0, str(BASE_DIR.parent))
 SECRET_KEY = 'django-insecure-crw6j)=%6qm9z#)!s%jsigvyt4rkj#@a*#1*^v4_!hw2racfo3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://www.jobflex.cl',
-    'https://' + env('RENDER_EXTERNAL_HOSTNAME', default='127.0.0.1')
+    'http://www.jobflex.cl', 
+    'http://jobflex.cl',
+    'http://179.43.127.166' 
 ]
 
 
