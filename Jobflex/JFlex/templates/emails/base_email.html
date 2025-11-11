@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Notificación de JobFlex{% endblock %}</title>
+    <style type="text/css">
+        /* Base */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            background-color: #f4f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        td {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        img {
+            border: 0;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        /* Main Structure */
+        .email-wrapper {
+            width: 100%;
+            background-color: #f4f5f7;
+            padding: 40px 0;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        /* Header */
+        .header {
+            background-color: #8CA01A; /* primary color */
+            padding: 24px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        /* Content */
+        .content {
+            padding: 32px;
+        }
+        .content-cell {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #312F32; /* dark color */
+        }
+        .content-cell h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #312F32;
+            margin: 0 0 16px;
+        }
+        .content-cell p {
+            margin: 0 0 16px;
+        }
+        /* Button */
+        .button-container {
+            padding: 16px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background-color: #8CA01A;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            border: 1px solid #8CA01A;
+        }
+        /* Footer */
+        .footer {
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #89746F; /* secondary color */
+        }
+        .footer a {
+            color: #8CA01A;
+            text-decoration: none;
+        }
+        /* Utilities */
+        .preheader {
+            display: none !important;
+            visibility: hidden;
+            opacity: 0;
+            color: transparent;
+            height: 0;
+            width: 0;
+        }
+    </style>
+</head>
+<body>
+    <span class="preheader">{% block preheader %}{% endblock %}</span>
+    <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center">
+                <table class="email-container" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header">
+                            <h1>JobFlex</h1>
+                        </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                        <td class="content">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td class="content-cell">
+                                        {% block content %}{% endblock %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer">
+                            <p style="margin-bottom: 16px;">Este es un correo automático, por favor no respondas a esta dirección.</p>
+                            <p>&copy; {% now "Y" %} JobFlex. Todos los derechos reservados.</p>
+                            <p>
+                                <a href="#">Visita nuestro sitio web</a> &bull;
+                                <a href="#">Cancelar suscripción</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
