@@ -24,3 +24,4 @@ mediafiles/
 .DS_Store
 **/ignore/
 Jobflex/JFlex/static/PUB_NOMBRES_PJ.txt
+Jobflex/.env
