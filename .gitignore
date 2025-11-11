@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+
+# Static files
+staticfiles/
+
+# Media files
+mediafiles/
+
+# Other
+.DS_Store
+**/ignore/
+Jobflex/JFlex/static/PUB_NOMBRES_PJ.txt

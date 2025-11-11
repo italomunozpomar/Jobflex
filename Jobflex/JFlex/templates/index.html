@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobFlex - Tu Próximo Empleo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8CA01A',
+                        'secondary': '#89746F',
+                        'light-gray': '#D8D9DD',
+                        'dark': '#312F32',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white font-sans">
+
+    <!-- Navbar -->
+    <nav id="main-nav" class="bg-white p-4 shadow-md fixed w-full top-0 z-50 transition-colors duration-300">
+        <div class="container mx-auto flex justify-between items-center relative">
+            <a href="{% url 'index'%}" id="nav-logo" class="text-2xl font-bold text-primary transition-colors duration-300">JobFlex</a>
+            
+            <!-- Contenedor de iconos y menú de la derecha -->
+            <div class="flex items-center space-x-2 md:space-x-4">
+                {% if user.is_authenticated %}
+                    <!-- Icono de Notificaciones (Visible en todas las pantallas) -->
+                    <button class="relative">
+                        <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
+
+                    <!-- Menú de Usuario (Visible solo en escritorio) -->
+                    <div class="relative hidden md:block">
+                        <button id="user-menu-button" class="flex items-center space-x-2">
+                            <span class="font-semibold text-dark">{{ user.first_name }}</span>
+                            <svg class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Ver Perfil</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Postulaciones</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Cuenta</a>
+                            <form action="{% url 'logout' %}" method="post" class="w-full">
+                                {% csrf_token %}
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Login/Register (Visible solo en escritorio) -->
+                    <div class="hidden md:flex space-x-6 items-center">
+                        <a id="nav-register" href="{% url 'signup' %}" class="text-dark font-semibold hover:text-primary transition-colors duration-300">Registrate</a>
+                        <a id="nav-login" href="{% url 'login' %}" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105">Iniciar Sesión</a>
+                    </div>
+                {% endif %}
+
+                <!-- Botón hamburguesa (Visible solo en móvil) -->
+                <button id="mobile-menu-btn" class="md:hidden focus:outline-none relative z-50" aria-label="Abrir menú">
+                    <svg id="hamburger-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+            <!-- Menú móvil animado -->
+            <div id="mobile-menu"
+                class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-end md:hidden transition-all duration-300 ease-in-out pointer-events-none opacity-0"
+                style="z-index:49;">
+                <div class="w-3/4 sm:w-1/2 bg-white shadow-xl h-full p-8 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out relative"
+                    id="mobile-menu-panel">
+                    <h2 class="text-2xl font-bold text-dark mb-8">Menú</h2>
+        
+                    <nav class="flex-grow">
+                        <ul class="space-y-2">
+                            {% if user.is_authenticated %}
+                            <li>
+                                <a href="{% url 'profile' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+                                    <span class="ml-3">Ver Perfil</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"></path></svg>
+                                    <span class="ml-3">Notificaciones</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"></path></svg>
+                                    <span class="ml-3">Postulaciones</span>
+                                </a>
+                            </li>
+                             <li>
+                                <a href="#" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"></path></svg>
+                                    <span class="ml-3">Cuenta</span>
+                                </a>
+                            </li>
+                            <div class="py-2"><hr class="border-light-gray"></div>
+                            {% endif %}
+                            <li>
+                                <a href="#empresas" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6.375a.375.375 0 01.375.375v1.5a.375.375 0 01-.375.375H9a.375.375 0 01-.375-.375v-1.5A.375.375 0 019 6.75zM9 12.75h6.375a.375.375 0 01.375.375v1.5a.375.375 0 01-.375.375H9a.375.375 0 01-.375-.375v-1.5a.375.375 0 01.375.375z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                    <span class="ml-3">Empresas que confían</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#publicar-oferta" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                    <span class="ml-3">Publicar Oferta</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#testimonios" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.125 3.01 2.625 3.01h9.75c1.5 0 2.625-1.41 2.625-3.01m-15 0V9.75c0-1.6 1.125-3.01 2.625-3.01h9.75c1.5 0 2.625 1.41 2.625 3.01m-15 0h15" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                    <span class="ml-3">Testimonios</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#nosotros" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M15 19.128a9.38 9.38 0 002.625.372m-10.5 0a9.38 9.38 0 002.625.372M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3a3 3 0 013-3h6.75a3 3 0 013 3" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        <path d="M9 12a3 3 0 11-6 0 3 3 0 016 0zm12 0a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                    <span class="ml-3">Sobre Nosotros</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+            
+                    {% if user.is_authenticated %}
+                      <div class="border-t border-light-gray pt-6 space-y-4">
+                          <form action="{% url 'logout' %}" method="post" class="w-full">
+                              {% csrf_token %}
+                              <button type="submit" class="block w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 text-lg text-center">Cerrar Sesión</button>
+                          </form>
+                      </div>
+                      {% else %}
+                      <div class="border-t border-light-gray pt-6 space-y-4">
+                          <a href="{% url 'signup' %}" class="block text-primary font-bold border-2 border-primary py-2 px-4 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 text-lg text-center">Registrate</a>
+                          <a href="{% url 'login' %}" class="block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transformhover:scale-105 text-lg text-center">Iniciar Sesión</a>
+                      </div>
+                      {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative bg-white overflow-hidden pt-16">
+        <div class="container mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center relative z-10">
+            <div class="md:w-3/5">
+                <div class="max-w-xl text-center md:text-left mx-auto md:mx-0">
+                    <h2 class="text-5xl md:text-6xl font-bold text-dark mb-4">Encuentra el trabajo de tus <span class="text-primary">sueños</span></h2>
+                    <p class="text-secondary mb-8 text-lg">Explora miles de oportunidades laborales y da el siguiente paso en tu carrera profesional.</p>
+                    <div class="flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
+                        <input type="text" placeholder="Puesto, palabra clave o empresa" class="w-full sm:w-auto flex-grow p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Buscar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hidden md:block absolute top-0 right-0 w-1/2 h-full diagonal-clip-left">
+            <img id="hero-parallax-img" src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop" alt="Equipo de trabajo" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black opacity-30"></div>
+        </div>
+    </section>
+
+    <!-- Company Logos Carousel -->
+    <section id="empresas" class="bg-light-gray py-10">
+        <div class="container mx-auto px-4">
+            <h1 class="text-center text-3xl font-bold text-dark mb-8">¡Empresas que confían en nosotros!</h1>
+
+            <div class="swiper company-carousel relative ">
+                <div class="swiper-wrapper flex items-center">
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Logo_copec_2023_Cielo.jpg" alt="Logo Empresa B" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://yt3.googleusercontent.com/FfBZauU_gka8Hu-XEIZghGhCTgGbwBSfEJSY3Wc5T5j-6XrT-SUZMQJtuSCbqoPenZ9dX0XVSmg=s900-c-k-c0x00ffffff-no-rj" alt="Logo Empresa C" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://thumbs.dreamstime.com/b/microsoft-logo-editorial-ilustrativo-sobre-fondo-blanco-icono-vectorial-logotipos-iconos-conjunto-redes-sociales-banner-plano-210443215.jpg" alt="Logo Empresa E" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://logosdechile.cl/cdn/shop/products/codelco_1975_Mesadetrabajo1.jpg?v=1661123452&width=1445" alt="Logo Empresa F" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+                    <div class="swiper-slide flex justify-center items-center">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ4AD03MQUEyk-f_VFhF1btszijndmDQkbHQ&s" alt="Logo Empresa D" class="rounded-full w-40 h-40 object-contain">
+                    </div>
+                </div>
+                <!-- Navigation Buttons -->
+                <div class="swiper-button-next text-primary"></div>
+                <div class="swiper-button-prev text-primary"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Post a Job Section -->
+    <section id="publicar-oferta" class="relative bg-white overflow-hidden">
+        <!-- Mobile Image -->
+        <div class="md:hidden">
+            <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop" alt="Reclutadores" class="w-full h-48 object-cover">
+        </div>
+
+        <div class="container mx-auto px-6 py-16 md:py-32 flex items-center justify-center md:justify-end relative z-10">
+            <div class="md:w-1/2">
+                <div class="max-w-lg mx-auto md:ml-auto text-center md:text-left">
+                    <h1 class="text-4xl font-bold text-dark mb-4">¿Eres una empresa?</h1>
+                    <p class="text-secondary mb-6">Publica tu oferta de trabajo y encuentra al candidato ideal.</p>
+                    <ul class="space-y-4 mb-8 text-left inline-block">
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Accede a miles de perfiles cualificados.</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Herramientas de gestión y seguimiento fáciles de usar.</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-6 h-6 text-primary mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Publicación de ofertas rápida y sencilla.</span>
+                        </li>
+                    </ul>
+                    <a href="{% url 'validate' %}" class="inline-block bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Publicar Oferta</a>
+                </div>
+            </div>
+        </div>
+        <!-- Desktop Image -->
+        <div class="hidden md:block absolute top-0 left-0 w-1/2 h-full diagonal-clip-right">
+            <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop" alt="Reclutadores" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black opacity-30"></div>
+        </div>
+    </section>
+
+    <!-- Testimonials Carousel -->
+    <section id="testimonios" class="bg-light-gray py-16">
+        <div class="container mx-auto px-6">
+            <h3 class="text-center text-3xl font-bold text-dark mb-12">Lo que dicen nuestros usuarios</h3>
+            <div class="relative max-w-7xl mx-auto">
+                <div class="swiper testimonials-carousel pb-12 px-12">
+                    <div class="swiper-wrapper py-4">
+                        <!-- Testimonio 1 -->
+                        <div class="swiper-slide text-center bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+                            <img src="https://picsum.photos/seed/user1/100/100" alt="Foto Usuario 1" class="rounded-full mx-auto mb-4 border-4 border-primary">
+                            <p class="text-secondary italic mb-4 flex-grow">"Gracias a JobFlex conseguí el trabajo que tanto buscaba. ¡La plataforma es increíblemente fácil de usar!"</p>
+                            <cite class="font-bold text-dark not-italic">- Carlos Rodríguez</cite>
+                        </div>
+                        <!-- Testimonio 2 -->
+                        <div class="swiper-slide text-center bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+                            <img src="https://picsum.photos/seed/user2/100/100" alt="Foto Usuario 2" class="rounded-full mx-auto mb-4 border-4 border-primary">
+                            <p class="text-secondary italic mb-4 flex-grow">"El proceso de selección fue muy rápido. Encontré candidatos perfectos para mi empresa en pocos días."</p>
+                            <cite class="font-bold text-dark not-italic">- Ana López, Gerente de RRHH</cite>
+                        </div>
+                        <!-- Testimonio 3 -->
+                        <div class="swiper-slide text-center bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+                            <img src="https://picsum.photos/seed/user3/100/100" alt="Foto Usuario 3" class="rounded-full mx-auto mb-4 border-4 border-primary">
+                            <p class="text-secondary italic mb-4 flex-grow">"Una herramienta fundamental para cualquier profesional que busque crecer en su carrera."</p>
+                            <cite class="font-bold text-dark not-italic">- Javier Fernández</cite>
+                        </div>
+                         <!-- Testimonio 4 -->
+                        <div class="swiper-slide text-center bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+                            <img src="https://picsum.photos/seed/user4/100/100" alt="Foto Usuario 4" class="rounded-full mx-auto mb-4 border-4 border-primary">
+                            <p class="text-secondary italic mb-4 flex-grow">"¡La mejor plataforma para encontrar talento! Muy intuitiva y con resultados excelentes."</p>
+                            <cite class="font-bold text-dark not-italic">- Sofía Martínez</cite>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                </div>
+                <!-- Navigation Buttons -->
+                <div class="swiper-button-next text-primary absolute top-1/2 -translate-y-1/2 right-0 z-10"></div>
+                <div class="swiper-button-prev text-primary absolute top-1/2 -translate-y-1/2 left-0 z-10"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission and Vision -->
+    <section id="nosotros" class="bg-gray-50 py-16 relative overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                <!-- Misión Column -->
+                <div class="flex flex-col md:flex-row items-center gap-6 bg-white p-8 md:p-10 rounded-3xl shadow-2xl text-center md:text-left hover:shadow-3xl hover:scale-105 transition-all duration-500 group border border-gray-200 animate-slide-up overflow-hidden">
+                    <div class="flex-shrink-0 bg-gradient-to-br from-primary to-gray-500 p-4 rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                        <svg class="w-20 h-20 md:w-24 md:h-24 text-white group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl md:text-3xl font-bold text-dark mb-4 group-hover:text-primary transition-colors duration-300">Nuestra Misión</h3>
+                        <p class="text-gray-600 text-base md:text-lg leading-relaxed">Conectar el talento adecuado con las oportunidades correctas, impulsando el crecimiento profesional y el éxito empresarial a través de una plataforma innovadora y accesible para todos.</p>
+
+                    </div>
+                </div>
+                <!-- Visión Column -->
+                <div class="flex flex-col md:flex-row items-center gap-6 bg-white p-8 md:p-10 rounded-3xl shadow-2xl text-center md:text-left hover:shadow-3xl hover:scale-105 transition-all duration-500 group border border-gray-200 animate-slide-up-delay overflow-hidden">
+                    <div class="flex-shrink-0 bg-gradient-to-br from-primary to-gray-500 p-4 rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                        <svg class="w-20 h-20 md:w-24 md:h-24 text-white group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl md:text-3xl font-bold text-dark mb-4 group-hover:text-primary transition-colors duration-300">Nuestra Visión</h3>
+                        <p class="text-gray-600 text-base md:text-lg leading-relaxed">Ser la plataforma líder y de mayor confianza en la búsqueda de empleo en Latinoamérica, transformando la manera en que las personas y las empresas construyen su futuro.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light-gray pt-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <!-- Logo and Info -->
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-2">JobFlex</h4>
+                    <p class="text-sm">Conectando talento con oportunidades.</p>
+                </div>
+                <!-- Empresa -->
+                <div>
+                    <h5 class="font-bold text-white mb-4">Empresa</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-primary">Sobre nosotros</a></li>
+                        <li><a href="#" class="hover:text-primary">Carreras</a></li>
+                        <li><a href="#" class="hover:text-primary">Prensa</a></li>
+                    </ul>
+                </div>
+                <!-- Soporte -->
+                <div>
+                    <h5 class="font-bold text-white mb-4">Soporte</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-primary">FAQ</a></li>
+                        <li><a href="#" class="hover:text-primary">Contacto</a></li>
+                        <li><a href="#" class="hover:text-primary">Términos de Servicio</a></li>
+                    </ul>
+                </div>
+                <!-- Redes Sociales -->
+                <div>
+                    <h5 class="font-bold text-white mb-4">Síguenos</h5>
+                    <div class="flex space-x-4 justify-center">
+                        <a href="#" class="hover:text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"/></svg>
+                        </a>
+                        <a href="#" class="hover:text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616v.064c0 2.299 1.634 4.217 3.797 4.66-.45.124-.933.18-1.435.18-.386 0-.76-.036-1.126-.108.632 1.88 2.456 3.251 4.616 3.288-1.623 1.27-3.666 2.022-5.88 2.022-.381 0-.757-.022-1.127-.065 2.099 1.35 4.596 2.13 7.29 2.13 8.755 0 13.54-7.24 13.54-13.54 0-.206-.005-.412-.013-.617.932-.67 1.738-1.508 2.384-2.471z"/></svg>
+                        </a>
+                        <a href="#" class="hover:text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.85-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.059-1.281.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.059-1.689-.073-4.948-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.441 1.441 1.441 1.441-.645 1.441-1.441-.645-1.44-1.441-1.44z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-4 text-center text-sm">
+                <p>&copy; 2025 JobFlex. Todos los derechos reservados.</p>
+            </div>
+            <br>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="{% static '/JS/main.js'%}"></script>
+    <style>
+        /* Animación para el menú móvil */
+        #mobile-menu.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mobile-menu.open #mobile-menu-panel {
+            transform: translateX(0);
+        }
+        #mobile-menu #mobile-menu-panel {
+            transform: translateX(100%);
+        }
+        /* Mejorar visibilidad del botón "Registrate" en móvil */
+        #mobile-menu-panel a:first-of-type {
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-width: 2px;
+        }
+
+        /* Animations for "Sobre Nosotros" section */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 1s ease-out forwards;
+        }
+
+        .animate-slide-up-delay {
+            animation: slideUp 1s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+    </style>
+    <script>
+        // Navbar móvil animado y profesional
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        // Abrir/cerrar menú con el mismo botón
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                closeMenu();
+            } else {
+                mobileMenu.classList.add('open');
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+            }
+        });
+
+        // Cerrar al hacer click fuera del panel
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) closeMenu();
+        });
+
+        function closeMenu() {
+            mobileMenu.classList.remove('open');
+            hamburgerIcon.classList.remove('hidden');
+            closeIcon.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Smooth scroll para anclas
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if(targetElement) {
+                    closeMenu(); // Cierra el menú al hacer clic en un enlace
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        const userMenuButton = document.getElementById('user-menu-button');
+          const userMenu = document.getElementById('user-menu');
+
+          if (userMenuButton) {
+              userMenuButton.addEventListener('click', (event) => {
+                  event.stopPropagation();
+                  userMenu.classList.toggle('hidden');
+              });
+          }
+
+          window.addEventListener('click', function(e){
+              if (userMenu && !userMenu.classList.contains('hidden') && userMenuButton && !userMenuButton.contains(e.target)){
+                  userMenu.classList.add('hidden');
+              }
+          });
+
+    </script>
+    <script>
+    // Dynamic Navbar on Scroll for index.html
+    const mainNav = document.getElementById('main-nav');
+    if (mainNav) { // Only run if this navbar exists (i.e., on index.html)
+        const navLogo = document.getElementById('nav-logo');
+        const navRegister = document.getElementById('nav-register');
+        const navLogin = document.getElementById('nav-login');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) { // Scroll threshold
+                // Change navbar background to primary green
+                mainNav.classList.remove('bg-white');
+                mainNav.classList.add('bg-primary', 'shadow-lg');
+
+                // Change logo text to white
+                navLogo.classList.remove('text-primary');
+                navLogo.classList.add('text-white');
+
+                // Change "Registrate" link to white text
+                navRegister.classList.remove('text-dark');
+                navRegister.classList.add('text-white');
+
+                // Change "Iniciar Sesión" button to white background, dark text
+                navLogin.classList.remove('bg-primary', 'text-white');
+                navLogin.classList.add('bg-white', 'text-dark');
+            } else {
+                // Revert to initial state
+                mainNav.classList.add('bg-white');
+                mainNav.classList.remove('bg-primary', 'shadow-lg');
+
+                navLogo.classList.add('text-primary');
+                navLogo.classList.remove('text-white');
+
+                navRegister.classList.add('text-dark');
+                navRegister.classList.remove('text-white');
+
+                navLogin.classList.add('bg-primary', 'text-white');
+                navLogin.classList.remove('bg-white', 'text-dark');
+            }
+        });
+    }
+    </script>
+</body>
+</html>

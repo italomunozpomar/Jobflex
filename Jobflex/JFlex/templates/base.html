@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JobFlex{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8CA01A',
+                        'secondary': '#89746F',
+                        'light-gray': '#D8D9DD',
+                        'dark': '#312F32',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-light-gray font-sans flex flex-col min-h-screen">
+
+    {% if messages %}
+        <div id="message-container" style="position: fixed; top: 80px; right: 20px; z-index: 2000; max-width: 350px;">
+            {% for message in messages %}
+                <div class="bg-white text-dark border-l-4 border-primary p-4 rounded-md shadow-lg mb-2 flex items-start justify-between">
+                    <div class="flex-grow">
+                        <p class="font-bold">Notificación</p>
+                        <p class="text-sm">{{ message }}</p>
+                    </div>
+                    <button onclick="this.closest('.flex').style.display='none'" class="ml-4 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Navbar -->
+    <nav class="bg-white p-4 shadow-md fixed w-full top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% url 'index' %}" class="text-2xl font-bold text-primary">JobFlex</a>
+            
+            {% if user.is_authenticated %}
+            <div class="flex items-center space-x-4">
+                <button class="relative">
+                    <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                </button>
+                <div class="relative">
+                    <button id="user-menu-button" class="flex items-center space-x-2">
+                        <span class="font-semibold text-dark">
+                            {{ user.first_name }}
+                        </span>
+                        <svg class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Ver Perfil</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Postulaciones</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Cuenta</a>
+                        
+                        <form action="{% url 'logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div>
+                <a href="{% url 'login' %}" class="text-dark font-semibold hover:text-primary transition-colors mr-4">Iniciar Sesión</a>
+                <a href="{% url 'signup' %}" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">Registrarse</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-16">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% if user.is_authenticated %}
+    <script>
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+
+        userMenuButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            userMenu.classList.toggle('hidden');
+        });
+
+        window.addEventListener('click', function(e){   
+            if (userMenu && !userMenu.classList.contains('hidden') && !userMenuButton.contains(e.target)){
+                userMenu.classList.add('hidden');
+            }
+        });
+    </script>
+    {% endif %}
+
+</body>
+</html>

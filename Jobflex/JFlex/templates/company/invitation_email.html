@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitación a JobFlex</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .content {
+            padding: 20px 0;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .content h1 {
+            color: #333333;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content p {
+            margin-bottom: 10px;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #8CA01A; /* primary color */
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #eeeeee;
+            color: #777777;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="{% static 'img/jobflex_logo.png' %}" alt="JobFlex Logo"> {# Assuming you have a logo here #}
+        </div>
+        <div class="content">
+            <h1>¡Has sido invitado a unirte a {{ company_name }} en JobFlex!</h1>
+            <p>Hola,</p>
+            <p>{{ company_name }} te ha invitado a formar parte de su equipo en la plataforma JobFlex.</p>
+            <p>Para aceptar la invitación y activar tu cuenta ({{ invited_email }}), por favor haz clic en el siguiente botón:</p>
+            <div class="button-container">
+                <a href="{{ invitation_link }}" class="button">Aceptar Invitación</a>
+            </div>
+            <p>Si el botón no funciona, puedes copiar y pegar el siguiente enlace en tu navegador:</p>
+            <p><a href="{{ invitation_link }}">{{ invitation_link }}</a></p>
+            <p>Este enlace es válido por 24 horas.</p>
+            <p>¡Esperamos verte pronto en JobFlex!</p>
+            <p>Saludos cordiales,</p>
+            <p>El equipo de JobFlex</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} JobFlex. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

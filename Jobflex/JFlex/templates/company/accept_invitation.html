@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aceptar Invitación - {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg z-10">
+        <div class="text-center">
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                Aceptar Invitación a {{ company_name }}
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+                Has sido invitado a unirte a {{ company_name }}. Por favor, establece tu contraseña para activar tu cuenta ({{ invited_email }}).
+            </p>
+        </div>
+        <form class="mt-8 space-y-6" method="POST">
+            {% csrf_token %}
+            
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="{{ form.nombres.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.nombres.label }}</label>
+                    {{ form.nombres }}
+                </div>
+                {% if form.nombres.errors %}
+                    {% for error in form.nombres.errors %}
+                        <p class="text-red-500 text-xs italic">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="{{ form.apellidos.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.apellidos.label }}</label>
+                    {{ form.apellidos }}
+                </div>
+                {% if form.apellidos.errors %}
+                    {% for error in form.apellidos.errors %}
+                        <p class="text-red-500 text-xs italic">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="{{ form.new_password1.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.new_password1.label }}</label>
+                    {{ form.new_password1 }}
+                </div>
+                {% if form.new_password1.errors %}
+                    {% for error in form.new_password1.errors %}
+                        <p class="text-red-500 text-xs italic">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="{{ form.new_password2.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.new_password2.label }}</label>
+                    {{ form.new_password2 }}
+                </div>
+                {% if form.new_password2.errors %}
+                    {% for error in form.new_password2.errors %}
+                        <p class="text-red-500 text-xs italic">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="text-sm">
+                    <a href="{% url 'login' %}" class="font-medium text-primary hover:text-primary-dark">
+                        ¿Ya tienes cuenta? Inicia sesión
+                    </a>
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    Establecer Contraseña y Activar Cuenta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

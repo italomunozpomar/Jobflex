@@ -1,0 +1,2326 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear CV - JobFlex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8CA01A',
+                        'secondary': '#89746F',
+                        'light-gray': '#D8D9DD',
+                        'dark': '#312F32',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Animación para el menú móvil */
+        #mobile-menu.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mobile-menu.open #mobile-menu-panel {
+            transform: translateX(0);
+        }
+        #mobile-menu #mobile-menu-panel {
+            transform: translateX(100%);
+        }
+        /* Mejorar visibilidad del botón "Registrate" en móvil */
+        #mobile-menu-panel a:first-of-type {
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-light-gray font-sans flex flex-col min-h-screen" data-cv-id="{{ cv_id }}" data-cv-name="{{ cv_name }}" data-cargo-asociado="{{ cargo_asociado }}">
+
+    <!--Navbar -->
+    <nav id="main-nav" class="bg-white p-4 shadow-md fixed w-full top-0 z-50 transition-colors duration-300">
+        <div class="container mx-auto flex justify-between items-center relative">
+            <a href="{% url 'index'%}" id="nav-logo" class="text-2xl font-bold text-primary transition-colors duration-300">JobFlex</a>
+            
+            <div class="flex items-center space-x-2 md:space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'user_index' %}" id="nav-inicio" class="hidden md:block font-semibold text-dark hover:text-primary transition-colors">Volver a Inicio</a>
+                    <button class="relative">
+                        <svg id="nav-notification-icon" class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
+
+                    <div class="relative hidden md:block">
+                        <button id="user-menu-button" class="flex items-center space-x-2">
+                            <span id="nav-user-name" class="font-semibold text-dark">{{ user.first_name }}</span>
+                            <svg id="nav-dropdown-icon" class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mi Perfil</a>
+                            <a href="{% url 'postulaciones' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Postulaciones</a>
+                            <a href="{% url 'perfiles_profesionales' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Perfiles Profesionales</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Configuración</a>
+                            <div class="border-t border-light-gray my-1"></div>
+                            <form action="{% url 'logout' %}" method="post" class="w-full">
+                                {% csrf_token %}
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <button id="mobile-menu-btn" class="md:hidden focus:outline-none relative z-50" aria-label="Abrir menú">
+                    <svg id="hamburger-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Menú móvil animado -->
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-end md:hidden transition-all duration-300 ease-in-out pointer-events-none opacity-0"
+            style="z-index:49;">
+            <div class="w-3/4 sm:w-1/2 bg-white shadow-xl h-full p-8 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out relative"
+                id="mobile-menu-panel">
+                <h2 class="text-2xl font-bold text-dark mb-8">Menú</h2>
+    
+                <nav class="flex-grow">
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'user_index' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span>Inicio</span></a></li>
+                        <li><a href="{% url 'profile' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><span>Mi Perfil</span></a></li>
+                        <li><a href="{% url 'postulaciones' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg><span>Mis Postulaciones</span></a></li>
+                        <li><a href="{% url 'perfiles_profesionales' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg><span>Mis Perfiles Profesionales</span></a></li>
+                    </ul>
+                </nav>
+        
+                <div class="border-t border-light-gray pt-6 space-y-4">
+                    <form action="{% url 'logout' %}" method="post" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="block w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 text-lg text-center">Cerrar Sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col md:flex-row">
+        <!-- Columna Izquierda: Controles -->
+                                                        <aside class="w-full md:w-1/3 lg:w-1/4 p-6 bg-white shadow-lg self-start sticky top-16">
+                                                            <div>
+                                                                <h2 class="text-2xl font-bold text-dark mb-6">Editor de CV</h2>
+                                                                
+                                                                <div class="space-y-4">
+                                                                    <div>
+                                                                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Obligatorias</h3>
+                                                                        <nav>
+                                                                            <ul class="space-y-1">
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="personal-data-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+                                                                                        <span class="ml-3">Datos Personales</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="personal-data-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="objective-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.006 3 11.55c0 4.556 4.03 8.25 9 8.25z"></path></svg>
+                                                                                        <span class="ml-3">Objetivo Profesional</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="objective-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="experience-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-13.5a2.25 2.25 0 01-2.25-2.25V6.323a2.25 2.25 0 012.25-2.25h4.073m6.076-1.486a.75.75 0 011.06 0l2.122 2.121a.75.75 0 010 1.06l-6.076 6.075a.75.75 0 01-1.06 0l-2.121-2.12a.75.75 0 010-1.06l6.076-6.076z"></path></svg>
+                                                                                        <span class="ml-3">Experiencia Laboral</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="experience-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="education-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20M1 12v7a2 2 0 002 2h18a2 2 0 002-2v-7"></path></svg>
+                                                                                        <span class="ml-3">Educación</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="education-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="skills-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.991s.145.75.438.99l1.004.827a1.125 1.125 0 01.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.99s-.145-.75-.437-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                                                        <span class="ml-3">Habilidades</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="skills-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </nav>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Opcionales</h3>
+                                                                        <nav>
+                                                                            <ul class="space-y-1">
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="languages-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.625M21 21l-5.25-11.625M3.75 5.25h16.5M4.5 5.25l5.25 11.625"></path></svg>
+                                                                                        <span class="ml-3">Idiomas</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="languages-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="certifications-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                                        <span class="ml-3">Certificaciones</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="certifications-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="projects-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0l-3.75 3.75M3.75 21v-1.5m0 1.5v-1.5m0 0h16.5m-16.5 0h1.5m13.5 0l3.75-3.75M3.75 16.5v1.5m0 0v1.5m0 0h16.5m2.25-11.25h-1.5m0 0h-1.5m-12 0h1.5m12 0h-1.5m0 0h-1.5m-1.5 0h-1.5m-6 0h1.5m-6 0h1.5m0 0h-1.5m0 0h-1.5"></path></svg>
+                                                                                        <span class="ml-3">Proyectos</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="projects-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="volunteering-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
+                                                                                        <span class="ml-3">Voluntariado</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="volunteering-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                                                                    <button data-modal-target="references-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0"></path><path stroke-linecap="round" stroke-linejoin="round" d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM21 6a3 3 0 11-6 0 3 3 0 016 0zM12 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                                                        <span class="ml-3">Referencias</span>
+                                                                                    </button>
+                                                                                    <input type="checkbox" id="references-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </nav>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mt-8">
+                                                                    <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Progreso</h3>
+                                                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                                        <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <p id="progress-text" class="text-sm text-center text-secondary mt-2">0% completado</p>
+                                                                </div>
+                                                
+                                                                <div class="mt-8 pt-4 border-t flex space-x-2">
+                                                                    <button class="w-1/2 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Guardar y Salir</button>
+                                                                    <button id="cancel-button" class="w-1/2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition-all">Cancelar y Reiniciar</button>
+                                                                </div>
+                                                            </div>
+                                                        </aside>        <!-- Columna Derecha: Vista Previa del CV -->
+        <div class="w-full md:w-2/3 lg:w-3/4 p-8 pt-24">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-dark">Vista Previa</h2>
+                    <div>
+                        <button id="download-pdf-btn" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">Descargar PDF</button>
+                    </div>
+                </div>
+                <div class="bg-white p-12 rounded-lg shadow-lg aspect-[210/297]">
+                    <!-- CV Preview -->
+                    <div id="cv-preview" class="text-gray-800 text-sm">
+                        <!-- Header -->
+                        <header class="text-center border-b-2 border-gray-800 pb-4">
+                            <h1 id="cv-name" class="text-4xl font-bold tracking-widest uppercase">TU NOMBREAQUÍ</h1>
+                            <p id="cv-title" class="text-lg font-medium text-gray-600">Tu Título Profesional</p>
+                            <div id="cv-personal-data" class="flex justify-center items-center flex-wrap space-x-4 mt-2 text-sm">
+                                <span id="cv-phone">Tu Teléfono</span>
+                                <span class="text-gray-300">•</span>
+                                <span id="cv-email">tu.email@example.com</span>
+                                <span class="text-gray-300">•</span>
+                                <a id="cv-website" href="#" class="text-primary hover:underline">tu-sitio-web.com</a>
+                            </div>
+                        </header>
+
+                        <!-- Body -->
+                        <main class="mt-4">
+                            <!-- Objetivo Profesional -->
+                            <section id="cv-section-objective">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2>
+                                <p id="cv-objective-text" class="text-sm placeholder-entry">Un resumen conciso y potente sobre tus aspiraciones y lo que ofreces profesionalmente. Haz clic en la sección para editar este texto.</p>
+                            </section>
+
+                            <!-- Experiencia Laboral -->
+                            <section id="cv-section-experience" class="mt-4">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>
+                                <div id="cv-experience-list" class="space-y-3">
+                                    <div class="text-sm placeholder-entry">
+                                        <h3 class="font-bold">Nombre de la Empresa Ejemplo</h3>
+                                        <p class="italic text-xs">Enero 2020 - Presente</p>
+                                        <p class="italic font-semibold">Tu Puesto Más Reciente</p>
+                                        <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
+                                            <li>Logro o responsabilidad clave número uno, descrito de forma clara y concisa.</li>
+                                            <li>Otro logro importante, cuantificando el impacto siempre que sea posible.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Educación -->
+                            <section id="cv-section-education" class="mt-4">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>
+                                <div id="cv-education-list" class="space-y-2">
+                                    <div class="text-sm placeholder-entry">
+                                        <h3 class="font-bold">Nombre de la Universidad</h3>
+                                        <p class="italic text-xs">2015 - 2019</p>
+                                        <p class="italic">Tu Título o Grado</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Habilidades -->
+                            <section id="cv-section-skills" class="mt-4">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>
+                                <div id="cv-skills-list" class="text-sm placeholder-entry">
+                                    <p>Habilidad Clave 1 • Habilidad Técnica 2 • Herramienta Específica 3 • Metodología Ágil • Habilidad Blanda 5</p>
+                                </div>
+                            </section>
+
+                            <!-- Idiomas -->
+                            <section id="cv-section-languages" class="mt-4 hidden">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2>
+                                <ul id="cv-languages-list" class="text-sm space-y-1">
+                                    <li class="placeholder-entry">Idioma 1 (Nivel)</li>
+                                    <li class="placeholder-entry">Idioma 2 (Nivel)</li>
+                                </ul>
+                            </section>
+
+                            <!-- Certificaciones -->
+                            <section id="cv-section-certifications" class="mt-4 hidden">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>
+                                <div id="cv-certifications-list" class="space-y-2">
+                                     <div class="text-sm placeholder-entry">
+                                        <p><span class="font-bold">Nombre de la Certificación</span>, Entidad Emisora (Año)</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Proyectos -->
+                            <section id="cv-section-projects" class="mt-4 hidden">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>
+                                <div id="cv-projects-list" class="space-y-3">
+                                    <div class="text-sm placeholder-entry">
+                                        <h3 class="font-bold">Proyecto Destacado</h3>
+                                        <p>Breve descripción del proyecto, tu rol, las tecnologías utilizadas y el resultado o impacto del mismo.</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Voluntariado -->
+                            <section id="cv-section-volunteering" class="mt-4 hidden">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>
+                                <div id="cv-volunteering-list" class="space-y-3">
+                                    <div class="text-sm placeholder-entry">
+                                        <h3 class="font-bold">Nombre de la Organización</h3>
+                                        <p class="italic">Tu Rol</p>
+                                        <p class="mt-1">Descripción de tus actividades y el impacto de tu contribución.</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Referencias -->
+                            <section id="cv-section-references" class="mt-4 hidden">
+                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>
+                                <div id="cv-references-list" class="space-y-3">
+                                    <div class="text-sm placeholder-entry">
+                                        <h3 class="font-bold">Nombre del Referente</h3>
+                                        <p class="italic">Cargo del Referente</p>
+                                        <p class="mt-1">Teléfono: 123456789 | Email: referente@example.com</p>
+                                        <a href="#" class="text-primary hover:underline">Perfil de LinkedIn</a>
+                                    </div>
+                                </div>
+                            </section>
+
+                        </main>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-light-gray py-4 mt-auto">
+        <div class="container mx-auto text-center text-sm">
+            <p>&copy; 2025 JobFlex. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Modals Container -->
+    <div id="modals-container">
+        <!-- Modal para Datos Personales -->
+        <div id="personal-data-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Datos Personales</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <form id="personal-data-form">
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold text-dark">Nombre</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Primer Nombre <span class="text-red-500">*</span></label>
+                                <input type="text" name="first_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Segundo Nombre</label>
+                                <input type="text" name="second_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Apellido Paterno <span class="text-red-500">*</span></label>
+                                <input type="text" name="last_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Apellido Materno</label>
+                                <input type="text" name="mother_last_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                        <hr class="my-6">
+                        <div>
+                            <label class="block text-sm font-medium text-dark">Título Profesional</label>
+                            <input type="text" name="title" placeholder="Ej: Ingeniero en Informática" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <hr class="my-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Correo Electrónico <span class="text-red-500">*</span></label>
+                                <input type="email" name="email" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark">Teléfono <span class="text-red-500">*</span></label>
+                                <input type="text" name="phone" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                        </div>
+                        <hr class="my-6">
+                        <div>
+                            <label class="block text-sm font-medium text-dark">Link de LinkedIn</label>
+                            <input type="text" name="linkedin_link" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                    <div class="mt-8 text-right">
+                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Objetivo Profesional -->
+        <div id="objective-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Objetivo Profesional</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <form id="objective-form">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Describe cual es tu objetivo profesional.</label>
+                        <textarea id="objective-summary" name="summary" rows="5" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                        <div id="word-count-container" class="text-right text-sm text-gray-500 mt-1">
+                            <span id="word-count">0</span>/150 palabras
+                        </div>
+                    </div>
+                    <div class="mt-8 text-right">
+                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Experiencia Laboral -->
+        <div id="experience-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Experiencia Laboral</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="experience-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="experience-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-experience-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra experiencia</button>
+                    <div>
+                        <button id="delete-experience-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-experience-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="experience-tab-template">
+            <button class="experience-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Experiencia</button>
+        </template>
+
+        <template id="experience-form-template">
+            <form class="experience-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Cargo o Puesto <span class="text-red-500">*</span></label>
+                        <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Empresa y Organización <span class="text-red-500">*</span></label>
+                        <input type="text" name="company" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Ubicación (ciudad y/o país) <span class="text-red-500">*</span></label>
+                    <input type="text" name="location" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Duración del Cargo</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Inicio <span class="text-red-500">*</span></label>
+                        <div class="flex space-x-2">
+                            <select name="start_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <option value="">Mes</option>
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
+                            <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <option value="">Año</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Término <span class="text-red-500">*</span></label>
+                        <div class="flex space-x-2">
+                            <select name="end_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <option value="">Mes</option>
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
+                            <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <option value="">Año</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <input type="checkbox" name="current_job" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                            <label class="ml-2 block text-sm text-dark">Actualmente trabajo aquí</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_internship" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-dark">Este cargo corresponde a una práctica laboral/profesional</label>
+                </div>
+                <div name="total_hours_container" class="hidden">
+                    <label class="block text-sm font-medium text-dark">Cantidad de horas totales</label>
+                    <input type="text" name="total_hours" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Descripción del cargo o responsabilidades</h4>
+                <p class="text-sm text-gray-500">Escribe cada responsabilidad del cargo en una línea separada. Cada salto de línea se mostrará como una viñeta en el CV (Máximo 6 viñetas por cargo).</p>
+                <textarea name="description" rows="6" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+            </form>
+        </template>
+
+        <!-- Modal para Educación -->
+        <div id="education-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Educación</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="education-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="education-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-education-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra educación</button>
+                    <div>
+                        <button id="delete-education-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-education-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="education-tab-template">
+            <button class="education-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Educación</button>
+        </template>
+
+        <template id="education-form-template">
+            <form class="education-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Institución Educativa <span class="text-red-500">*</span></label>
+                    <input type="text" name="institution" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Carrera/Título/Nivel <span class="text-red-500">*</span></label>
+                    <input type="text" name="degree" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Duración</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Inicio (Año) <span class="text-red-500">*</span></label>
+                        <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="">Año</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Término (Año)</label>
+                        <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Año</option>
+                        </select>
+                        <div class="flex items-center mt-2">
+                            <input type="checkbox" name="currently_studying" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                            <label class="ml-2 block text-sm text-dark">Actualmente cursando</label>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Especificaciones/Notas</h4>
+                <textarea name="notes" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+            </form>
+        </template>
+
+        <!-- Modal para Habilidades -->
+        <div id="skills-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Habilidades</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-dark">Habilidades Técnicas/Hard Skills</h4>
+                        <div class="flex space-x-2 mt-2">
+                            <input type="text" id="hard-skill-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ej: Python">
+                            <button id="add-hard-skill-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
+                        </div>
+                        <div id="hard-skills-container" class="flex flex-wrap gap-2 mt-4"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-dark">Competencias/Soft Skills</h4>
+                        <div class="flex space-x-2 mt-2">
+                            <input type="text" id="soft-skill-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ej: Comunicación">
+                            <button id="add-soft-skill-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
+                        </div>
+                        <div id="soft-skills-container" class="flex flex-wrap gap-2 mt-4"></div>
+                    </div>
+                </div>
+                <div class="mt-8 text-right">
+                    <button id="save-skills-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Idiomas -->
+        <div id="languages-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Idiomas</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex space-x-2">
+                        <select id="language-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Selecciona un idioma</option>
+                            <option value="Inglés">Inglés</option>
+                            <option value="Chino Mandarín">Chino Mandarín</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Español">Español</option>
+                            <option value="Francés">Francés</option>
+                            <option value="Árabe Estándar">Árabe Estándar</option>
+                            <option value="Bengalí">Bengalí</option>
+                            <option value="Ruso">Ruso</option>
+                            <option value="Portugués">Portugués</option>
+                            <option value="Urdu">Urdu</option>
+                        </select>
+                        <select id="language-level-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="Básico">Básico</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Avanzado">Avanzado</option>
+                            <option value="Nativo">Nativo</option>
+                        </select>
+                        <button id="add-language-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
+                    </div>
+                    <div id="languages-container" class="flex flex-wrap gap-2 mt-4"></div>
+                </div>
+                <div class="mt-8 text-right">
+                    <button id="save-languages-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Certificaciones -->
+        <div id="certifications-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-2xl max-h-[80vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Certificaciones</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="certifications-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="certifications-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-certification-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra certificación</button>
+                    <div>
+                        <button id="delete-certification-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-certifications-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="certification-tab-template">
+            <button class="certification-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Certificación</button>
+        </template>
+
+        <template id="certification-form-template">
+            <form class="certification-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos de la Certificación</h4>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Nombre de la Certificación <span class="text-red-500">*</span></label>
+                    <input type="text" name="cert_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Entidad Emisora <span class="text-red-500">*</span></label>
+                    <input type="text" name="issuer" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Año de Obtención <span class="text-red-500">*</span></label>
+                    <select name="year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">Año</option>
+                    </select>
+                </div>
+            </form>
+        </template>
+
+
+        <!-- Modal para Proyectos -->
+        <div id="projects-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Proyectos</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="projects-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="projects-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-project-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otro proyecto</button>
+                    <div>
+                        <button id="delete-project-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-projects-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="project-tab-template">
+            <button class="project-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Proyecto</button>
+        </template>
+
+        <template id="project-form-template">
+            <form class="project-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos del Proyecto</h4>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Nombre del Proyecto <span class="text-red-500">*</span></label>
+                    <input type="text" name="project_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Año o periodo de ejecución <span class="text-red-500">*</span></label>
+                    <input type="text" name="period" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Rol o participación</label>
+                    <input type="text" name="role" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Descripción del proyecto <span class="text-red-500">*</span></label>
+                    <textarea name="description" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Enlace o repositorio</label>
+                    <input type="text" name="link" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+            </form>
+        </template>
+
+        <!-- Modal para Voluntariado -->
+        <div id="volunteering-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Voluntariado</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="volunteering-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="volunteering-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-volunteering-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otro voluntariado</button>
+                    <div>
+                        <button id="delete-volunteering-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-volunteering-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="volunteering-tab-template">
+            <button class="volunteering-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Voluntariado</button>
+        </template>
+
+        <template id="volunteering-form-template">
+            <form class="volunteering-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos del Voluntariado</h4>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Nombre de la organización <span class="text-red-500">*</span></label>
+                    <input type="text" name="organization" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Puesto / rol desempeñado <span class="text-red-500">*</span></label>
+                    <input type="text" name="role" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Descripción de actividades</label>
+                    <textarea name="description" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Ubicación</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Ciudad</label>
+                        <input type="text" name="city" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">País</label>
+                        <input type="text" name="country" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Región/Estado/Provincia</label>
+                        <input type="text" name="region" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                <hr class="my-6">
+                <h4 class="text-lg font-semibold text-dark">Duración del Voluntariado</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Inicio <span class="text-red-500">*</span></label>
+                        <input type="date" name="start_date" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Fecha de Término</label>
+                        <input type="date" name="end_date" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                <div class="flex items-center mt-2">
+                    <input type="checkbox" name="current" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-dark">Actualmente activo</label>
+                </div>
+            </form>
+        </template>
+
+        <!-- Modal para Referencias -->
+        <div id="references-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-2xl font-bold text-dark">Referencias</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
+                    <div id="references-tabs-container" class="flex border-b mb-4"></div>
+                    <div id="references-forms-container" class="flex-grow"></div>
+                </div>
+                <div class="p-6 border-t flex justify-between">
+                    <button id="add-reference-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra referencia</button>
+                    <div>
+                        <button id="delete-reference-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
+                        <button id="save-references-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="reference-tab-template">
+            <button class="reference-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Referencia</button>
+        </template>
+
+        <template id="reference-form-template">
+            <form class="reference-form space-y-4">
+                <h4 class="text-lg font-semibold text-dark">Datos de la Referencia</h4>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Nombre del referente <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Cargo del referente <span class="text-red-500">*</span></label>
+                    <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Teléfono <span class="text-red-500">*</span></label>
+                    <input type="text" name="phone" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">Email <span class="text-red-500">*</span></label>
+                    <input type="email" name="email" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-dark">URL de LinkedIn</label>
+                    <input type="url" name="linkedin_url" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+            </form>
+        </template>
+
+        <!-- Modal para Cancelar -->
+        <div id="cancel-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Confirmar Cancelación</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <p class="text-secondary mb-6">¿Estás seguro de que quieres reiniciar tu progreso? Se perderán todos los cambios no guardados y el CV volverá a su estado inicial.</p>
+                <div class="flex justify-end space-x-4">
+                    <button id="confirm-cancel-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Sí, Reiniciar</button>
+                    <button class="bg-gray-300 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-400 close-modal">No, continuar editando</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nuevo Modal para Guardar CV -->
+        <div id="save-cv-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-dark">Guardar CV</h3>
+                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+                </div>
+                <form id="save-cv-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-dark">Nombre del CV <span class="text-red-500">*</span></label>
+                            <input type="text" name="cv_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-dark">Cargo Asociado <span class="text-red-500">*</span></label>
+                            <input type="text" name="cargo_asociado" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-right">
+                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Confirmar y Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    {{ cv_data|json_script:"cv-data" }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const { jsPDF } = window.jspdf;
+
+    // --- ESTRUCTURA DE DATOS DEL CV ---
+    let cvData = {};
+    const cvId = document.body.dataset.cvId;
+
+    const cvDataElement = document.getElementById('cv-data');
+    if (cvDataElement) {
+        const cvDataJSON = JSON.parse(cvDataElement.textContent);
+        if (cvDataJSON) {
+            cvData = cvDataJSON;
+        }
+    } else {
+        // Fallback for safety, though it shouldn't be needed in edit mode
+        cvData = {
+            personalData: {},
+            objective: '',
+            experience: [],
+            education: [],
+            skills: { hard: [], soft: [] },
+            languages: [],
+            certifications: [],
+            projects: [],
+            volunteering: [],
+            references: []
+        };
+    }
+
+    function clearPlaceholder(container) {
+        const placeholder = container.querySelector('.placeholder-entry');
+        if (placeholder) {
+            placeholder.remove();
+        }
+    }
+
+    // --- MANEJO DE MODALES ---
+    // Función para abrir un modal
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // Función para cerrar un modal
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    document.querySelectorAll('[data-modal-target]').forEach(button => {
+        button.addEventListener('click', () => {
+            const modalId = button.dataset.modalTarget;
+            const populateFunction = window[`populate${modalId.replace(/-/g, '').replace('modal','')}`];
+            if (typeof populateFunction === 'function') {
+                populateFunction();
+            }
+            openModal(modalId);
+        });
+    });
+
+    document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', () => {
+            closeModal(button.closest('.fixed.inset-0').id);
+        });
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('bg-opacity-50')) {
+            closeModal(e.target.id);
+        }
+    });
+
+    // --- LÓGICA DE GUARDADO Y ACTUALIZACIÓN DE VISTA PREVIA ---
+    function setSectionAsFilled(sectionKey) {
+        const checkbox = document.getElementById(`${sectionKey}-checkbox`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+        const section = document.getElementById(`cv-section-${sectionKey}`);
+        if (section) {
+            section.classList.remove('hidden');
+        }
+    }
+
+    function updateProgressBar() {
+        const sections = {
+            personalData: () => Object.values(cvData.personalData).some(v => v),
+            objective: () => cvData.objective.trim() !== '',
+            experience: () => cvData.experience.length > 0,
+            education: () => cvData.education.length > 0,
+            skills: () => cvData.skills.hard.length > 0 || cvData.skills.soft.length > 0,
+            languages: () => cvData.languages.length > 0,
+            certifications: () => cvData.certifications.length > 0,
+            projects: () => cvData.projects.length > 0,
+            volunteering: () => cvData.volunteering.length > 0,
+            references: () => cvData.references.length > 0,
+        };
+
+        const totalSections = Object.keys(sections).length;
+        let filledSections = 0;
+
+        for (const section in sections) {
+            if (sections[section]()) {
+                filledSections++;
+            }
+        }
+
+        const percentage = Math.round((filledSections / totalSections) * 100);
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+
+        progressBar.style.width = `${percentage}%`;
+        progressText.textContent = `${percentage}% completado`;
+    }
+
+    // --- DESCARGAR CV COMO PDF ---
+    document.getElementById('download-pdf-btn').addEventListener('click', () => {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const cvPreview = document.getElementById('cv-preview');
+        const html_content = cvPreview.innerHTML;
+
+        fetch('/download-cv-pdf/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ html_content: html_content })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'cv_jobflex.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('Error downloading PDF:', error));
+    });
+
+    // --- DATOS PERSONALES ---
+    window.populatepersonaldata = function() {
+        const form = document.getElementById('personal-data-form');
+        form.first_name.value = cvData.personalData.firstName || '';
+        form.second_name.value = cvData.personalData.secondName || '';
+        form.last_name.value = cvData.personalData.lastName || '';
+        form.mother_last_name.value = cvData.personalData.motherLastName || '';
+        form.title.value = cvData.personalData.title || '';
+        form.email.value = cvData.personalData.email || '';
+        form.phone.value = cvData.personalData.phone || '';
+        form.linkedin_link.value = cvData.personalData.linkedin_link || '';
+    }
+
+    document.getElementById('personal-data-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        cvData.personalData = {
+            firstName: formData.get('first_name'),
+            secondName: formData.get('second_name'),
+            lastName: formData.get('last_name'),
+            motherLastName: formData.get('mother_last_name'),
+            title: formData.get('title'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            linkedin_link: formData.get('linkedin_link')
+        };
+        updatePersonalDataPreview();
+        setSectionAsFilled('personal-data');
+        updateProgressBar();
+        document.getElementById('personal-data-modal').classList.add('hidden');
+    });
+
+    function updatePersonalDataPreview() {
+        const { firstName, secondName, lastName, motherLastName, title, email, phone, linkedin_link } = cvData.personalData;
+        const fullName = `${firstName || ''} ${secondName || ''} ${lastName || ''} ${motherLastName || ''}`.replace(/\s+/g, ' ').trim();
+        document.getElementById('cv-name').textContent = fullName.toUpperCase() || 'TU NOMBRE AQUÍ';
+        document.getElementById('cv-title').textContent = title || 'Tu Título Profesional';
+        document.getElementById('cv-phone').textContent = phone || 'Tu Teléfono';
+        document.getElementById('cv-email').textContent = email || 'tu.email@example.com';
+        const webA = document.getElementById('cv-website');
+        if (linkedin_link) {
+            webA.href = linkedin_link;
+            webA.textContent = 'Perfil de LinkedIn';
+        } else {
+            webA.textContent = 'tu-sitio-web.com';
+            webA.href = '#';
+        }
+    }
+
+    // --- OBJETIVO PROFESIONAL ---
+    window.populateobjective = function() {
+        const form = document.getElementById('objective-form');
+        form.summary.value = cvData.objective || '';
+    }
+
+    document.getElementById('objective-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        cvData.objective = formData.get('summary');
+        updateObjectivePreview();
+        setSectionAsFilled('objective');
+        updateProgressBar();
+        document.getElementById('objective-modal').classList.add('hidden');
+    });
+
+    function updateObjectivePreview() {
+        const objectiveText = document.getElementById('cv-objective-text');
+        if (cvData.objective) {
+            objectiveText.textContent = cvData.objective;
+            objectiveText.classList.remove('placeholder-entry');
+        } else {
+            objectiveText.textContent = 'Un resumen conciso y potente sobre tus aspiraciones y lo que ofreces profesionalmente. Haz clic en la sección para editar este texto.';
+            objectiveText.classList.add('placeholder-entry');
+        }
+    }
+
+    // --- EXPERIENCIA LABORAL ---
+    const experienceModal = document.getElementById('experience-modal');
+    const experienceTabsContainer = document.getElementById('experience-tabs-container');
+    const experienceFormsContainer = document.getElementById('experience-forms-container');
+    const addExperienceBtn = document.getElementById('add-experience-btn');
+    const deleteExperienceBtn = document.getElementById('delete-experience-btn');
+    const saveExperienceBtn = document.getElementById('save-experience-btn');
+    const experienceTabTemplate = document.getElementById('experience-tab-template');
+    const experienceFormTemplate = document.getElementById('experience-form-template');
+
+    window.populateexperience = function() {
+        experienceFormsContainer.innerHTML = '';
+        experienceTabsContainer.innerHTML = '';
+
+        if (cvData.experience.length === 0) {
+            addExperience();
+        } else {
+            cvData.experience.forEach((exp, index) => {
+                addExperience(exp, index + 1);
+            });
+        }
+        switchExperienceTab(1);
+    }
+
+    function getNextExperienceNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.experience-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addExperience(data = null, number = null) {
+        const nextNumber = number || getNextExperienceNumber();
+        const newTab = experienceTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Experiencia ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        experienceTabsContainer.appendChild(newTab);
+
+        const newForm = experienceFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        const startYearSelect = newForm.querySelector('select[name="start_year"]');
+        const endYearSelect = newForm.querySelector('select[name="end_year"]');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= currentYear - 50; i--) {
+            const startOption = document.createElement('option');
+            startOption.value = i;
+            startOption.textContent = i;
+            startYearSelect.appendChild(startOption);
+
+            const endOption = document.createElement('option');
+            endOption.value = i;
+            endOption.textContent = i;
+            endYearSelect.appendChild(endOption);
+        }
+
+        if (data) {
+            newForm.position.value = data.position || '';
+            newForm.company.value = data.company || '';
+            newForm.location.value = data.location || '';
+            newForm.start_month.value = data.start_month || '';
+            newForm.start_year.value = data.start_year || '';
+            newForm.end_month.value = data.end_month || '';
+            newForm.end_year.value = data.end_year || '';
+            newForm.current_job.checked = data.current_job || false;
+            newForm.is_internship.checked = data.is_internship || false;
+            newForm.total_hours.value = data.total_hours || '';
+            newForm.description.value = data.description || '';
+        }
+
+        experienceFormsContainer.appendChild(newForm);
+
+        newForm.addEventListener('change', (e) => {
+            if (e.target.name === 'is_internship') {
+                const totalHoursContainer = e.target.closest('.experience-form').querySelector('[name="total_hours_container"]');
+                if (e.target.checked) {
+                    totalHoursContainer.classList.remove('hidden');
+                } else {
+                    totalHoursContainer.classList.add('hidden');
+                }
+            }
+        });
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchExperienceTab(tabId);
+        });
+    }
+
+    function switchExperienceTab(tabId) {
+        document.querySelectorAll('.experience-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.experience-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.experience-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.experience-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteExperience() {
+        const activeTab = document.querySelector('.experience-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.experience.splice(activeTabId - 1, 1);
+            populateexperience();
+        }
+    }
+
+    saveExperienceBtn.addEventListener('click', () => {
+        cvData.experience = [];
+        document.querySelectorAll('.experience-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.experience.push({
+                position: formData.get('position'),
+                company: formData.get('company'),
+                location: formData.get('location'),
+                start_month: formData.get('start_month'),
+                start_year: formData.get('start_year'),
+                end_month: formData.get('end_month'),
+                end_year: formData.get('end_year'),
+                current_job: formData.get('current_job'),
+                is_internship: formData.get('is_internship'),
+                total_hours: formData.get('total_hours'),
+                description: formData.get('description'),
+            });
+        });
+        updateExperiencePreview();
+        setSectionAsFilled('experience');
+        updateProgressBar();
+        experienceModal.classList.add('hidden');
+    });
+
+    function updateExperiencePreview() {
+        const list = document.getElementById('cv-experience-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.experience.forEach(exp => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-3';
+            const description = exp.description.split('\n').slice(0, 6).join('</li><li>');
+            const position = exp.is_internship ? `${exp.position} (Practica laboral)` : exp.position;
+            newEntry.innerHTML = `
+                <p class="italic font-semibold">${position}</p>
+                <h3 class="font-bold">${exp.company} - ${exp.location}</h3>
+                <p class="italic text-xs">${exp.start_month} ${exp.start_year} - ${exp.current_job ? 'Presente' : `${exp.end_month} ${exp.end_year}`}</p>
+                <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
+                    <li>${description}</li>
+                </ul>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addExperienceBtn.addEventListener('click', () => addExperience());
+    deleteExperienceBtn.addEventListener('click', deleteExperience);
+
+    // --- EDUCACIÓN ---
+    const educationModal = document.getElementById('education-modal');
+    const educationTabsContainer = document.getElementById('education-tabs-container');
+    const educationFormsContainer = document.getElementById('education-forms-container');
+    const addEducationBtn = document.getElementById('add-education-btn');
+    const deleteEducationBtn = document.getElementById('delete-education-btn');
+    const saveEducationBtn = document.getElementById('save-education-btn');
+    const educationTabTemplate = document.getElementById('education-tab-template');
+    const educationFormTemplate = document.getElementById('education-form-template');
+
+    window.populateeducation = function() {
+        educationFormsContainer.innerHTML = '';
+        educationTabsContainer.innerHTML = '';
+
+        if (cvData.education.length === 0) {
+            addEducation();
+        } else {
+            cvData.education.forEach((edu, index) => {
+                addEducation(edu, index + 1);
+            });
+        }
+        switchEducationTab(1);
+    }
+
+    function getNextEducationNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.education-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addEducation(data = null, number = null) {
+        const nextNumber = number || getNextEducationNumber();
+        const newTab = educationTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Educación ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        educationTabsContainer.appendChild(newTab);
+
+        const newForm = educationFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        const startYearSelect = newForm.querySelector('select[name="start_year"]');
+        const endYearSelect = newForm.querySelector('select[name="end_year"]');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= currentYear - 50; i--) {
+            const startOption = document.createElement('option');
+            startOption.value = i;
+            startOption.textContent = i;
+            startYearSelect.appendChild(startOption);
+
+            const endOption = document.createElement('option');
+            endOption.value = i;
+            endOption.textContent = i;
+            endYearSelect.appendChild(endOption);
+        }
+
+        if (data) {
+            newForm.institution.value = data.institution || '';
+            newForm.degree.value = data.degree || '';
+            newForm.start_year.value = data.start_year || '';
+            newForm.end_year.value = data.end_year || '';
+            newForm.currently_studying.checked = data.currently_studying || false;
+            newForm.notes.value = data.notes || '';
+        }
+
+        educationFormsContainer.appendChild(newForm);
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchEducationTab(tabId);
+        });
+    }
+
+    function switchEducationTab(tabId) {
+        document.querySelectorAll('.education-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.education-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.education-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.education-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteEducation() {
+        const activeTab = document.querySelector('.education-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.education.splice(activeTabId - 1, 1);
+            populateeducation();
+        }
+    }
+
+    saveEducationBtn.addEventListener('click', () => {
+        cvData.education = [];
+        document.querySelectorAll('.education-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.education.push({
+                institution: formData.get('institution'),
+                degree: formData.get('degree'),
+                start_year: formData.get('start_year'),
+                end_year: formData.get('end_year'),
+                currently_studying: formData.get('currently_studying'),
+                notes: formData.get('notes'),
+            });
+        });
+        updateEducationPreview();
+        setSectionAsFilled('education');
+        updateProgressBar();
+        educationModal.classList.add('hidden');
+    });
+
+    function updateEducationPreview() {
+        const list = document.getElementById('cv-education-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.education.forEach(edu => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-2';
+            newEntry.innerHTML = `
+                <h3 class="font-bold">${edu.institution}</h3>
+                <p class="italic text-xs">${edu.start_year} - ${edu.currently_studying ? 'Presente' : edu.end_year}</p>
+                <p class="italic">${edu.degree}</p>
+                <p class="text-sm mt-1">${edu.notes}</p>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addEducationBtn.addEventListener('click', () => addEducation());
+    deleteEducationBtn.addEventListener('click', deleteEducation);
+
+    // --- HABILIDADES ---
+    const skillsModal = document.getElementById('skills-modal');
+    const hardSkillInput = document.getElementById('hard-skill-input');
+    const addHardSkillBtn = document.getElementById('add-hard-skill-btn');
+    const hardSkillsContainer = document.getElementById('hard-skills-container');
+    const softSkillInput = document.getElementById('soft-skill-input');
+    const addSoftSkillBtn = document.getElementById('add-soft-skill-btn');
+    const softSkillsContainer = document.getElementById('soft-skills-container');
+    const saveSkillsBtn = document.getElementById('save-skills-btn');
+
+    window.populateskills = function() {
+        renderSkills();
+    }
+
+    function renderSkills() {
+        hardSkillsContainer.innerHTML = '';
+        cvData.skills.hard.forEach((skill, index) => {
+            const skillTag = document.createElement('div');
+            skillTag.className = 'bg-primary text-white px-3 py-1 rounded-full flex items-center';
+            skillTag.innerHTML = `<span>${skill}</span><button data-index="${index}" class="ml-2 text-white font-bold">x</button>`;
+            hardSkillsContainer.appendChild(skillTag);
+        });
+
+        softSkillsContainer.innerHTML = '';
+        cvData.skills.soft.forEach((skill, index) => {
+            const skillTag = document.createElement('div');
+            skillTag.className = 'bg-gray-500 text-white px-3 py-1 rounded-full flex items-center';
+            skillTag.innerHTML = `<span>${skill}</span><button data-index="${index}" class="ml-2 text-white font-bold">x</button>`;
+            softSkillsContainer.appendChild(skillTag);
+        });
+    }
+
+    addHardSkillBtn.addEventListener('click', () => {
+        if (hardSkillInput.value && cvData.skills.hard.length < 10) {
+            cvData.skills.hard.push(hardSkillInput.value);
+            hardSkillInput.value = '';
+            renderSkills();
+        }
+    });
+
+    addSoftSkillBtn.addEventListener('click', () => {
+        if (softSkillInput.value && cvData.skills.soft.length < 10) {
+            cvData.skills.soft.push(softSkillInput.value);
+            softSkillInput.value = '';
+            renderSkills();
+        }
+    });
+
+    hardSkillsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            cvData.skills.hard.splice(e.target.dataset.index, 1);
+            renderSkills();
+        }
+    });
+
+    softSkillsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            cvData.skills.soft.splice(e.target.dataset.index, 1);
+            renderSkills();
+        }
+    });
+
+    saveSkillsBtn.addEventListener('click', () => {
+        updateSkillsPreview();
+        setSectionAsFilled('skills');
+        updateProgressBar();
+        skillsModal.classList.add('hidden');
+    });
+
+    function updateSkillsPreview() {
+        const list = document.getElementById('cv-skills-list');
+        clearPlaceholder(list);
+        let hardSkillsList = '';
+        if (cvData.skills.hard.length > 0) {
+            hardSkillsList = '<ul>' + cvData.skills.hard.map(skill => `<li>&bull; ${skill}</li>`).join('') + '</ul>';
+        }
+
+        let softSkillsList = '';
+        if (cvData.skills.soft.length > 0) {
+            softSkillsList = '<ul>' + cvData.skills.soft.map(skill => `<li>&bull; ${skill}</li>`).join('') + '</ul>';
+        }
+
+        list.innerHTML = `<p><strong>Habilidades Técnicas:</strong></p>${hardSkillsList}<p><strong>Competencias:</strong></p>${softSkillsList}`;
+    }
+
+    // --- IDIOMAS ---
+    const languagesModal = document.getElementById('languages-modal');
+    const languageInput = document.getElementById('language-input');
+    const languageLevelInput = document.getElementById('language-level-input');
+    const addLanguageBtn = document.getElementById('add-language-btn');
+    const languagesContainer = document.getElementById('languages-container');
+    const saveLanguagesBtn = document.getElementById('save-languages-btn');
+
+    window.populatelanguages = function() {
+        renderLanguages();
+    }
+
+    function renderLanguages() {
+        languagesContainer.innerHTML = '';
+        cvData.languages.forEach((lang, index) => {
+            const langTag = document.createElement('div');
+            langTag.className = 'bg-primary text-white px-3 py-1 rounded-full flex items-center';
+            langTag.innerHTML = `<span>${lang.language} (${lang.level})</span><button data-index="${index}" class="ml-2 text-white font-bold">x</button>`;
+            languagesContainer.appendChild(langTag);
+        });
+    }
+
+    addLanguageBtn.addEventListener('click', () => {
+        if (languageInput.value) {
+            cvData.languages.push({ language: languageInput.value, level: languageLevelInput.value });
+            languageInput.value = '';
+            renderLanguages();
+        }
+    });
+
+    languagesContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            cvData.languages.splice(e.target.dataset.index, 1);
+            renderLanguages();
+        }
+    });
+
+    saveLanguagesBtn.addEventListener('click', () => {
+        updateLanguagesPreview();
+        setSectionAsFilled('languages');
+        updateProgressBar();
+        languagesModal.classList.add('hidden');
+    });
+
+    function updateLanguagesPreview() {
+        const list = document.getElementById('cv-languages-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.languages.forEach(lang => {
+            const newEntry = document.createElement('li');
+            newEntry.textContent = `${lang.language} (${lang.level})`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    // --- CERTIFICACIONES ---
+    const certificationsModal = document.getElementById('certifications-modal');
+    const certificationsTabsContainer = document.getElementById('certifications-tabs-container');
+    const certificationsFormsContainer = document.getElementById('certifications-forms-container');
+    const addCertificationBtn = document.getElementById('add-certification-btn');
+    const deleteCertificationBtn = document.getElementById('delete-certification-btn');
+    const saveCertificationsBtn = document.getElementById('save-certifications-btn');
+    const certificationTabTemplate = document.getElementById('certification-tab-template');
+    const certificationFormTemplate = document.getElementById('certification-form-template');
+
+    window.populatecertifications = function() {
+        certificationsFormsContainer.innerHTML = '';
+        certificationsTabsContainer.innerHTML = '';
+
+        if (cvData.certifications.length === 0) {
+            addCertification();
+        } else {
+            cvData.certifications.forEach((cert, index) => {
+                addCertification(cert, index + 1);
+            });
+        }
+        switchCertificationTab(1);
+    }
+
+    function getNextCertificationNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.certification-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addCertification(data = null, number = null) {
+        const nextNumber = number || getNextCertificationNumber();
+        const newTab = certificationTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Certificación ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        certificationsTabsContainer.appendChild(newTab);
+
+        const newForm = certificationFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        const yearSelect = newForm.querySelector('select[name="year"]');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= currentYear - 50; i--) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            yearSelect.appendChild(option);
+        }
+
+        if (data) {
+            newForm.cert_name.value = data.cert_name || '';
+            newForm.issuer.value = data.issuer || '';
+            newForm.year.value = data.year || '';
+        }
+
+        certificationsFormsContainer.appendChild(newForm);
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchCertificationTab(tabId);
+        });
+    }
+
+    function switchCertificationTab(tabId) {
+        document.querySelectorAll('.certification-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.certification-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.certification-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.certification-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteCertification() {
+        const activeTab = document.querySelector('.certification-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.certifications.splice(activeTabId - 1, 1);
+            populatecertifications();
+        }
+    }
+
+    saveCertificationsBtn.addEventListener('click', () => {
+        cvData.certifications = [];
+        document.querySelectorAll('.certification-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.certifications.push({
+                cert_name: formData.get('cert_name'),
+                issuer: formData.get('issuer'),
+                year: formData.get('year'),
+            });
+        });
+        updateCertificationsPreview();
+        setSectionAsFilled('certifications');
+        updateProgressBar();
+        certificationsModal.classList.add('hidden');
+    });
+
+    function updateCertificationsPreview() {
+        const list = document.getElementById('cv-certifications-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.certifications.forEach(cert => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-2';
+            newEntry.innerHTML = `<p><span class="font-bold">${cert.cert_name}</span>, ${cert.issuer} (${cert.year})</p>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addCertificationBtn.addEventListener('click', () => addCertification());
+    deleteCertificationBtn.addEventListener('click', deleteCertification);
+
+    // --- PROYECTOS ---
+    const projectsModal = document.getElementById('projects-modal');
+    const projectsTabsContainer = document.getElementById('projects-tabs-container');
+    const projectsFormsContainer = document.getElementById('projects-forms-container');
+    const addProjectBtn = document.getElementById('add-project-btn');
+    const deleteProjectBtn = document.getElementById('delete-project-btn');
+    const saveProjectsBtn = document.getElementById('save-projects-btn');
+    const projectTabTemplate = document.getElementById('project-tab-template');
+    const projectFormTemplate = document.getElementById('project-form-template');
+
+    window.populateprojects = function() {
+        projectsFormsContainer.innerHTML = '';
+        projectsTabsContainer.innerHTML = '';
+
+        if (cvData.projects.length === 0) {
+            addProject();
+        } else {
+            cvData.projects.forEach((proj, index) => {
+                addProject(proj, index + 1);
+            });
+        }
+        switchProjectTab(1);
+    }
+
+    function getNextProjectNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.project-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addProject(data = null, number = null) {
+        const nextNumber = number || getNextProjectNumber();
+        const newTab = projectTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Proyecto ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        projectsTabsContainer.appendChild(newTab);
+
+        const newForm = projectFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        if (data) {
+            newForm.project_name.value = data.project_name || '';
+            newForm.period.value = data.period || '';
+            newForm.role.value = data.role || '';
+            newForm.description.value = data.description || '';
+            newForm.link.value = data.link || '';
+        }
+
+        projectsFormsContainer.appendChild(newForm);
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchProjectTab(tabId);
+        });
+    }
+
+    function switchProjectTab(tabId) {
+        document.querySelectorAll('.project-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.project-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.project-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.project-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteProject() {
+        const activeTab = document.querySelector('.project-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.projects.splice(activeTabId - 1, 1);
+            populateprojects();
+        }
+    }
+
+    saveProjectsBtn.addEventListener('click', () => {
+        cvData.projects = [];
+        document.querySelectorAll('.project-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.projects.push({
+                project_name: formData.get('project_name'),
+                period: formData.get('period'),
+                role: formData.get('role'),
+                description: formData.get('description'),
+                link: formData.get('link'),
+            });
+        });
+        updateProjectsPreview();
+        setSectionAsFilled('projects');
+        updateProgressBar();
+        projectsModal.classList.add('hidden');
+    });
+
+    function updateProjectsPreview() {
+        const list = document.getElementById('cv-projects-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.projects.forEach(proj => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-3';
+            newEntry.innerHTML = `
+                <h3 class="font-bold">${proj.project_name}</h3>
+                <p class="italic text-xs">${proj.period}</p>
+                <p class="italic font-semibold">${proj.role}</p>
+                <p>${proj.description}</p>
+                <a href="${proj.link}" class="text-primary hover:underline">Repositorio: ${proj.link}</a>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addProjectBtn.addEventListener('click', () => addProject());
+    deleteProjectBtn.addEventListener('click', deleteProject);
+
+    // --- VOLUNTARIADO ---
+    const volunteeringModal = document.getElementById('volunteering-modal');
+    const volunteeringTabsContainer = document.getElementById('volunteering-tabs-container');
+    const volunteeringFormsContainer = document.getElementById('volunteering-forms-container');
+    const addVolunteeringBtn = document.getElementById('add-volunteering-btn');
+    const deleteVolunteeringBtn = document.getElementById('delete-volunteering-btn');
+    const saveVolunteeringBtn = document.getElementById('save-volunteering-btn');
+    const volunteeringTabTemplate = document.getElementById('volunteering-tab-template');
+    const volunteeringFormTemplate = document.getElementById('volunteering-form-template');
+
+    window.populatevolunteering = function() {
+        volunteeringFormsContainer.innerHTML = '';
+        volunteeringTabsContainer.innerHTML = '';
+
+        if (cvData.volunteering.length === 0) {
+            addVolunteering();
+        } else {
+            cvData.volunteering.forEach((vol, index) => {
+                addVolunteering(vol, index + 1);
+            });
+        }
+        switchVolunteeringTab(1);
+    }
+
+    function getNextVolunteeringNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.volunteering-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addVolunteering(data = null, number = null) {
+        const nextNumber = number || getNextVolunteeringNumber();
+        const newTab = volunteeringTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Voluntariado ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        volunteeringTabsContainer.appendChild(newTab);
+
+        const newForm = volunteeringFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        if (data) {
+            newForm.organization.value = data.organization || '';
+            newForm.role.value = data.role || '';
+            newForm.description.value = data.description || '';
+            newForm.city.value = data.city || '';
+            newForm.country.value = data.country || '';
+            newForm.region.value = data.region || '';
+            newForm.start_date.value = data.start_date || '';
+            newForm.end_date.value = data.end_date || '';
+            newForm.current.checked = data.current || false;
+        }
+
+        volunteeringFormsContainer.appendChild(newForm);
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchVolunteeringTab(tabId);
+        });
+    }
+
+    function switchVolunteeringTab(tabId) {
+        document.querySelectorAll('.volunteering-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.volunteering-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.volunteering-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.volunteering-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteVolunteering() {
+        const activeTab = document.querySelector('.volunteering-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.volunteering.splice(activeTabId - 1, 1);
+            populatevolunteering();
+        }
+    }
+
+    saveVolunteeringBtn.addEventListener('click', () => {
+        cvData.volunteering = [];
+        document.querySelectorAll('.volunteering-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.volunteering.push({
+                organization: formData.get('organization'),
+                role: formData.get('role'),
+                description: formData.get('description'),
+                city: formData.get('city'),
+                country: formData.get('country'),
+                region: formData.get('region'),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date'),
+                current: formData.get('current'),
+            });
+        });
+        updateVolunteeringPreview();
+        setSectionAsFilled('volunteering');
+        updateProgressBar();
+        volunteeringModal.classList.add('hidden');
+    });
+
+    function updateVolunteeringPreview() {
+        const list = document.getElementById('cv-volunteering-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.volunteering.forEach(vol => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-3';
+            const description = vol.description.split('\n').join('</li><li>');
+            newEntry.innerHTML = `
+                <h3 class="font-bold">${vol.organization}</h3>
+                <p class="italic">${vol.role}</p>
+                <p class="italic text-xs">${vol.start_date} - ${vol.current ? 'Presente' : vol.end_date}</p>
+                <p class="text-sm">${vol.city}, ${vol.region}, ${vol.country}</p>
+                <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
+                    <li>${description}</li>
+                </ul>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addVolunteeringBtn.addEventListener('click', () => addVolunteering());
+    deleteVolunteeringBtn.addEventListener('click', deleteVolunteering);
+
+    // --- REFERENCIAS ---
+    const referencesModal = document.getElementById('references-modal');
+    const referencesTabsContainer = document.getElementById('references-tabs-container');
+    const referencesFormsContainer = document.getElementById('references-forms-container');
+    const addReferenceBtn = document.getElementById('add-reference-btn');
+    const deleteReferenceBtn = document.getElementById('delete-reference-btn');
+    const saveReferencesBtn = document.getElementById('save-references-btn');
+    const referenceTabTemplate = document.getElementById('reference-tab-template');
+    const referenceFormTemplate = document.getElementById('reference-form-template');
+
+    window.populatereferences = function() {
+        referencesFormsContainer.innerHTML = '';
+        referencesTabsContainer.innerHTML = '';
+
+        if (cvData.references.length === 0) {
+            addReference();
+        } else {
+            cvData.references.forEach((ref, index) => {
+                addReference(ref, index + 1);
+            });
+        }
+        switchReferenceTab(1);
+    }
+
+    function getNextReferenceNumber() {
+        const existingTabIds = Array.from(document.querySelectorAll('.reference-tab')).map(tab => parseInt(tab.dataset.tabId));
+        let nextNumber = 1;
+        while (existingTabIds.includes(nextNumber)) {
+            nextNumber++;
+        }
+        return nextNumber;
+    }
+
+    function addReference(data = null, number = null) {
+        const nextNumber = number || getNextReferenceNumber();
+        const newTab = referenceTabTemplate.content.cloneNode(true).firstElementChild;
+        newTab.textContent = `Referencia ${nextNumber}`;
+        newTab.dataset.tabId = nextNumber;
+        referencesTabsContainer.appendChild(newTab);
+
+        const newForm = referenceFormTemplate.content.cloneNode(true).firstElementChild;
+        newForm.dataset.formId = nextNumber;
+
+        if (data) {
+            newForm.name.value = data.name || '';
+            newForm.position.value = data.position || '';
+            newForm.phone.value = data.phone || '';
+            newForm.email.value = data.email || '';
+            newForm.linkedin_url.value = data.linkedin_url || '';
+        }
+
+        referencesFormsContainer.appendChild(newForm);
+
+        newTab.addEventListener('click', (event) => {
+            const tabId = event.currentTarget.dataset.tabId;
+            switchReferenceTab(tabId);
+        });
+    }
+
+    function switchReferenceTab(tabId) {
+        document.querySelectorAll('.reference-tab').forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            tab.classList.add('text-dark');
+        });
+        const activeTab = document.querySelector(`.reference-tab[data-tab-id='${tabId}']`);
+        if (activeTab) {
+            activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            activeTab.classList.remove('text-dark');
+        }
+
+        document.querySelectorAll('.reference-form').forEach(form => form.classList.add('hidden'));
+        const activeForm = document.querySelector(`.reference-form[data-form-id='${tabId}']`);
+        if (activeForm) {
+            activeForm.classList.remove('hidden');
+        }
+    }
+
+    function deleteReference() {
+        const activeTab = document.querySelector('.reference-tab.border-primary');
+        if (activeTab) {
+            const activeTabId = activeTab.dataset.tabId;
+            cvData.references.splice(activeTabId - 1, 1);
+            populatereferences();
+        }
+    }
+
+    saveReferencesBtn.addEventListener('click', () => {
+        cvData.references = [];
+        document.querySelectorAll('.reference-form').forEach(form => {
+            const formData = new FormData(form);
+            cvData.references.push({
+                name: formData.get('name'),
+                position: formData.get('position'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                linkedin_url: formData.get('linkedin_url'),
+            });
+        });
+        updateReferencesPreview();
+        setSectionAsFilled('references');
+        updateProgressBar();
+        referencesModal.classList.add('hidden');
+    });
+
+    function updateReferencesPreview() {
+        const list = document.getElementById('cv-references-list');
+        clearPlaceholder(list);
+        list.innerHTML = '';
+        cvData.references.forEach(ref => {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-sm mb-3';
+            newEntry.innerHTML = `
+                <h3 class="font-bold">${ref.name}</h3>
+                <p class="italic">${ref.position}</p>
+                <p class="mt-1">Teléfono: ${ref.phone} | Email: ${ref.email}</p>
+                <a href="${ref.linkedin_url}" class="text-primary hover:underline">Perfil de LinkedIn</a>`;
+            list.appendChild(newEntry);
+        });
+    }
+
+    addReferenceBtn.addEventListener('click', () => addReference());
+    deleteReferenceBtn.addEventListener('click', deleteReference);
+
+    // --- LÓGICA DE CANCELACIÓN ---
+    const cancelButton = document.getElementById('cancel-button');
+    const cancelModal = document.getElementById('cancel-modal');
+    const confirmCancelButton = document.getElementById('confirm-cancel-btn');
+
+    if (cancelButton) {
+        cancelButton.addEventListener('click', () => {
+            if (cancelModal) {
+                cancelModal.classList.remove('hidden');
+            }
+        });
+    }
+
+    if (confirmCancelButton) {
+        confirmCancelButton.addEventListener('click', () => {
+            resetCv();
+            if (cancelModal) {
+                cancelModal.classList.add('hidden');
+            }
+        });
+    }
+
+    function resetCv() {
+        cvData = {
+            personalData: {},
+            objective: '',
+            experience: [],
+            education: [],
+            skills: { hard: [], soft: [] },
+            languages: [],
+            certifications: [],
+            projects: [],
+            volunteering: [],
+            references: []
+        };
+        updatePersonalDataPreview();
+        updateObjectivePreview();
+        updateExperiencePreview();
+        updateEducationPreview();
+        updateSkillsPreview();
+        updateLanguagesPreview();
+        updateCertificationsPreview();
+        updateProjectsPreview();
+        updateVolunteeringPreview();
+        updateReferencesPreview();
+
+        const checkboxes = document.querySelectorAll('.form-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        const sections = document.querySelectorAll('#cv-preview main section');
+        sections.forEach(section => {
+            if (section.id !== 'cv-section-objective' && section.id !== 'cv-section-experience' && section.id !== 'cv-section-education' && section.id !== 'cv-section-skills') {
+                section.classList.add('hidden');
+            }
+        });
+    }
+    // --- GUARDAR Y SALIR (Abre el modal de nombre de CV) ---
+    document.querySelector('button.bg-primary.text-white.font-bold.py-3.px-6').addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal('save-cv-modal');
+    });
+
+    // --- Manejo del formulario del modal de Guardar CV ---
+    document.getElementById('save-cv-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const cvName = form.querySelector('[name="cv_name"]').value;
+        const cargoAsociado = form.querySelector('[name="cargo_asociado"]').value;
+
+        if (!cvName || !cargoAsociado) {
+            alert('Por favor, ingresa el nombre del CV y el cargo asociado.');
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        try {
+            const response = await fetch('/save-cv/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    cv_id: cvId,
+                    cv_name: cvName,
+                    cargo_asociado: cargoAsociado,
+                    cvData: cvData
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                alert(result.message);
+                closeModal('save-cv-modal');
+                window.location.href = result.redirect_url; // Redirigir a la página de perfiles
+            } else {
+                alert('Error al guardar el CV: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error al enviar el CV:', error);
+            alert('Ocurrió un error al intentar guardar el CV.');
+        }
+    });
+
+    // --- INITIAL POPULATION ON PAGE LOAD ---
+    function initializeCvView() {
+        if (!cvData) return;
+
+        // Populate the preview with the loaded data
+        updatePersonalDataPreview();
+        updateObjectivePreview();
+        updateExperiencePreview();
+        updateEducationPreview();
+        updateSkillsPreview();
+        updateLanguagesPreview();
+        updateCertificationsPreview();
+        updateProjectsPreview();
+        updateVolunteeringPreview();
+        updateReferencesPreview();
+
+        // Mark sections as filled and show optional ones
+        if (cvData.personalData && Object.keys(cvData.personalData).length > 0 && cvData.personalData.firstName) setSectionAsFilled('personal-data');
+        if (cvData.objective) setSectionAsFilled('objective');
+        if (cvData.experience && cvData.experience.length > 0) setSectionAsFilled('experience');
+        if (cvData.education && cvData.education.length > 0) setSectionAsFilled('education');
+        if (cvData.skills && (cvData.skills.hard.length > 0 || cvData.skills.soft.length > 0)) setSectionAsFilled('skills');
+        if (cvData.languages && cvData.languages.length > 0) setSectionAsFilled('languages');
+        if (cvData.certifications && cvData.certifications.length > 0) setSectionAsFilled('certifications');
+        if (cvData.projects && cvData.projects.length > 0) setSectionAsFilled('projects');
+        if (cvData.volunteering && cvData.volunteering.length > 0) setSectionAsFilled('volunteering');
+        if (cvData.references && cvData.references.length > 0) setSectionAsFilled('references');
+        
+        // Populate the save modal fields
+        const saveCvForm = document.getElementById('save-cv-form');
+        if (saveCvForm) {
+            saveCvForm.querySelector('[name="cv_name"]').value = document.body.dataset.cvName || '';
+            saveCvForm.querySelector('[name="cargo_asociado"]').value = document.body.dataset.cargoAsociado || '';
+        }
+
+        updateProgressBar();
+    }
+
+    initializeCvView();
+});
+    </script>
+<script src="{% static 'JS/main.js' %}" defer></script>
+    <script>
+        // User menu dropdown
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        if (userMenuButton) {
+            userMenuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                userMenu.classList.toggle('hidden');
+            });
+        }
+        window.addEventListener('click', function(e){
+            if (userMenu && !userMenu.classList.contains('hidden') && userMenuButton && !userMenuButton.contains(e.target)){
+                userMenu.classList.add('hidden');
+            }
+        });
+
+        // Navbar móvil animado y profesional
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        // Abrir/cerrar menú con el mismo botón
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                closeMenu();
+            } else {
+                mobileMenu.classList.add('open');
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+            }
+        });
+
+        // Cerrar al hacer click fuera del panel
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) closeMenu();
+        });
+
+        function closeMenu() {
+            mobileMenu.classList.remove('open');
+            hamburgerIcon.classList.remove('hidden');
+            closeIcon.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    </script>
+
+    
+
+</body>
+</html>

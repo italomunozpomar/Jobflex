@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ empresa.nombre_comercial }} - Perfil de Empresa{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 md:px-6 py-8">
+    <!-- Encabezado del Perfil -->
+    <header class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+        <!-- Banner de la Empresa -->
+        <div class="h-48 bg-cover bg-center" style="background-image: url('{% if empresa.imagen_portada %}{{ empresa.imagen_portada.url }}{% else %}{% static 'images/default_banner.png' %}{% endif %}')"></div>
+        
+        <div class="p-6">
+            <div class="flex flex-col sm:flex-row items-center sm:items-end sm:space-x-5 -mt-20">
+                <!-- Logo de la Empresa -->
+                <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0">
+                    <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil.url }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
+                </div>
+                
+                <!-- Nombre, Tagline e Industria -->
+                <div class="mt-4 sm:mt-0 text-center sm:text-left flex-grow">
+                    <h1 class="text-3xl font-bold text-dark">{{ empresa.nombre_comercial }}</h1>
+                    {% if empresa.rubro %}
+                        <p class="text-md text-secondary mt-1">
+                            {{ empresa.rubro.nombre_rubro }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal: Pestañas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Pestañas de Navegación -->
+            <div class="bg-white rounded-xl shadow-lg p-2">
+                <nav id="company-tabs" class="flex space-x-2">
+                    <button data-tab="about" class="tab-btn flex-1 text-center font-semibold p-3 rounded-lg text-white bg-primary">Sobre Nosotros</button>
+                    <button data-tab="jobs" class="tab-btn flex-1 text-center font-semibold p-3 rounded-lg text-secondary hover:bg-gray-100">Ofertas de Trabajo (0)</button>
+                </nav>
+            </div>
+
+            <!-- Contenido de las Pestañas -->
+            <div id="tab-content" class="bg-white p-6 rounded-xl shadow-lg">
+                <!-- Pestaña "Sobre Nosotros" -->
+                <div id="about-content" class="tab-panel space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-dark">Resumen</h3>
+                        <p class="text-secondary mt-2">{{ empresa.resumen_empresa|linebreaks|default:"No hay un resumen disponible." }}</p>
+                    </div>
+                    {% if empresa.mision %}
+                        <div>
+                            <h3 class="text-xl font-bold text-dark">Nuestra Misión</h3>
+                            <p class="text-secondary mt-2">{{ empresa.mision|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                    {% if empresa.vision %}
+                        <div>
+                            <h3 class="text-xl font-bold text-dark">Nuestra Visión</h3>
+                            <p class="text-secondary mt-2">{{ empresa.vision|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pestaña "Ofertas de Trabajo" -->
+                <div id="jobs-content" class="tab-panel hidden space-y-4">
+                    <p class="text-secondary">Actualmente no hay ofertas de trabajo publicadas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra Lateral de Información -->
+        <aside class="lg:col-span-1 space-y-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold text-dark mb-4">Información General</h3>
+                <ul class="space-y-3 text-secondary">
+                    {% if empresa.rubro %}
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 text-primary mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <span>{{ empresa.rubro.nombre_rubro }}</span>
+                    </li>
+                    {% endif %}
+                    {% if empresa.ubicacion %}
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 text-primary mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>{{ empresa.ubicacion }}</span>
+                    </li>
+                    {% endif %}
+                    {% if empresa.sitio_web %}
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 text-primary mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        <a href="{{ empresa.sitio_web }}" target="_blank" rel="noopener noreferrer" class="hover:text-primary break-all">{{ empresa.sitio_web }}</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </aside>
+    </div>
+</main>
+{% endblock %}

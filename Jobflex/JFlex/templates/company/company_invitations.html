@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Invitaciones de la Empresa{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-dark mb-6">Invitaciones de {{ company.name }}</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-b">
+                    <th class="py-2">Email</th>
+                    <th class="py-2">Rol</th>
+                    <th class="py-2">Estado</th>
+                    <th class="py-2">Fecha de Invitación</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invitation in invitations %}
+                <tr class="border-b">
+                    <td class="py-4">{{ invitation.email }}</td>
+                    <td class="py-4">{{ invitation.get_role_display }}</td>
+                    <td class="py-4">{{ invitation.get_status_display }}</td>
+                    <td class="py-4">{{ invitation.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

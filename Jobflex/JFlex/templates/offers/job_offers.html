@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Ofertas - JobFlex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8CA01A',
+                        'secondary': '#89746F',
+                        'light-gray': '#D8D9DD',
+                        'dark': '#312F32',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .job-list-container::-webkit-scrollbar { width: 8px; }
+        .job-list-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        .job-list-container::-webkit-scrollbar-thumb { background: #D8D9DD; border-radius: 4px; }
+        .job-list-container::-webkit-scrollbar-thumb:hover { background: #89746F; }
+        /* Estilos para la vista móvil */
+        @media (max-width: 767px) {
+            .mobile-detail-view #job-list-aside {
+                display: none;
+            }
+            .mobile-detail-view #job-detail-section {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white font-sans flex flex-col h-screen">
+
+
+    <!-- Navbar -->
+    <nav id="main-nav" class="bg-white p-4 shadow-md w-full z-30 flex-shrink-0">
+        <div class="container mx-auto flex justify-between items-center relative">
+            <a href="{% url 'index'%}" id="nav-logo" class="text-2xl font-bold text-primary">JobFlex</a>
+            
+            <div class="flex items-center space-x-2 md:space-x-4">
+                {% if user.is_authenticated %}
+                    <button class="relative">
+                        <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    </button>
+
+                    <div class="relative hidden md:block">
+                        <button id="user-menu-button" class="flex items-center space-x-2">
+                            <span class="font-semibold text-dark">{{ user.first_name }}</span>
+                            <svg class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="{% url 'user_index' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Inicio</a>
+                            <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mi Perfil</a>
+                            <a href="{% url 'postulaciones' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Postulaciones</a>
+                            <form action="{% url 'logout' %}" method="post" class="w-full">
+                                {% csrf_token %}
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <button id="mobile-menu-btn" class="md:hidden focus:outline-none relative z-50" aria-label="Abrir menú">
+                    <svg id="hamburger-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+            <!-- Menú móvil animado -->
+            <div id="mobile-menu"
+                class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-end md:hidden transition-all duration-300 ease-in-out pointer-events-none opacity-0"
+                style="z-index:49;">
+                <div class="w-3/4 sm:w-1/2 bg-white shadow-xl h-full p-8 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out relative"
+                    id="mobile-menu-panel">
+                    <h2 class="text-2xl font-bold text-dark mb-8">Menú</h2>
+
+                    <nav class="flex-grow">
+                        <ul class="space-y-2">
+                            {% if user.is_authenticated %}
+                            <li>
+                                <a href="{% url 'profile' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+                                    <span class="ml-3">Mi Perfil</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'postulaciones' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
+                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"></path></svg>
+                                    <span class="ml-3">Mis Postulaciones</span>
+                                </a>
+                            </li>
+                            <div class="py-2"><hr class="border-light-gray"></div>
+                            {% endif %}
+                        </ul>
+                    </nav>
+
+                    {% if user.is_authenticated %}
+                      <div class="border-t border-light-gray pt-6 space-y-4">
+                          <form action="{% url 'logout' %}" method="post" class="w-full">
+                              {% csrf_token %}
+                              <button type="submit" class="block w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 text-lg text-center">Cerrar Sesión</button>
+                          </form>
+                      </div>
+                      {% else %}
+                      <div class="border-t border-light-gray pt-6 space-y-4">
+                          <a href="{% url 'signup' %}" class="block text-primary font-bold border-2 border-primary py-2 px-4 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 text-lg text-center">Registrate</a>
+                          <a href="{% url 'login' %}" class="block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transformhover:scale-105 text-lg text-center">Iniciar Sesión</a>
+                      </div>
+                      {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <style>
+        /* Animación para el menú móvil */
+        #mobile-menu.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mobile-menu.open #mobile-menu-panel {
+            transform: translateX(0);
+        }
+        /* Mejorar visibilidad del botón "Registrate" en móvil */
+        #mobile-menu-panel a:first-of-type {
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-width: 2px;
+        }
+    </style>
+
+    <!-- Search Bar -->
+    <div class="bg-light-gray p-4 border-b border-gray-200 w-full z-20 flex-shrink-0">
+        <div class="container mx-auto flex flex-col md:flex-row gap-2">
+            <input type="text" placeholder="Puesto, palabra clave o empresa" class="w-full md:w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            <input type="text" placeholder="Ciudad, región o país" class="w-full md:w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            <button class="w-full md:w-auto bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90">Buscar</button>
+            <button class="w-full md:w-auto bg-white text-dark font-bold py-3 px-6 rounded-lg border-2 border-gray-300 hover:bg-gray-100">Filtros</button>
+        </div>
+    </div>
+
+    <main id="job-search-main" class="flex-grow flex flex-row overflow-hidden">
+        <!-- Columna Izquierda: Lista de Ofertas -->
+        <aside id="job-list-aside" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 flex flex-col">
+            <div class="p-4 border-b border-gray-200 flex-shrink-0">
+                <h2 class="text-lg font-bold text-dark">Resultados de Búsqueda</h2>
+                <p class="text-sm text-secondary">12 ofertas encontradas</p>
+            </div>
+            <div class="job-list-container overflow-y-auto flex-grow">
+                <div class="job-card active-card cursor-pointer p-4 border-b border-l-4 border-l-primary bg-gray-50" data-job-id="1"><div class="flex items-center"><img src="https://picsum.photos/seed/1/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-primary">Desarrollador Frontend</h3><p class="text-sm text-dark font-semibold">Tech Solutions Inc.</p><p class="text-sm text-secondary">Remoto</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">React</span><span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">TypeScript</span></div></div>
+                <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50" data-job-id="2"><div class="flex items-center"><img src="https://picsum.photos/seed/2/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-dark">Diseñador UX/UI</h3><p class="text-sm text-dark font-semibold">Creative Minds</p><p class="text-sm text-secondary">Ciudad de México (Híbrido)</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Figma</span><span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">UX Research</span></div></div>
+                <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50" data-job-id="3"><div class="flex items-center"><img src="https://picsum.photos/seed/3/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-dark">Analista de Datos</h3><p class="text-sm text-dark font-semibold">Data Insights Co.</p><p class="text-sm text-secondary">Remoto</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">SQL</span><span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Power BI</span></div></div>
+                <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50" data-job-id="4"><div class="flex items-center"><img src="https://picsum.photos/seed/4/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-dark">Gerente de Proyecto</h3><p class="text-sm text-dark font-semibold">Innovate Group</p><p class="text-sm text-secondary">Presencial, Santiago</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Agile</span><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Scrum</span></div></div>
+                <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50" data-job-id="5"><div class="flex items-center"><img src="https://picsum.photos/seed/5/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-dark">DevOps Engineer</h3><p class="text-sm text-dark font-semibold">Cloud Services</p><p class="text-sm text-secondary">Remoto (Latam)</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">AWS</span><span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Kubernetes</span></div></div>
+                <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50" data-job-id="6"><div class="flex items-center"><img src="https://picsum.photos/seed/6/48/48" class="w-12 h-12 rounded-md mr-4"><div class="flex-grow"><h3 class="font-bold text-dark">Líder de Equipo de Ventas</h3><p class="text-sm text-dark font-semibold">Global Sales</p><p class="text-sm text-secondary">Híbrido, Bogotá</p></div></div><div class="flex space-x-2 mt-2"><span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">CRM</span><span class="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded-full">B2B</span></div></div>
+            </div>
+        </aside>
+        <section id="job-detail-section" class="w-full md:w-2/3 lg:w-3/5 overflow-y-auto p-8 hidden md:block">
+            <button id="back-to-list-btn" class="md:hidden mb-4 flex items-center text-sm font-semibold text-primary hover:underline"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>Volver a la lista</button>
+            <div class="job-detail" data-job-id="1"></div>
+            <div class="job-detail hidden" data-job-id="2"></div>
+            <div class="job-detail hidden" data-job-id="3"></div>
+            <div class="job-detail hidden" data-job-id="4"></div>
+            <div class="job-detail hidden" data-job-id="5"></div>
+            <div class="job-detail hidden" data-job-id="6"></div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mainContainer = document.getElementById('job-search-main');
+            const jobCards = document.querySelectorAll('.job-card');
+            const jobDetails = document.querySelectorAll('.job-detail');
+            const backToListBtn = document.getElementById('back-to-list-btn');
+
+            const jobData = {
+                1: { title: 'Desarrollador Frontend', company: 'Tech Solutions Inc.', location: 'Remoto', salary: '$4,000 - $6,000 USD', type: 'Tiempo Completo', level: 'Senior', description: 'Serás responsable de construir la interfaz de usuario de nuestras aplicaciones web, trabajando de cerca con diseñadores y desarrolladores backend para crear una experiencia de usuario excepcional.', requirements: ['+5 años de experiencia con React.js y TypeScript.', 'Experiencia sólida con HTML5, CSS3 y SASS.', 'Conocimiento de Jest o React Testing Library.'], skills: ['React', 'TypeScript', 'JavaScript', 'CSS', 'HTML'] },
+                2: { title: 'Diseñador UX/UI', company: 'Creative Minds', location: 'Ciudad de México (Híbrido)', salary: '$3,500 - $5,000 USD', type: 'Tiempo Completo', level: 'Mid-Senior', description: 'Buscamos un Diseñador UX/UI talentoso para crear experiencias de usuario intuitivas y atractivas. Colaborarás con Product Managers y desarrolladores para transformar ideas en wireframes, prototipos y diseños finales.', requirements: ['Portafolio sólido demostrando experiencia en diseño UX/UI.', 'Dominio de herramientas como Figma, Sketch o Adobe XD.', 'Experiencia en diseño de sistemas y mobile-first.'], skills: ['Figma', 'UX Research', 'Prototyping', 'UI Design'] },
+                3: { title: 'Analista de Datos', company: 'Data Insights Co.', location: 'Remoto', salary: '$3,000 - $4,500 USD', type: 'Tiempo Completo', level: 'Junior-Mid', description: 'Serás responsable de interpretar datos, analizar resultados utilizando técnicas estadísticas y proveer reportes continuos para la toma de decisiones estratégicas.', requirements: ['Experiencia con SQL y bases de datos relacionales.', 'Conocimiento de herramientas de visualización como Tableau o Power BI.', 'Fuertes habilidades analíticas.'], skills: ['SQL', 'Power BI', 'Tableau', 'Excel', 'Statistics'] },
+                4: { title: 'Gerente de Proyecto', company: 'Innovate Group', location: 'Presencial, Santiago', salary: '$5,000 - $7,000 USD', type: 'Tiempo Completo', level: 'Senior', description: 'Buscamos un Gerente de Proyecto experimentado para planificar, coordinar y supervisar nuestros proyectos desde su inicio hasta su finalización.', requirements: ['Certificación PMP o similar es un plus.', 'Experiencia con metodologías Ágiles y Scrum.', 'Excelentes habilidades de comunicación y liderazgo.'], skills: ['Agile', 'Scrum', 'JIRA', 'Project Management'] },
+                5: { title: 'DevOps Engineer', company: 'Cloud Services', location: 'Remoto (Latam)', salary: '$6,000 - $8,000 USD', type: 'Tiempo Completo', level: 'Senior', description: 'Buscamos un Ingeniero DevOps para automatizar y optimizar nuestros procesos operativos y de desarrollo, trabajando en CI/CD y la gestión de nuestra infraestructura en la nube.', requirements: ['Experiencia con AWS, GCP o Azure.', 'Conocimiento profundo de Docker y Kubernetes.', 'Experiencia con herramientas de CI/CD como Jenkins o GitLab CI.'], skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'Terraform'] },
+                6: { title: 'Líder de Equipo de Ventas', company: 'Global Sales', location: 'Híbrido, Bogotá', salary: '$4,500 USD + Comisiones', type: 'Tiempo Completo', level: 'Manager', description: 'Buscamos un líder de ventas motivado para dirigir nuestro equipo regional. Serás responsable de establecer objetivos, entrenar al equipo y desarrollar estrategias para alcanzar las metas.', requirements: ['+7 años de experiencia en ventas B2B, con al menos 3 en un rol de liderazgo.', 'Historial comprobado de cumplimiento de cuotas.', 'Excelentes habilidades de coaching.'], skills: ['CRM', 'Sales Strategy', 'B2B', 'Leadership'] },
+            };
+
+            function renderJobDetail(jobId) {
+                const job = jobData[jobId];
+                const detailContainer = document.querySelector(`.job-detail[data-job-id='${jobId}']`);
+                
+                const skillsHtml = job.skills.map(skill => `<span class="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded">${skill}</span>`).join('');
+                const requirementsHtml = job.requirements.map(req => `<li>${req}</li>`).join('');
+
+                detailContainer.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h1 class="text-3xl font-bold text-dark">${job.title}</h1>
+                            <p class="text-lg text-secondary"><a href="/company-profile/" class="hover:underline hover:text-primary">${job.company}</a> • ${job.location}</p>
+                        </div>
+                        <button class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 flex-shrink-0">Postular</button>
+                    </div>
+                    <div class="flex items-center flex-wrap gap-x-6 gap-y-2 border-y border-gray-200 my-6 py-4">
+                        <div class="text-left"><p class="font-bold text-dark">${job.salary}</p><p class="text-sm text-secondary">Salario</p></div>
+                        <div class="text-left"><p class="font-bold text-dark">${job.type}</p><p class="text-sm text-secondary">Jornada</p></div>
+                        <div class="text-left"><p class="font-bold text-dark">${job.level}</p><p class="text-sm text-secondary">Nivel</p></div>
+                    </div>
+                    <h2 class="text-xl font-bold text-dark mb-3">Habilidades Clave</h2>
+                    <div class="flex flex-wrap gap-2 mb-6">${skillsHtml}</div>
+                    <h2 class="text-xl font-bold text-dark mb-2">Descripción del Puesto</h2>
+                    <p class="text-secondary mb-4">${job.description}</p>
+                    <h2 class="text-xl font-bold text-dark mb-2">Requisitos</h2>
+                    <ul class="list-disc list-inside text-secondary space-y-1 mb-4">${requirementsHtml}</ul>
+                `;
+            }
+
+            function showJob(jobId) {
+                // Render the detail content
+                if (!document.querySelector(`.job-detail[data-job-id='${jobId}']`).innerHTML) {
+                     renderJobDetail(jobId);
+                }
+
+                // Update active card style
+                jobCards.forEach(c => {
+                    const h3 = c.querySelector('h3');
+                    if (c.dataset.jobId === jobId) {
+                        c.classList.add('active-card', 'border-l-primary', 'bg-gray-50');
+                        c.classList.remove('border-l-transparent');
+                        h3.classList.add('text-primary');
+                        h3.classList.remove('text-dark');
+                    } else {
+                        c.classList.remove('active-card', 'border-l-primary', 'bg-gray-50');
+                        c.classList.add('border-l-transparent');
+                        h3.classList.remove('text-primary');
+                        h3.classList.add('text-dark');
+                    }
+                });
+
+                // Show the corresponding job detail
+                jobDetails.forEach(detail => {
+                    detail.classList.toggle('hidden', detail.dataset.jobId !== jobId);
+                });
+
+                // Handle mobile view
+                if (window.innerWidth < 768) {
+                    mainContainer.classList.add('mobile-detail-view');
+                }
+            }
+
+            jobCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    showJob(card.dataset.jobId);
+                });
+            });
+
+            backToListBtn.addEventListener('click', () => {
+                mainContainer.classList.remove('mobile-detail-view');
+            });
+
+            // Initial load
+            showJob('1');
+        });
+
+        // User menu dropdown
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        if (userMenuButton) {
+            userMenuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                userMenu.classList.toggle('hidden');
+            });
+        }
+        window.addEventListener('click', function(e){
+            if (userMenu && !userMenu.classList.contains('hidden') && userMenuButton && !userMenuButton.contains(e.target)){
+                userMenu.classList.add('hidden');
+            }
+        });
+
+        // Navbar móvil animado y profesional
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        // Abrir/cerrar menú con el mismo botón
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                closeMenu();
+            } else {
+                mobileMenu.classList.add('open');
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+            }
+        });
+
+        // Cerrar al hacer click fuera del panel
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) closeMenu();
+        });
+
+        function closeMenu() {
+            mobileMenu.classList.remove('open');
+            hamburgerIcon.classList.remove('hidden');
+            closeIcon.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    </script>
+
+</body>
+</html>

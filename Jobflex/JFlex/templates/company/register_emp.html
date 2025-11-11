@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Representante - JobFlex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#8CA01A',
+                        'secondary': '#89746F',
+                        'light-gray': '#D8D9DD',
+                        'dark': '#312F32',
+                    },
+                    animation: {
+                        'marquee-left': 'marquee-left 40s linear infinite',
+                        'marquee-right': 'marquee-right 40s linear infinite',
+                    },
+                    keyframes: {
+                        'marquee-left': {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        },
+                        'marquee-right': {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(0%)' },
+                        }
+                    }
+                }
+            }
+        }
+        // Password Toggle Function
+        function setupPasswordToggle(toggleButtonId, passwordInputId) {
+            const toggleButton = document.getElementById(toggleButtonId);
+            const passwordInput = document.getElementById(passwordInputId);
+            
+            if (toggleButton && passwordInput) {
+                const lockIcon = toggleButton.querySelector('svg:first-child');
+                const unlockIcon = toggleButton.querySelector('svg:last-child');
+
+                toggleButton.addEventListener('click', function () {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    lockIcon.classList.toggle('hidden');
+                    unlockIcon.classList.toggle('hidden');
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup toggles for both password fields
+            setupPasswordToggle('togglePassword1', 'id_password1');
+            setupPasswordToggle('togglePassword2', 'id_password2');
+        });
+    </script>
+</head>
+<body class="bg-white font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-primary md:bg-white p-4 shadow-md fixed w-full top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% url 'index'%}" class="text-2xl font-bold text-white md:text-primary">JobFlex</a>
+            <div>
+                <a href="{% url 'index'%}" class="text-white md:text-dark font-semibold hover:text-primary transition-colors">Volver a Inicio</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex flex-col md:flex-row min-h-screen pt-16">
+
+        <!-- Panel Decorativo (Izquierda) -->
+        <div class="hidden md:flex md:w-2/5 bg-primary text-white items-center justify-center overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 transform -rotate-12 scale-150 flex flex-col justify-around">
+                 <div class="flex items-center whitespace-nowrap animate-marquee-left">
+                    <span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span>
+                 </div>
+                 <div class="flex items-center whitespace-nowrap animate-marquee-right">
+                    <span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span>
+                 </div>
+                 <div class="flex items-center whitespace-nowrap animate-marquee-left">
+                    <span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span>
+                 </div>
+                 <div class="flex items-center whitespace-nowrap animate-marquee-right">
+                    <span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span>
+                 </div>
+                 <div class="flex items-center whitespace-nowrap animate-marquee-left">
+                    <span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span><span class="text-7xl font-extrabold mx-16">JobFlex</span>
+                 </div>
+            </div>
+            <!-- Post-it Note -->
+            <div class="relative z-10 bg-light-gray text-dark p-6 rounded-lg shadow-2xl transform -rotate-3 max-w-xs">
+                <h3 class="font-bold text-lg mb-2">¡Registro de Representante!</h3>
+                <p class="text-sm">Al registrarte, te convertirás en el representante oficial de tu empresa en JobFlex. Podrás publicar ofertas de trabajo y gestionar candidatos en nombre de la empresa.</p>
+            </div>
+        </div>
+
+        <!-- Panel de Formulario (Derecha) -->
+        <div class="w-full md:w-3/5 flex flex-col items-center p-8 md:p-12">
+            <div class="w-full max-w-md m-auto">
+                <div class="text-center mb-8">
+                     <h1 class="text-3xl">
+                        <span class="text-gray-500">Registro de</span>
+                        <a href="{% url 'index'%}" class="text-primary font-bold">Representante de Empresa</a>
+                    </h1>
+                </div>
+
+                <h2 class="text-3xl font-bold text-dark mb-2 text-center">Crea tu Cuenta</h2>
+                <p class="text-secondary mb-8 text-center">Estás a punto de crear una cuenta como representante de la empresa. Completa tus datos para continuar.</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+                            <span class="block sm:inline">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" action="{% url 'register_emp' %}" class="space-y-6">
+                    {% csrf_token %}
+                    {{ form.rut }}
+
+                    <div>
+                        <label for="id_razon_social" class="block text-sm font-medium text-dark">Razón Social</label>
+                        <input type="text" id="id_razon_social" readonly value="{{ emp_validation.razon_social }}" class="mt-1 block w-full p-3 border border-light-gray rounded-lg bg-gray-100 cursor-not-allowed">
+                    </div>
+
+                    <div>
+                        <label for="{{ form.nombres.id_for_label }}" class="block text-sm font-medium text-dark">{{ form.nombres.label }}</label>
+                        {{ form.nombres }}
+                        {% for error in form.nombres.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.apellidos.id_for_label }}" class="block text-sm font-medium text-dark">{{ form.apellidos.label }}</label>
+                        {{ form.apellidos }}
+                        {% for error in form.apellidos.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-dark">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-dark">{{ form.password1.label }}</label>
+                        <div class="relative">
+                            {{ form.password1 }}
+                            <button type="button" id="togglePassword1" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                <svg class="h-5 w-5 text-gray-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+                            </button>
+                        </div>
+                        {% if form.password1.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.password1.help_text }}</p>{% endif %}
+                        {% for error in form.password1.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-dark">{{ form.password2.label }}</label>
+                        <div class="relative">
+                            {{ form.password2 }}
+                            <button type="button" id="togglePassword2" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                <svg class="h-5 w-5 text-gray-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+                            </button>
+                        </div>
+                        {% for error in form.password2.errors %}<p class="text-red-500 text-xs mt-1">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="flex items-center">
+                        {{ form.terms }}
+                        <label for="{{ form.terms.id_for_label }}" class="ml-2 block text-sm text-dark">Acepto los <a href="#" class="text-primary hover:underline">Términos y Condiciones</a></label>
+                    </div>
+                     {% for error in form.terms.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+
+                    <div>
+                        <button type="submit" id="register-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:scale-105">
+                            Crear Cuenta de Representante
+                        </button>
+                    </div>
+                </form>
+
+                <p class="mt-8 text-center text-sm text-dark">
+                    ¿Ya tienes una cuenta de representante?
+                    <a href="{% url 'login' %}" class="font-medium text-primary hover:underline">Inicia Sesión</a>
+                </p>
+
+                <p class="mt-4 text-center text-sm text-dark">
+                    ¿Buscas trabajo?
+                    <a href="{% url 'signup' %}" class="font-medium text-primary hover:underline">Regístrate como candidato</a>
+                </p>
+
+            </div>
+
+            <footer class="w-full mt-auto pt-8">
+                <div class="container mx-auto text-center text-sm">
+                    <div class="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4 mb-2">
+                        <a href="#" class="text-secondary hover:text-primary">Políticas de Privacidad</a>
+                        <span class="hidden md:inline text-gray-300">|</span>
+                        <a href="#" class="text-secondary hover:text-primary">Términos y Condiciones</a>
+                        <span class="hidden md:inline text-gray-300">|</span>
+                        <a href="#" class="text-secondary hover:text-primary">Soporte</a>
+                    </div>
+                    <p class="text-xs text-gray-500">&copy; 2025 JobFlex. Todos los derechos reservados.</p>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+</body>
+</html>

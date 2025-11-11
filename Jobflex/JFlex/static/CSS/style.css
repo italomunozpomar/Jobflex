@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos para la paginación y navegación de Swiper */
+.swiper-pagination-bullet-active {
+    background-color: #8CA01A !important;
+}
+
+.swiper-button-next, .swiper-button-prev {
+    color: #8CA01A !important;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.diagonal-clip-left {
+  clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+.diagonal-clip-right {
+  clip-path: polygon(0 0, 80% 0, 100% 100%, 0% 100%);
+}
+
+/* Floating Label */
+.input-label {
+    transform-origin: left top;
+    cursor: text;
+    pointer-events: none;
+    top: 1.25rem; /* Adjust based on input padding */
+    left: 0.75rem; /* Adjust based on input padding */
+    transition: all 0.2s ease-in-out;
+}
+
+.peer:focus ~ .input-label,
+.peer:not(:placeholder-shown) ~ .input-label {
+    transform: translateY(-0.75rem) scale(0.85);
+    color: var(--color-primary, #8CA01A);
+}
+
+/* Spinner */
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    width: 1em;
+    height: 1em;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+}
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Fix for navbar hover issue */
+#nav-register {
+    display: inline-block;
+    transition: transform 0.2s ease-in-out;
+}
+
+#main-nav.bg-primary #nav-register:hover {
+    color: white !important;
+    opacity: 0.8 !important;
+    transform: scale(1.05);
+}
