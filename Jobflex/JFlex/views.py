@@ -9,7 +9,7 @@ from django.conf import settings as django_settings
 
 from datetime import datetime, date, timedelta # Added here
 import random
-
+from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash, logout
 from django.contrib.auth import views as auth_views
@@ -733,7 +733,23 @@ def perfiles_profesionales(request):
             'url': None,
             'ultima_actualizacion': None
         }
-
+        cv_item['stats']=(
+              CVCandidato.objects
+              .filter(id_cv_user=cv.id_cv_user)
+              .annotate(
+                  total=Count('postulacion', distinct=True),
+                  aceptado=Count('postulacion', filter=Q(postulacion__estado_postulacion='aprobado'), distinct=True),
+                  rechazado=Count('postulacion', filter=Q(postulacion__estado_postulacion='rechazado'), distinct=True),
+                  entrevistas=Count('postulacion__entrevista', distinct=True),
+              )
+              .values(
+                  'total',
+                  'aceptado',
+                  'rechazado',
+                  'entrevistas'
+              )
+              .first()
+          )
         if cv.tipo_cv == 'creado' and hasattr(cv, 'cvcreado'):
             cv_creado = cv.cvcreado
             cv_item['ultima_actualizacion'] = cv_creado.ultima_actualizacion
