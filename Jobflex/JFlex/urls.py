@@ -53,4 +53,7 @@ urlpatterns = [
     # path('company/invitations/', views.company_invitations, name='company_invitations'),
     path('company_index/', views.company_index, name='company_index'),
     path('company/accept-invitation/<str:token>/', views.accept_company_invitation, name='accept_company_invitation'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('about-us/', views.about_us, name='about_us'),
+    path('contact-us/', views.contact_us, name='contact_us'),
 ]

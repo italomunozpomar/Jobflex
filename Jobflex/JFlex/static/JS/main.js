@@ -124,5 +124,160 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- CV Upload Modal Logic ---
+    const cvModal = document.getElementById('cv-upload-modal');
+    if (cvModal) {
+        // Modal components
+        const openModalBtn = document.getElementById('open-cv-modal-btn');
+        const closeModalBtn = document.getElementById('close-cv-modal-btn');
+        const cancelBtn = document.getElementById('cancel-upload-btn');
+        const modalPanel = document.getElementById('cv-modal-panel');
+        const profileNameInput = document.getElementById('cv-profile-name');
+        
+        // File related components
+        const fileInput = document.getElementById('cv-file-input');
+        const fileDropArea = document.getElementById('file-drop-area');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        const pdfPreviewIframe = document.getElementById('pdf-preview-iframe');
+        const changeFileBtn = document.getElementById('change-file-btn');
 
+        // Save Button components
+        const saveBtn = document.getElementById('save-cv-btn');
+        const saveBtnContent = document.getElementById('save-btn-content');
+        const successBtnContent = document.getElementById('success-btn-content');
+        const saveSpinner = document.getElementById('save-cv-spinner');
+
+        // Progress Bar
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        let selectedFile = null;
+        let objectUrl = null; 
+
+        const openModal = () => {
+            cvModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => modalPanel.classList.remove('opacity-0', 'scale-95'), 10);
+        };
+
+        const closeModal = () => {
+            modalPanel.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                cvModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                resetModalState();
+            }, 300);
+        };
+
+        const resetModalState = () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileNameDisplay.textContent = '';
+            profileNameInput.value = '';
+
+            // Reset button to initial state
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('bg-green-500');
+            saveBtn.classList.add('bg-primary');
+            successBtnContent.classList.add('hidden');
+            saveBtnContent.classList.remove('hidden');
+            saveSpinner.classList.add('hidden');
+            saveBtnContent.querySelector('span:last-child').classList.remove('hidden');
+
+            // Reset progress bar
+            progressBar.style.width = '0%';
+            progressBarContainer.classList.add('hidden');
+
+            // Reset file areas
+            fileDropArea.classList.remove('hidden', 'border-primary');
+            filePreviewContainer.classList.add('hidden');
+            fileNameDisplay.classList.add('hidden');
+
+            // Clean up PDF preview
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+                objectUrl = null;
+            }
+            pdfPreviewIframe.src = '';
+        };
+
+        const handleFileSelect = (file) => {
+            if (!file) return;
+
+            selectedFile = file;
+            saveBtn.disabled = false;
+            fileNameDisplay.textContent = `Archivo: ${file.name}`;
+
+            if (file.type === 'application/pdf') {
+                if (objectUrl) URL.revokeObjectURL(objectUrl);
+                objectUrl = URL.createObjectURL(file);
+                pdfPreviewIframe.src = objectUrl;
+                filePreviewContainer.classList.remove('hidden');
+                fileDropArea.classList.add('hidden');
+                fileNameDisplay.classList.add('hidden');
+            } else {
+                filePreviewContainer.classList.add('hidden');
+                fileDropArea.classList.add('hidden');
+                fileNameDisplay.classList.remove('hidden');
+            }
+        };
+
+        // --- Event Listeners ---
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        cvModal.addEventListener('click', (e) => {
+            if (e.target === cvModal) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !cvModal.classList.contains('hidden')) closeModal();
+        });
+
+        fileInput.addEventListener('change', () => handleFileSelect(fileInput.files[0]));
+        changeFileBtn.addEventListener('click', () => fileInput.click());
+
+        fileDropArea.addEventListener('dragover', (e) => { e.preventDefault(); fileDropArea.classList.add('border-primary'); });
+        fileDropArea.addEventListener('dragleave', () => fileDropArea.classList.remove('border-primary'));
+        fileDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropArea.classList.remove('border-primary');
+            handleFileSelect(e.dataTransfer.files[0]);
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if (!selectedFile || profileNameInput.value.trim() === '') {
+                alert('Por favor, completa todos los campos y selecciona un archivo.');
+                return;
+            }
+
+            // --- Loading State ---
+            saveBtn.disabled = true;
+            saveSpinner.classList.remove('hidden');
+            saveBtnContent.querySelector('span:last-child').classList.add('hidden'); // Hide "Guardar" text
+            progressBarContainer.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            // --- Simulate Upload ---
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+
+                    // --- Success State ---
+                    saveBtnContent.classList.add('hidden');
+                    successBtnContent.classList.remove('hidden');
+                    saveBtn.classList.remove('bg-primary');
+                    saveBtn.classList.add('bg-green-500');
+
+                    // --- Auto Close ---
+                    setTimeout(() => {
+                        closeModal();
+                    }, 1500); 
+                }
+            }, 150);
+        });
+    }
 });

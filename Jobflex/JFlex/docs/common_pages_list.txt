@@ -1,0 +1,29 @@
+Lista de Páginas Adicionales Comunes para Sitios Web:
+
+**Información Legal:**
+- Términos y Condiciones de Uso (Terms & Conditions)
+- Política de Privacidad (Privacy Policy)
+- Política de Cookies (Cookie Policy)
+- Aviso Legal (Legal Notice / Disclaimer)
+
+**Sobre Nosotros:**
+- Sobre Nosotros (About Us) / Quiénes Somos
+- Nuestra Misión y Visión (Our Mission & Vision)
+- Equipo (Team)
+- Historia (History)
+
+**Ayuda y Soporte:**
+- Preguntas Frecuentes (FAQ - Frequently Asked Questions)
+- Contacto (Contact Us)
+- Soporte (Support)
+- Guías / Tutoriales (Guides / Tutorials)
+
+**Específicas de JobFlex (Ejemplos):**
+- Para Empresas (For Companies)
+- Para Candidatos (For Candidates)
+- Cómo Funciona (How It Works)
+
+**Otros:**
+- Blog / Noticias (Blog / News)
+- Mapa del Sitio (Sitemap)
+- Accesibilidad (Accessibility Statement)

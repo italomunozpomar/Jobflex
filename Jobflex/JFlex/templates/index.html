@@ -347,7 +347,9 @@
                 <div>
                     <h5 class="font-bold text-white mb-4">Empresa</h5>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-primary">Sobre nosotros</a></li>
+                        <li><a href="{% url 'about_us' %}" class="hover:text-primary">Sobre nosotros</a></li>
+                        <li><a href="{% url 'privacy_policy' %}" class="hover:text-primary">Política de Privacidad</a></li>
+                        <li><a href="{% url 'terms_and_conditions' %}" class="hover:text-primary">Términos y Condiciones</a></li>
                         <li><a href="#" class="hover:text-primary">Carreras</a></li>
                         <li><a href="#" class="hover:text-primary">Prensa</a></li>
                     </ul>
@@ -357,8 +359,7 @@
                     <h5 class="font-bold text-white mb-4">Soporte</h5>
                     <ul class="space-y-2 text-sm">
                         <li><a href="#" class="hover:text-primary">FAQ</a></li>
-                        <li><a href="#" class="hover:text-primary">Contacto</a></li>
-                        <li><a href="#" class="hover:text-primary">Términos de Servicio</a></li>
+                        <li><a href="{% url 'contact_us' %}" class="hover:text-primary">Contacto</a></li>
                     </ul>
                 </div>
                 <!-- Redes Sociales -->

@@ -1846,5 +1846,20 @@ def company_profile(request, company_id):
     }
     return render(request, 'company/company_profile.html', context)
 
+def terms_and_conditions(request):
+    """Renderiza la página de Términos y Condiciones."""
+    return render(request, 'static_pages/terms.html')
 
-# --- El resto de las vistas se mantienen comentadas para ser implementadas después ---
+def privacy_policy(request):
+    """Renderiza la página de Política de Privacidad."""
+    return render(request, 'static_pages/privacy.html')
+
+def about_us(request):
+    """Renderiza la página 'Sobre Nosotros'."""
+    return render(request, 'static_pages/about.html')
+
+def contact_us(request):
+    """Renderiza la página de Contacto."""
+    return render(request, 'static_pages/contact.html')
+
+

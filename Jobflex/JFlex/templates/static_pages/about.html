@@ -1,0 +1,59 @@
+{% extends "layout/static_page_base.html" %}
+
+{% block page_title %}Sobre Nosotros{% endblock %}
+
+{% block page_header %}Conoce a JobFlex{% endblock %}
+
+{% block page_subheader %}
+Somos un equipo apasionado por conectar el talento correcto con la oportunidad perfecta, impulsando el crecimiento profesional en Chile.
+{% endblock %}
+
+{% block static_content %}
+<div class="space-y-12">
+    <section class="fade-in-section">
+        <h2 class="text-2xl font-semibold text-dark mb-4">Nuestra Misión</h2>
+        <p>Nuestra misión es simplificar y humanizar el proceso de búsqueda de empleo. Creemos que encontrar un trabajo que te apasione no debería ser una tarea abrumadora. Para las empresas, queremos ser el puente hacia el talento que transformará sus organizaciones. Buscamos crear un ecosistema laboral más transparente, eficiente y justo para todos.</p>
+    </section>
+
+    <section class="fade-in-section">
+        <h2 class="text-2xl font-semibold text-dark mb-4">Nuestra Visión</h2>
+        <p>Aspiramos a ser la plataforma de empleo líder en Chile, reconocida por nuestra tecnología innovadora, la calidad de nuestras oportunidades y un enfoque centrado en el bienestar y desarrollo de los profesionales. Queremos ser más que un portal de empleos; queremos ser un compañero de carrera para cada candidato y un socio estratégico para cada empresa.</p>
+    </section>
+
+    <section class="fade-in-section">
+        <h2 class="text-2xl font-semibold text-dark mb-4">La Historia de JobFlex</h2>
+        <p>JobFlex nació en 2024 de la idea de un grupo de profesionales de recursos humanos y tecnología que vieron una brecha en el mercado laboral chileno. Frustrados con las plataformas existentes, que a menudo se sentían impersonales y poco efectivas, decidieron crear una solución diferente. Una que pusiera a las personas primero.</p>
+        <p class="mt-4">Desde nuestro lanzamiento, hemos ayudado a miles de candidatos a encontrar su próximo desafío profesional y hemos permitido a cientos de empresas, desde startups hasta grandes corporaciones, a construir equipos sólidos y talentosos. Todo esto, manteniendo siempre nuestro compromiso con la calidad y la cercanía.</p>
+    </section>
+
+    <section class="fade-in-section">
+        <h2 class="text-2xl font-semibold text-dark mb-4">Nuestro Equipo</h2>
+        <p>Detrás de JobFlex hay un equipo diverso de desarrolladores, diseñadores, reclutadores y especialistas en marketing. Nos une la pasión por la tecnología y el deseo de generar un impacto positivo en la vida de las personas. Trabajamos cada día para mejorar la plataforma, escuchar a nuestros usuarios y construir la mejor experiencia posible.</p>
+        
+        <!-- Example Team Members -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
+            <div class="text-center">
+                <div class="w-32 h-32 rounded-full bg-light-gray mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-4xl text-secondary">JD</span>
+                </div>
+                <h3 class="font-bold text-dark">Jane Doe</h3>
+                <p class="text-secondary">CEO & Co-Fundadora</p>
+            </div>
+            <div class="text-center">
+                <div class="w-32 h-32 rounded-full bg-light-gray mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-4xl text-secondary">JS</span>
+                </div>
+                <h3 class="font-bold text-dark">John Smith</h3>
+                <p class="text-secondary">CTO & Co-Fundador</p>
+            </div>
+            <div class="text-center">
+                <div class="w-32 h-32 rounded-full bg-light-gray mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-4xl text-secondary">AR</span>
+                </div>
+                <h3 class="font-bold text-dark">Ana Rojas</h3>
+                <p class="text-secondary">Directora de Marketing</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
