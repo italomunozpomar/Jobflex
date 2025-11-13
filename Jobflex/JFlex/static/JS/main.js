@@ -1,51 +1,62 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const companySwiper = new Swiper('.company-carousel', {
-        loop: true,
-        autoplay: {
-            delay: 2500,
-            disableOnInteraction: false,
-        },
-        slidesPerView: 2,
-        spaceBetween: 10,
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        breakpoints: {
-            640: {
-                slidesPerView: 3,
-                spaceBetween: 15,
-            },
-            768: {
-                slidesPerView: 4,
-                spaceBetween: 20,
-            },
-            1024: {
-                slidesPerView: 5,
-                spaceBetween: 25,
-            },
-        },
-    });
+    // Initialize Swiper only if it exists (for homepage carousels)
+    if (typeof Swiper !== 'undefined') {
+        // Company carousel
+        const companyCarousel = document.querySelector('.company-carousel');
+        if (companyCarousel) {
+            new Swiper('.company-carousel', {
+                loop: true,
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                },
+                slidesPerView: 2,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    640: {
+                        slidesPerView: 3,
+                        spaceBetween: 15,
+                    },
+                    768: {
+                        slidesPerView: 4,
+                        spaceBetween: 20,
+                    },
+                    1024: {
+                        slidesPerView: 5,
+                        spaceBetween: 25,
+                    },
+                },
+            });
+        }
 
-    const testimonialsSwiper = new Swiper('.testimonials-carousel', {
-        loop: true,
-        slidesPerView: 1,
-        spaceBetween: 30,
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true,
-        },
-        breakpoints: {
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 50,
-            },
-        },
-    });
+        // Testimonials carousel
+        const testimonialsCarousel = document.querySelector('.testimonials-carousel');
+        if (testimonialsCarousel) {
+            new Swiper('.testimonials-carousel', {
+                loop: true,
+                slidesPerView: 1,
+                spaceBetween: 30,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                breakpoints: {
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 50,
+                    },
+                },
+            });
+        }
+    }
 
 
 
@@ -280,4 +291,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 150);
         });
     }
+
+
 });

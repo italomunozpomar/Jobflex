@@ -1,12 +1,13 @@
 import re
 import os
 import json
+import unicodedata
 from urllib.parse import urlparse
 import uuid
 import boto3
 from django.conf import settings as django_settings
  # Added here
-
+from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
 from django.db.models import Count, Q
@@ -27,7 +28,7 @@ from playwright.sync_api import sync_playwright
 # ... (rest of the imports)
 
 # 1. Importar los formularios y modelos necesarios y limpios
-from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm
+from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
@@ -119,12 +120,37 @@ def upload_to_s3(file, bucket_name, object_key):
         aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY,
     )
-    s3.upload_fileobj(file, bucket_name, object_key, ExtraArgs={
-        'ContentType': file.content_type
-    })
+    if hasattr(file, 'seek'):
+        file.seek(0)
+    extra_args = {'ContentType': file.content_type}
+    s3.upload_fileobj(file, bucket_name, object_key, ExtraArgs=extra_args)
     # La URL del objeto no cambia en su formato base
     file_url = f"https://{bucket_name}.s3.{django_settings.AWS_S3_REGION_NAME}.amazonaws.com/{object_key}"
     return file_url
+
+def sanitize_company_folder_name(name: str) -> str:
+    if not name:
+        return "Empresa"
+    if not isinstance(name, str):
+        if hasattr(name, 'name'):
+            name = name.name  # e.g., InMemoryUploadedFile
+        else:
+            try:
+                name = name.decode('utf-8')  # type: ignore[attr-defined]
+            except AttributeError:
+                name = str(name)
+    normalized = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+    cleaned = re.sub(r'[^A-Za-z0-9]+', ' ', normalized).strip()
+    sanitized = re.sub(r'\s+', '_', cleaned)
+    return sanitized or "Empresa"
+
+def build_company_asset_key(company_obj, asset_folder: str, filename: str) -> str:
+    base_folder = sanitize_company_folder_name(
+        getattr(company_obj, 'nombre_comercial', '') or 
+        getattr(company_obj, 'razon_social', '') or 
+        getattr(company_obj, 'rut_empresa', 'Empresa')
+    )
+    return f"Empresas/{base_folder}/{asset_folder}/{filename}"
 
 @login_required
 def user_index(request):
@@ -501,12 +527,17 @@ import uuid # Add this import at the top
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, EmpresaDataForm
 from .models import *
 from django.http import JsonResponse
+import json
 
 # ... (rest of the views)
 
+from django.utils import timezone
 @login_required
 def company_index(request):
     # 1. Get the current user's company and role
+    company = None # Initialize company to None
+    user_role = None # Initialize user_role to None
+
     try:
         empresa_usuario = EmpresaUsuario.objects.select_related('empresa', 'rol').get(id_empresa_user=request.user)
         company = empresa_usuario.empresa
@@ -521,15 +552,137 @@ def company_index(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        if action == 'update_company_data' and is_admin:
-            company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
-            if company_data_form.is_valid():
-                company_data_form.save()
-                messages.success(request, "Los datos de la empresa han sido actualizados.")
+        if action == 'create_job_offer' and is_admin:
+            job_offer_form = OfertaLaboralForm(request.POST)
+            if job_offer_form.is_valid():
+                nueva_categoria_str = job_offer_form.cleaned_data.get('nueva_categoria')
+                categoria_obj = job_offer_form.cleaned_data.get('categoria')
+
+                if nueva_categoria_str:
+                    categoria_obj, created = Categoria.objects.get_or_create(
+                        tipo_categoria__iexact=nueva_categoria_str,
+                        defaults={'tipo_categoria': nueva_categoria_str}
+                    )
+                
+                # Remove fields that are not part of the OfertaLaboral model
+                job_offer_form.cleaned_data.pop('nueva_categoria', None)
+                job_offer_form.cleaned_data.pop('categoria', None)
+                duracion = job_offer_form.cleaned_data.pop('duracion_oferta')
+                fecha_personalizada = job_offer_form.cleaned_data.pop('fecha_cierre_personalizada')
+
+                new_offer = job_offer_form.save(commit=False)
+                new_offer.empresa = company
+                new_offer.categoria = categoria_obj
+
+                if duracion == 'custom':
+                    new_offer.fecha_cierre = fecha_personalizada
+                else:
+                    new_offer.fecha_cierre = timezone.now() + timedelta(days=int(duracion))
+                
+                print(f"DEBUG: Creating offer. Selected duration: {duracion}, Calculated fecha_cierre: {new_offer.fecha_cierre}, Fecha Publicacion: {new_offer.fecha_publicacion}")
+                new_offer.save()
+                messages.success(request, "La oferta de trabajo ha sido creada exitosamente.")
                 return redirect('company_index')
             else:
+                messages.error(request, "Error al crear la oferta. Por favor, revisa el formulario.")
+
+        elif action == 'edit_job_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                # Get the offer to edit
+                offer_to_edit = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                job_offer_form = OfertaLaboralForm(request.POST, instance=offer_to_edit)
+                
+                if job_offer_form.is_valid():
+                    nueva_categoria_str = job_offer_form.cleaned_data.get('nueva_categoria')
+                    categoria_obj = job_offer_form.cleaned_data.get('categoria')
+
+                    if nueva_categoria_str:
+                        categoria_obj, created = Categoria.objects.get_or_create(
+                            tipo_categoria__iexact=nueva_categoria_str,
+                            defaults={'tipo_categoria': nueva_categoria_str}
+                        )
+                    
+                    # Remove fields that are not part of the OfertaLaboral model
+                    job_offer_form.cleaned_data.pop('nueva_categoria', None)
+                    job_offer_form.cleaned_data.pop('categoria', None)
+                    duracion = job_offer_form.cleaned_data.pop('duracion_oferta')
+                    fecha_personalizada = job_offer_form.cleaned_data.pop('fecha_cierre_personalizada')
+
+                    updated_offer = job_offer_form.save(commit=False)
+                    updated_offer.categoria = categoria_obj
+
+                    if duracion == 'custom':
+                        updated_offer.fecha_cierre = fecha_personalizada
+                    else:
+                        updated_offer.fecha_cierre = timezone.now() + timedelta(days=int(duracion))
+                    
+                    print(f"DEBUG: Updating offer {offer_id}. Selected duration: {duracion}, Calculated fecha_cierre: {updated_offer.fecha_cierre}")
+                    updated_offer.save()
+                    messages.success(request, "La oferta de trabajo ha sido actualizada exitosamente.")
+                    return redirect('company_index')
+                else:
+                    messages.error(request, "Error al editar la oferta. Por favor, revisa el formulario.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas editar no existe o no tienes permiso.")
+                return redirect('company_index')
+
+        elif action == 'archive_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                offer = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                offer.estado = 'cerrada'
+                offer.save()
+                messages.success(request, f"La oferta '{offer.titulo_puesto}' ha sido archivada.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas archivar no existe o no tienes permiso.")
+            return redirect('company_index')
+
+        elif action == 'delete_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                offer = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                title = offer.titulo_puesto
+                offer.delete()
+                messages.success(request, f"La oferta '{title}' ha sido eliminada permanentemente.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas eliminar no existe o no tienes permiso.")
+            return redirect('company_index')
+
+        elif action == 'update_company_data' and is_admin:
+            company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
+            if company_data_form.is_valid():
+                # Save the form instance without committing to get the updated company object
+                # but without saving the image fields yet.
+                updated_company = company_data_form.save(commit=False)
+
+                # Handle image uploads to S3
+                if 'imagen_perfil' in request.FILES:
+                    file = request.FILES['imagen_perfil']
+                    file_ext = os.path.splitext(file.name)[1].lower()
+                    filename = f"logo_{uuid.uuid4().hex[:8]}{file_ext}"
+                    s3_key = build_company_asset_key(updated_company, 'Logo', filename)
+                    file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
+                    updated_company.imagen_perfil = file_url
+                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
+                
+                if 'imagen_portada' in request.FILES:
+                    file = request.FILES['imagen_portada']
+                    file_ext = os.path.splitext(file.name)[1].lower()
+                    filename = f"banner_{uuid.uuid4().hex[:8]}{file_ext}"
+                    s3_key = build_company_asset_key(updated_company, 'Banner', filename)
+                    file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
+                    updated_company.imagen_portada = file_url
+                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
+                
+                # Now save the updated company object to the database
+                updated_company.save()
+                messages.success(request, "Los datos de la empresa han sido actualizados.")
+                company = updated_company # Update the company object in the view's scope
+                return redirect('company_index')
+            else:
+                print("DEBUG: EmpresaDataForm errors ->", company_data_form.errors)
                 messages.error(request, "Error al actualizar los datos. Por favor, revisa el formulario.")
-                # The form with errors will be passed in the context, but we need to handle it in the template
 
         elif action == 'invite_user' and is_admin: # Only admins can invite
             form = InvitationForm(request.POST)
@@ -537,14 +690,11 @@ def company_index(request):
                 email = form.cleaned_data['email']
                 role = form.cleaned_data['role'] # This is a RolesEmpresa object
 
-                # Check if user already exists in Django's User model
                 try:
                     invited_user = User.objects.get(email=email)
-                    # Check if the user is already part of this company
                     if EmpresaUsuario.objects.filter(empresa=company, id_empresa_user=invited_user).exists():
                         messages.warning(request, f"El usuario {email} ya es parte de esta empresa.")
                     else:
-                        # Link existing user to the company
                         EmpresaUsuario.objects.create(
                             id_empresa_user=invited_user,
                             empresa=company,
@@ -552,17 +702,11 @@ def company_index(request):
                         )
                         messages.success(request, f"El usuario existente {email} ha sido añadido a la empresa como {role.nombre_rol}.")
                 except User.DoesNotExist:
-                    # User does not exist, create an inactive user and send invitation
-                    # This part needs a proper invitation flow (e.g., email with a link to set password)
-                    # For now, let's create an inactive user and link them.
-                    # A more robust solution would involve a temporary token and a dedicated registration view.
-                    
-                    # Create a dummy username for the inactive user
                     username = f"temp_{uuid.uuid4().hex[:10]}"
                     new_user = User.objects.create_user(username=username, email=email, password="temporarypassword123")
                     new_user.is_active = False
-                    new_user.first_name = "Invitado" # Placeholder
-                    new_user.last_name = "Pendiente" # Placeholder
+                    new_user.first_name = "Invitado"
+                    new_user.last_name = "Pendiente"
                     new_user.save()
 
                     EmpresaUsuario.objects.create(
@@ -571,23 +715,20 @@ def company_index(request):
                         rol=role
                     )
                     
-                    # Generate invitation token
                     invitation_token = uuid.uuid4().hex
-                    expires_at = timezone.now() + timedelta(days=1) # Token valid for 24 hours
+                    expires_at = timezone.now() + timedelta(days=1)
 
                     CompanyInvitationToken.objects.using('jflex_db').create(
-                        user_id=new_user.id, # Assign the user's ID, not the user object
+                        user_id=new_user.id,
                         company=company,
                         token=invitation_token,
                         expires_at=expires_at
                     )
 
-                    # Construct invitation URL
                     invitation_link = request.build_absolute_uri(
                         reverse('accept_company_invitation', kwargs={'token': invitation_token})
                     )
 
-                    # Send invitation email
                     mail_subject = f'Invitación para unirte a {company.nombre_comercial} en JobFlex'
                     message = render_to_string('company/invitation_email.html', {
                         'company_name': company.nombre_comercial,
@@ -600,11 +741,9 @@ def company_index(request):
 
                     messages.success(request, f"Se ha enviado una invitación a {email} para unirse a la empresa como {role.nombre_rol}.")
                 
-                return redirect('company_index') # Redirect to refresh the page and show messages
+                return redirect('company_index')
             else:
-                # Form is invalid, re-render with errors
                 messages.error(request, "Error al invitar usuario. Por favor, revisa los datos.")
-                # The form with errors will be passed to the context below
         
         elif action == 'edit_user' and is_admin:
             member_id = request.POST.get('member_id')
@@ -623,7 +762,6 @@ def company_index(request):
             member_id = request.POST.get('member_id')
             try:
                 member_to_delete = EmpresaUsuario.objects.get(pk=member_id, empresa=company)
-                # Prevent deleting the last admin/representative
                 if (member_to_delete.rol.nombre_rol == 'Representante' or member_to_delete.rol.nombre_rol == 'Administrador'):
                     admin_count = EmpresaUsuario.objects.filter(empresa=company, rol__nombre_rol__in=['Representante', 'Administrador']).count()
                     if admin_count <= 1:
@@ -638,7 +776,42 @@ def company_index(request):
             return redirect('company_index')
 
     # For GET requests or after POST handling, prepare context
-    empresa_usuarios_qs = EmpresaUsuario.objects.using('jflex_db').filter(empresa=company).select_related('rol') # Removed .order_by('id_empresa_user__email')
+    # At this point, 'company' is guaranteed to be defined from the initial try-except block,
+    # or potentially updated by a successful POST request.
+
+    # Explicitly check for and clear problematic default filenames just before context creation
+    # This needs to happen AFTER any potential POST updates to 'company'
+    if company.imagen_perfil and ('codelco_default640x360.png' in company.imagen_perfil or 'logo_color.png' in company.imagen_perfil):
+        company.imagen_perfil = ""
+    if company.imagen_portada and ('codelco_default640x360.png' in company.imagen_portada or 'logo_color.png' in company.imagen_portada):
+        company.imagen_portada = ""
+
+    logo_value = company.imagen_perfil
+    banner_value = company.imagen_portada
+
+    def coerce_to_url(value):
+        if not value:
+            return ""
+        if isinstance(value, str):
+            return value
+        if hasattr(value, 'url'):
+            return getattr(value, 'url', '') or ""
+        if hasattr(value, 'name'):
+            return getattr(value, 'name', '') or ""
+        try:
+            return value.decode('utf-8')  # type: ignore[attr-defined]
+        except AttributeError:
+            return str(value)
+
+    logo_url = coerce_to_url(logo_value)
+    banner_url = coerce_to_url(banner_value)
+
+    if logo_url and not urlparse(logo_url).scheme:
+        logo_url = ""
+    if banner_url and not urlparse(banner_url).scheme:
+        banner_url = ""
+
+    empresa_usuarios_qs = EmpresaUsuario.objects.using('jflex_db').filter(empresa=company).select_related('rol')
     
     user_ids = [eu.id_empresa_user_id for eu in empresa_usuarios_qs]
     users_from_default = User.objects.using('default').filter(pk__in=user_ids)
@@ -647,7 +820,7 @@ def company_index(request):
     members_for_template = []
     for eu in empresa_usuarios_qs:
         user_obj = user_map.get(eu.id_empresa_user_id)
-        if user_obj: # Ensure user exists
+        if user_obj:
             members_for_template.append({
                 'pk': eu.pk,
                 'user_full_name': user_obj.get_full_name(),
@@ -656,30 +829,72 @@ def company_index(request):
                 'role_display': eu.rol.nombre_rol,
             })
     
-    # Sort the list of dictionaries by user_email in Python
     members_for_template.sort(key=lambda x: x['user_email'])
 
-    # Initialize forms for modals
     invitation_form = InvitationForm()
     company_data_form = EmpresaDataForm(instance=company)
+    job_offer_form = OfertaLaboralForm()
+    all_categorias = Categoria.objects.all()
+    all_offers = OfertaLaboral.objects.filter(empresa=company).select_related('categoria', 'jornada', 'modalidad').annotate(
+        candidate_count=Count('postulacion')
+    ).order_by('-fecha_publicacion')
 
-    # If a specific form had an error on POST, we might need to replace the empty one
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'invite_user' and 'form' in locals() and not form.is_valid():
-            invitation_form = form # Pass the form with errors back to the template
-        elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
-            # This form is already the one with errors, so no need to reassign
-            pass
+    # Pre-process offers for duplication
+    for offer in all_offers:
+        # Calculate duration for duplication
+        if offer.fecha_cierre and offer.fecha_publicacion:
+            duration_days = (offer.fecha_cierre - offer.fecha_publicacion).days
+            if duration_days == 7:
+                offer.calculated_duration = '7'
+            elif duration_days == 14:
+                offer.calculated_duration = '14'
+            elif duration_days == 21:
+                offer.calculated_duration = '21'
+            elif duration_days == 30:
+                offer.calculated_duration = '30'
+            else:
+                offer.calculated_duration = 'custom'
+        else:
+            offer.calculated_duration = '' # Default to empty if dates are missing
 
+        print(f"Offer ID: {offer.id_oferta}, Title: {offer.titulo_puesto}, Fecha Publicacion: {offer.fecha_publicacion}, Fecha Cierre: {offer.fecha_cierre}, Calculated Duration: {offer.calculated_duration}, Raw Duration Days: {duration_days}") # Debug print
+        try:
+            habilidades_list = json.loads(offer.habilidades_clave)
+            offer.habilidades_str = ",".join([item['value'] for item in habilidades_list])
+        except (json.JSONDecodeError, TypeError):
+            offer.habilidades_str = ""
+        try:
+            beneficios_list = json.loads(offer.beneficios)
+            offer.beneficios_str = ",".join([item['value'] for item in beneficios_list])
+        except (json.JSONDecodeError, TypeError):
+            offer.beneficios_str = ""
+
+    # This block was incorrectly placed and caused the SyntaxError.
+    # It should not be here, as it was already handled above in the POST section.
+    # The forms are initialized for GET requests or after a POST that didn't redirect.
+    # The logic for handling form submission is already in the 'if request.method == 'POST':' block.
+    # This block is redundant and was causing issues.
+    # if request.method == 'POST':
+    #     action = request.POST.get('action')
+    #     if action == 'invite_user' and 'form' in locals() and not form.is_valid():
+    #         invitation_form = form
+    #     elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
+    #         pass
+    #     elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
+    #         pass
 
     context = {
         'company': company,
+        'company_logo_url': logo_url,
+        'company_banner_url': banner_url,
         'is_admin': is_admin,
-        'members': members_for_template, # Use the list of dictionaries
+        'members': members_for_template,
         'invitation_form': invitation_form,
         'company_data_form': company_data_form,
-        'user_role': user_role, # For displaying current user's role
+        'job_offer_form': job_offer_form,
+        'all_categorias': all_categorias,
+        'all_offers': all_offers,
+        'user_role': user_role,
     }
     return render(request, 'company/company_index.html', context)
 
@@ -1871,8 +2086,17 @@ def job_offers(request:HttpRequest):
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404
     company = get_object_or_404(Empresa, pk=company_id)
+    
+    # Get active job offers for this company
+    ofertas_activas = OfertaLaboral.objects.filter(
+        empresa=company,
+        estado='activa'
+    ).order_by('-fecha_publicacion')
+    
     context = {
-        'empresa': company
+        'empresa': company,
+        'ofertas_activas': ofertas_activas,
+        'total_ofertas': ofertas_activas.count()
     }
     return render(request, 'company/company_profile.html', context)
 

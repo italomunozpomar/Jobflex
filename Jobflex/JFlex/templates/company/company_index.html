@@ -13,9 +13,9 @@
         </div>
         <nav class="mt-2">
             <div class="px-6 py-4">
-                <a href="#" class="w-full block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 text-center mb-3">
+                <button data-modal-toggle="create-job-modal" class="w-full block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 text-center mb-3">
                     Crear Empleo
-                </a>
+                </button>
                 {% if is_admin %}
                 <button data-modal-toggle="invitation-modal" class="w-full block bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 text-center">
                     Crear Usuario
@@ -169,110 +169,11 @@
             </div>
         </div>
 
-        <!-- All Jobs Content -->
-        <div id="all-jobs" class="tab-content hidden">
-            <h1 class="text-3xl font-bold text-dark mb-6">Todos los Empleos</h1>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="relative w-full max-w-xs">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
-                        </div>
-                        <input type="text" placeholder="Buscar empleo..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
-                    </div>
-                    <div>
-                        <select class="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
-                            <option>Filtrar por estado</option>
-                            <option>Activo</option>
-                            <option>En Pausa</option>
-                            <option>Cerrado</option>
-                        </select>
-                    </div>
-                </div>
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2">Título del Puesto</th>
-                            <th class="py-2">Estado</th>
-                            <th class="py-2">Candidatos</th>
-                            <th class="py-2">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b">
-                            <td class="py-4">Desarrollador Full-Stack</td>
-                            <td class="py-4"><span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Activo</span></td>
-                            <td class="py-4">25</td>
-                            <td class="py-4">
-                                <a href="#" class="text-primary hover:underline">Ver</a>
-                                <a href="#" class="text-gray-500 hover:underline ml-4">Duplicar</a>
-                                <a href="#" class="text-red-500 hover:underline ml-4">Archivar</a>
-                            </td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="py-4">Diseñador UX/UI</td>
-                            <td class="py-4"><span class="bg-yellow-200 text-yellow-800 py-1 px-3 rounded-full text-xs">En Pausa</span></td>
-                            <td class="py-4">10</td>
-                            <td class="py-4">
-                                <a href="#" class="text-primary hover:underline">Ver</a>
-                                <a href="#" class="text-gray-500 hover:underline ml-4">Duplicar</a>
-                                <a href="#" class="text-red-500 hover:underline ml-4">Archivar</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="py-4">Analista de Datos</td>
-                            <td class="py-4"><span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs">Cerrado</span></td>
-                            <td class="py-4">58</td>
-                            <td class="py-4">
-                                <a href="#" class="text-primary hover:underline">Ver</a>
-                                <a href="#" class="text-gray-500 hover:underline ml-4">Duplicar</a>
-                                <a href="#" class="text-red-500 hover:underline ml-4">Archivar</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+{% include 'company/partials/_all_jobs_content.html' %}
 
         <!-- Users Content -->
         {% if is_admin %}
-        <div id="users" class="tab-content hidden">
-            <h1 class="text-3xl font-bold text-dark mb-6">Usuarios de la Empresa</h1>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b">
-                            <th class="py-2">Nombre</th>
-                            <th class="py-2">Rol</th>
-                            <th class="py-2">Última Actividad</th>
-                            <th class="py-2">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for member in members %}
-                        <tr class="border-b">
-                            <td class="py-4">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ member.user_full_name }}</div>
-                                        <div class="text-sm text-gray-500">{{ member.user_email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4">{{ member.role_display }}</td>
-                            <td class="py-4">Hace 2 horas</td> {# Placeholder for last activity #}
-                            <td class="py-4">
-                                <button data-modal-toggle="edit-modal-{{ member.pk }}" class="text-primary hover:underline">Editar</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        {% include 'company/partials/_users_content.html' %}
         {% endif %}
 
         <!-- Other Tab Content (Placeholders) -->
@@ -445,7 +346,7 @@
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
                     <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z"></path></svg>
                     </div>
                     <h3 class="text-lg font-semibold text-primary">Asistente IA para Descripciones</h3>
                     <p class="text-dark mt-2">Genera descripciones de trabajo atractivas y efectivas con la ayuda de inteligencia artificial.</p>
@@ -458,160 +359,13 @@
 
 <!-- Modals Section -->
 
-<!-- Company Data Modal -->
+{% include 'company/partials/_create_job_modal.html' %}
+
 {% if is_admin %}
-<div id="company-data-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-8 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-        <h3 class="text-2xl font-bold text-center text-dark mb-6">Actualizar Datos de la Empresa</h3>
-        
-        <form method="POST" action="{% url 'company_index' %}" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="update_company_data">
-            
-            <div>
-                <label for="{{ company_data_form.nombre_comercial.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.nombre_comercial.label }}</label>
-                {{ company_data_form.nombre_comercial }}
-            </div>
-
-            <div>
-                <label for="{{ company_data_form.resumen_empresa.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.resumen_empresa.label }}</label>
-                {{ company_data_form.resumen_empresa }}
-            </div>
-
-            <div>
-                <label for="{{ company_data_form.mision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.mision.label }}</label>
-                {{ company_data_form.mision }}
-            </div>
-
-            <div>
-                <label for="{{ company_data_form.vision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.vision.label }}</label>
-                {{ company_data_form.vision }}
-            </div>
-
-            <div>
-                <label for="{{ company_data_form.sitio_web.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.sitio_web.label }}</label>
-                {{ company_data_form.sitio_web }}
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="{{ company_data_form.imagen_perfil.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_perfil.label }}</label>
-                    {% if company.imagen_perfil %}
-                        <img id="logo-preview" src="{{ company.imagen_perfil.url }}" alt="Logo actual" class="mt-2 h-24 w-24 object-cover rounded-md">
-                    {% else %}
-                        <img id="logo-preview" src="https://via.placeholder.com/96" alt="Logo preview" class="mt-2 h-24 w-24 object-cover rounded-md">
-                    {% endif %}
-                    {{ company_data_form.imagen_perfil }}
-                </div>
-                <div>
-                    <label for="{{ company_data_form.imagen_portada.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_portada.label }}</label>
-                    {% if company.imagen_portada %}
-                        <img id="banner-preview" src="{{ company.imagen_portada.url }}" alt="Banner actual" class="mt-2 h-24 w-full object-cover rounded-md">
-                    {% else %}
-                        <img id="banner-preview" src="https://via.placeholder.com/300x100" alt="Banner preview" class="mt-2 h-24 w-full object-cover rounded-md">
-                    {% endif %}
-                    {{ company_data_form.imagen_portada }}
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end space-x-4 pt-4">
-                <button data-modal-hide="company-data-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Cancelar</button>
-                <button type="submit" class="px-6 py-2 bg-primary text-white text-base font-medium rounded-md shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">Guardar Cambios</button>
-            </div>
-        </form>
-    </div>
-</div>
+{% include 'company/partials/_company_data_modal.html' %}
 {% endif %}
 
-
-<!-- Invitation Modal (Shared) -->
-{% if is_admin %}
-<div id="invitation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-8 border w-full max-w-lg shadow-lg rounded-md bg-white">
-        <div class="flex items-center justify-center mb-4">
-            <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"></path></svg>
-            </div>
-        </div>
-        <h3 class="text-2xl font-bold text-center text-dark">Invitar a un Nuevo Miembro</h3>
-        <p class="text-center text-secondary mt-2 mb-6">El nuevo miembro recibirá una invitación por correo electrónico para unirse a tu equipo.</p>
-        
-        <form method="POST" action="{% url 'company_index' %}" class="space-y-6">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="invite_user">
-            
-            <div>
-                <label for="id_email" class="block text-sm font-medium text-dark">Correo Electrónico</label>
-                <div class="mt-1 relative rounded-md shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
-                    </div>
-                    <input type="email" name="email" id="id_email" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="tu@email.com">
-                </div>
-            </div>
-
-            <div>
-                <label for="id_role" class="block text-sm font-medium text-dark">Rol del Usuario</label>
-                <select name="role" id="id_role" class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
-                    {% for value, label in invitation_form.fields.role.choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="flex items-center justify-end space-x-4 pt-4">
-                <button data-modal-hide="invitation-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Cancelar</button>
-                <button type="submit" class="px-6 py-2 bg-primary text-white text-base font-medium rounded-md shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">Enviar Invitación</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Individual Edit Modals (Generated in loop) -->
-{% for member in members %}
-<div id="edit-modal-{{ member.pk }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Editar Usuario: <span class="font-bold">{{ member.user_full_name }}</span></h3>
-            <div class="mt-2 px-7 py-3 text-left">
-                <form method="POST" action="{% url 'company_index' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="edit_user">
-                    <input type="hidden" name="member_id" value="{{ member.pk }}">
-                    
-                    <div class="mb-4">
-                        <label for="email-{{ member.pk }}" class="block text-sm font-medium text-dark">Email</label>
-                        <input type="email" name="email" id="email-{{ member.pk }}" class="mt-1 block w-full p-3 border border-light-gray rounded-lg" value="{{ member.user_email }}" readonly>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="role-{{ member.pk }}" class="block text-sm font-medium text-dark">Rol</label>
-                        <select name="role" id="role-{{ member.pk }}" class="mt-1 block w-full p-3 border border-light-gray rounded-lg">
-                            {% for role_obj in invitation_form.fields.role.queryset %}
-                                <option value="{{ role_obj.pk }}" {% if role_obj.pk == member.role.pk %}selected{% endif %}>{{ role_obj.nombre_rol }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="items-center px-4 py-3 bg-gray-50 -mx-7 -mb-5 mt-6 rounded-b-md">
-                        <button data-modal-hide="edit-modal-{{ member.pk }}" type="button" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-700">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-opacity-90">Guardar Cambios</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="mt-4 border-t pt-4 text-center">
-            <form method="POST" action="{% url 'company_index' %}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.');">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="delete_user">
-                <input type="hidden" name="member_id" value="{{ member.pk }}">
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700">Eliminar Usuario</button>
-            </form>
-        </div>
-    </div>
-</div>
-{% endfor %}
-{% endif %}
+{% include 'company/partials/_user_modals.html' %}
 
 <style>
     .active-tab {
@@ -623,114 +377,19 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Image Preview Logic ---
-    const logoInput = document.getElementById('{{ company_data_form.imagen_perfil.id_for_label }}');
-    const logoPreview = document.getElementById('logo-preview');
-    if (logoInput) {
-        logoInput.addEventListener('change', function(event) {
-            if (event.target.files && event.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    logoPreview.src = e.target.result;
-                }
-                reader.readAsDataURL(event.target.files[0]);
-            }
-        });
-    }
-
-    const bannerInput = document.getElementById('{{ company_data_form.imagen_portada.id_for_label }}');
-    const bannerPreview = document.getElementById('banner-preview');
-    if (bannerInput) {
-        bannerInput.addEventListener('change', function(event) {
-            if (event.target.files && event.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    bannerPreview.src = e.target.result;
-                }
-                reader.readAsDataURL(event.target.files[0]);
-            }
-        });
-    }
-
-    // --- Chart.js Logic ---
-    const jobsCtx = document.getElementById('jobsChart').getContext('2d');
-    const jobsChart = new Chart(jobsCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Desarrollador Full-Stack', 'Diseñador UX/UI', 'Analista de Datos', 'Diseñador Gráfico'],
-            datasets: [{
-                label: '# de Candidatos',
-                data: [25, 10, 58, 15],
-                backgroundColor: 'rgba(140, 160, 26, 0.2)',
-                borderColor: 'rgba(140, 160, 26, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    const candidatesSourceCtx = document.getElementById('candidatesSourceChart').getContext('2d');
-    const candidatesSourceChart = new Chart(candidatesSourceCtx, {
-        type: 'pie',
-        data: {
-            labels: ['JobFlex', 'LinkedIn', 'Referidos', 'Otros'],
-            datasets: [{
-                label: 'Fuente de Candidatos',
-                data: [45, 25, 15, 15],
-                backgroundColor: [
-                    'rgba(140, 160, 26, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(140, 160, 26, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        }
-    });
-
-    const monthlyApplicantsCtx = document.getElementById('monthlyApplicantsChart').getContext('2d');
-    const monthlyApplicantsChart = new Chart(monthlyApplicantsCtx, {
-        type: 'line',
-        data: {
-            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio'],
-            datasets: [{
-                label: 'Candidatos por Mes',
-                data: [65, 59, 80, 81, 56, 55, 40],
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        }
-    });
-
-    // --- Generic Modal Toggling --- 
+    // --- OTHER PAGE LOGIC (MODALS, TABS, ETC.) ---
     document.addEventListener('click', function(event) {
         const toggleAttr = event.target.closest('[data-modal-toggle]')?.getAttribute('data-modal-toggle');
-        if (toggleAttr) {
-            const modal = document.getElementById(toggleAttr);
-            if (modal) modal.classList.remove('hidden');
-        }
-
+        if (toggleAttr) document.getElementById(toggleAttr)?.classList.remove('hidden');
         const hideAttr = event.target.closest('[data-modal-hide]')?.getAttribute('data-modal-hide');
-        if (hideAttr) {
-            const modal = document.getElementById(hideAttr);
-            if (modal) modal.classList.add('hidden');
-        }
+        if (hideAttr) document.getElementById(hideAttr)?.classList.add('hidden');
     });
+    
+    window.toggleSubmenu = function () {
+        document.getElementById('jobs-submenu').classList.toggle('hidden');
+        document.getElementById('submenu-arrow').classList.toggle('rotate-180');
+    };
 
-    // --- Tab Switching Logic ---
     const tabLinks = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
     function switchTab(tabId) {
@@ -749,13 +408,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabId) switchTab(tabId);
         });
     });
-    switchTab('dashboard'); // Set dashboard as default
-
-    // --- Submenu Toggle ---
-    window.toggleSubmenu = function () {
-        document.getElementById('jobs-submenu').classList.toggle('hidden');
-        document.getElementById('submenu-arrow').classList.toggle('rotate-180');
-    }
+    switchTab('dashboard');
 });
 </script>
 {% endblock %}

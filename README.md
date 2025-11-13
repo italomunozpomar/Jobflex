@@ -1,6 +1,5 @@
-# JobFlex
-In the Render Dashboard, go to the Blueprints page and click `New Blueprint Instance`. Select the repository that contains your blueprint and click Connect. Give your blueprint project a name and click Apply.
+poner .env en Jobflex/Jobflex/.env
 
----
+run.bat en cmd (Se crea venv, se instala dependencias desde el reqs.txt y se instala playwright.)
 
-Esperemos que simplemente funcione, Italo dame acceso al render idk como pero pls
+Poner DEBUG=True en settings.py

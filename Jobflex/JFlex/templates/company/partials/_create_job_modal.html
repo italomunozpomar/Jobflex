@@ -1,0 +1,173 @@
+{% load static %}
+
+<div id="create-job-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-5 mx-auto p-5 border w-[80vw] shadow-lg rounded-md bg-white">
+        <form id="create-job-form" method="POST" action="{% url 'company_index' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="form-action" value="create_job_offer">
+            <input type="hidden" name="offer_id" id="offer-id-input" value="">
+            <div class="grid grid-cols-10 gap-6">
+                <!-- Left Column: Form -->
+                <div class="col-span-6 p-4 border-r">
+                    <h3 id="modal-title" class="text-2xl font-bold text-dark mb-6">Crear Nueva Oferta Laboral</h3>
+                    
+                    <!-- Información Principal -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Información Principal</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label for="id_titulo_puesto" class="block text-sm font-medium text-dark">Título del Puesto</label>
+                                {{ job_offer_form.titulo_puesto }}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mt-4">
+                            <div id="categoria-fields">
+                                <div id="categoria-select-container">
+                                    <label for="id_categoria" class="block text-sm font-medium text-dark">Categoría</label>
+                                    {{ job_offer_form.categoria }}
+                                </div>
+                                <div id="nueva-categoria-container" class="hidden">
+                                    <label for="id_nueva_categoria" class="block text-sm font-medium text-dark">Nueva Categoría</label>
+                                    {{ job_offer_form.nueva_categoria }}
+                                </div>
+                                <div class="mt-2">
+                                    <input type="checkbox" id="crear-nueva-categoria-checkbox" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                                    <label for="crear-nueva-categoria-checkbox" class="ml-2 text-sm text-dark">Crear nueva categoría</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="id_jornada" class="block text-sm font-medium text-dark">Jornada</label>
+                                {{ job_offer_form.jornada }}
+                            </div>
+                            <div>
+                                <label for="id_modalidad" class="block text-sm font-medium text-dark">Modalidad</label>
+                                {{ job_offer_form.modalidad }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalles del Puesto -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Detalles del Puesto</h4>
+                        <div>
+                             <label for="id_descripcion_puesto" class="block text-sm font-medium text-dark">Descripción</label>
+                            <div id="quill-descripcion" style="height: 150px;"></div>
+                            {{ job_offer_form.descripcion_puesto }}
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_requisitos_puesto" class="block text-sm font-medium text-dark">Requisitos</label>
+                            <div id="quill-requisitos" style="height: 150px;"></div>
+                            {{ job_offer_form.requisitos_puesto }}
+                        </div>
+                    </div>
+
+                    <!-- Condiciones -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Condiciones</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="id_salario_min" class="block text-sm font-medium text-dark">Salario Mínimo (CLP)</label>
+                                {{ job_offer_form.salario_min }}
+                            </div>
+                            <div>
+                                <label for="id_salario_max" class="block text-sm font-medium text-dark">Salario Máximo (CLP)</label>
+                                {{ job_offer_form.salario_max }}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_nivel_experiencia" class="block text-sm font-medium text-dark">Nivel de Experiencia</label>
+                            {{ job_offer_form.nivel_experiencia }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="id_duracion_oferta" class="block text-sm font-medium text-dark">Duración de la Oferta</label>
+                                {{ job_offer_form.duracion_oferta }}
+                            </div>
+                            <div id="custom-date-container" class="hidden">
+                                <label for="id_fecha_cierre_personalizada" class="block text-sm font-medium text-dark">Fecha de Cierre</label>
+                                {{ job_offer_form.fecha_cierre_personalizada }}
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Habilidades y Beneficios -->
+                     <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Habilidades y Beneficios</h4>
+                        <div class="mt-4">
+                            <label for="id_habilidades_clave" class="block text-sm font-medium text-dark">Habilidades Clave (separadas por coma)</label>
+                            {{ job_offer_form.habilidades_clave }}
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_beneficios" class="block text-sm font-medium text-dark">Beneficios (separados por coma)</label>
+                            {{ job_offer_form.beneficios }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Preview -->
+                <div class="col-span-4 p-4 bg-gray-50 rounded-r-md">
+                    <h3 class="text-xl font-bold text-dark mb-4">Vista Previa</h3>
+                    <div class="border p-4 rounded-lg bg-white shadow-md">
+                        <!-- Header -->
+                        <div class="flex items-center mb-4">
+                            <img src="{% if company_logo_url %}{{ company_logo_url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 id="preview-titulo" class="text-lg font-bold text-dark">Título de la Oferta</h4>
+                                <p class="text-sm text-secondary">{{ company.nombre_comercial }}</p>
+                            </div>
+                        </div>
+                        <!-- Details -->
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-4">
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> <span id="preview-categoria">Categoría</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> <span id="preview-modalidad">Modalidad</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="preview-jornada">Jornada</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                                                CLP <span id="preview-sal-min">Salario Min</span> - <span id="preview-sal-max">Salario Max</span>
+                            </span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> <span id="preview-experiencia">Experiencia</span></span>
+                        </div>
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Descripción del Puesto</h5>
+                            <div id="preview-descripcion" class="text-sm text-dark prose">
+                                <p>Aquí aparecerá la descripción del puesto...</p>
+                            </div>
+                        </div>
+                        <!-- Requirements -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Requisitos</h5>
+                            <div id="preview-requisitos" class="text-sm text-dark prose">
+                                <p>Aquí aparecerán los requisitos del puesto...</p>
+                            </div>
+                        </div>
+                        <!-- Skills -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Habilidades Clave</h5>
+                            <div id="preview-habilidades" class="flex flex-wrap gap-2">
+                                <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Habilidad 1</span>
+                            </div>
+                        </div>
+
+                         <!-- Benefits -->
+                         <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Beneficios</h5>
+                            <div id="preview-beneficios" class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Beneficio 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between pt-4 mt-4 border-t">
+                <button id="clear-form-btn" type="button" class="px-6 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none">Limpiar Campos</button>
+                <div class="space-x-4">
+                    <button data-modal-hide="create-job-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none">Cancelar</button>
+                    <button id="submit-btn" type="submit" class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none">Publicar Oferta</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'JS/create_job_modal.js' %}" defer></script>

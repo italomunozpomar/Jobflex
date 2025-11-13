@@ -8,13 +8,13 @@
     <!-- Encabezado del Perfil -->
     <header class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
         <!-- Banner de la Empresa -->
-        <div class="h-48 bg-cover bg-center" style="background-image: url('{% if empresa.imagen_portada %}{{ empresa.imagen_portada.url }}{% else %}{% static 'images/default_banner.png' %}{% endif %}')"></div>
+        <div class="h-48 bg-cover bg-center" style="background-image: url('{% if empresa.imagen_portada %}{{ empresa.imagen_portada }}{% else %}{% static 'images/default_banner.png' %}{% endif %}')"></div>
         
         <div class="p-6">
             <div class="flex flex-col sm:flex-row items-center sm:items-end sm:space-x-5 -mt-20">
                 <!-- Logo de la Empresa -->
                 <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0">
-                    <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil.url }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
+                    <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
                 </div>
                 
                 <!-- Nombre, Tagline e Industria -->
@@ -37,7 +37,7 @@
             <div class="bg-white rounded-xl shadow-lg p-2">
                 <nav id="company-tabs" class="flex space-x-2">
                     <button data-tab="about" class="tab-btn flex-1 text-center font-semibold p-3 rounded-lg text-white bg-primary">Sobre Nosotros</button>
-                    <button data-tab="jobs" class="tab-btn flex-1 text-center font-semibold p-3 rounded-lg text-secondary hover:bg-gray-100">Ofertas de Trabajo (0)</button>
+                    <button data-tab="jobs" class="tab-btn flex-1 text-center font-semibold p-3 rounded-lg text-secondary hover:bg-gray-100">Ofertas de Trabajo ({{ total_ofertas }})</button>
                 </nav>
             </div>
 
@@ -65,7 +65,71 @@
 
                 <!-- Pestaña "Ofertas de Trabajo" -->
                 <div id="jobs-content" class="tab-panel hidden space-y-4">
-                    <p class="text-secondary">Actualmente no hay ofertas de trabajo publicadas.</p>
+                    {% if ofertas_activas %}
+                        <div class="space-y-4">
+                            {% for oferta in ofertas_activas %}
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow duration-300">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-grow">
+                                            <h4 class="text-lg font-bold text-dark">{{ oferta.titulo_puesto }}</h4>
+                                            <p class="text-sm text-secondary flex items-center mt-1">
+                                                <svg class="w-4 h-4 mr-1.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7a4 4 0 100 8 4 4 0 000-8zM7 7a4 4 0 100 8 4 4 0 000-8zM7 7c0 1.1.9 2 2 2s2-.9 2-2-2-2-2-2-2 .9-2 2z"></path>
+                                                </svg>
+                                                {% if oferta.categoria %}{{ oferta.categoria.tipo_categoria }}{% else %}Sin categoría{% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">Activa</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
+                                        <div>
+                                            <p class="text-xs text-secondary font-semibold">Jornada</p>
+                                            <p class="text-sm text-dark mt-1">{% if oferta.jornada %}{{ oferta.jornada.tipo_jornada }}{% else %}N/A{% endif %}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-secondary font-semibold">Modalidad</p>
+                                            <p class="text-sm text-dark mt-1">{% if oferta.modalidad %}{{ oferta.modalidad.tipo_modalidad }}{% else %}N/A{% endif %}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-secondary font-semibold">Experiencia</p>
+                                            <p class="text-sm text-dark mt-1">{{ oferta.nivel_experiencia }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-secondary font-semibold">Salario</p>
+                                            <p class="text-sm text-dark mt-1">${{ oferta.salario_min|stringformat:",.0f" }} - ${{ oferta.salario_max|stringformat:",.0f" }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <p class="text-sm text-gray-600 line-clamp-2">{{ oferta.descripcion_puesto|striptags|truncatewords:30 }}</p>
+                                    </div>
+
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-xs text-secondary">
+                                            Publicado: {{ oferta.fecha_publicacion|date:"d \d\e M, Y" }}
+                                        </div>
+                                        <a href="#" class="inline-flex items-center text-primary font-semibold text-sm hover:underline">
+                                            Ver oferta completa
+                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 font-medium">No hay ofertas de trabajo activas en este momento.</p>
+                            <p class="text-gray-400 text-sm mt-1">Esta empresa aún no ha publicado sus oportunidades de empleo.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

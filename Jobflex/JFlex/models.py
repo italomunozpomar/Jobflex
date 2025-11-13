@@ -69,8 +69,8 @@ class Empresa(models.Model):
     vision = models.TextField(max_length=500, null=True, blank=True)
     telefono = models.CharField(max_length=20)
     sitio_web = models.URLField(max_length=255, null=True, blank=True)
-    imagen_portada = models.ImageField(upload_to='company_banners/', null=True, blank=True)
-    imagen_perfil = models.ImageField(upload_to='company_logos/', null=True, blank=True)
+    imagen_portada = models.URLField(max_length=500, null=True, blank=True)
+    imagen_perfil = models.URLField(max_length=500, null=True, blank=True)
     ultima_modificacion = models.DateTimeField(auto_now=True)
     rubro = models.ForeignKey(RubroIndustria, on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
     ubicacion = models.ForeignKey('Ubicacion', on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
@@ -137,6 +137,11 @@ class Modalidad(models.Model):
         return self.tipo_modalidad
 
 class OfertaLaboral(models.Model):
+    ESTADO_CHOICES = [
+        ('activa', 'Activa'),
+        ('pausada', 'Pausada'),
+        ('cerrada', 'Cerrada'),
+    ]
     id_oferta = models.AutoField(primary_key=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE) # Relación inferida
     titulo_puesto = models.CharField(max_length=150)
@@ -149,6 +154,7 @@ class OfertaLaboral(models.Model):
     salario_max = models.IntegerField()
     fecha_publicacion = models.DateField(auto_now_add=True)
     fecha_cierre = models.DateField()
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='activa')
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True) # Relación inferida
     jornada = models.ForeignKey(Jornada, on_delete=models.SET_NULL, null=True) # Relación inferida
     modalidad = models.ForeignKey(Modalidad, on_delete=models.SET_NULL, null=True) # Relación inferida

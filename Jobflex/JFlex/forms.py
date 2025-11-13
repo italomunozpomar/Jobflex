@@ -283,80 +283,35 @@ from .models import Empresa, CVSubido
 
 
 class EmpresaDataForm(forms.ModelForm):
-
     class Meta:
-
         model = Empresa
-
-        fields = ['nombre_comercial', 'resumen_empresa', 'sitio_web', 'mision', 'vision', 'imagen_perfil', 'imagen_portada']
-
+        fields = ['nombre_comercial', 'resumen_empresa', 'sitio_web', 'mision', 'vision']
         labels = {
-
             'nombre_comercial': 'Nombre Comercial',
-
             'resumen_empresa': 'Resumen de la Empresa',
-
             'sitio_web': 'Sitio Web',
-
             'mision': 'Misión',
-
             'vision': 'Visión',
-
-            'imagen_perfil': 'Logo de la Empresa',
-
-            'imagen_portada': 'Banner de la Empresa',
-
         }
-
         widgets = {
-
             'resumen_empresa': forms.Textarea(attrs={'rows': 4}),
-
             'mision': forms.Textarea(attrs={'rows': 3}),
-
             'vision': forms.Textarea(attrs={'rows': 3}),
-
         }
-
-
 
     def clean_sitio_web(self):
-
         sitio_web = self.cleaned_data.get('sitio_web')
-
         if sitio_web and not sitio_web.startswith(('http://', 'https://')):
-
             sitio_web = 'https://' + sitio_web
-
         return sitio_web
 
-
-
-
-
-
-
-
-
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
-
-
-
-        for field_name in self.fields:
-
-            field = self.fields.get(field_name)
-
-            if field:
-
-                css_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
-
-                if isinstance(field.widget, forms.FileInput):
-
-                    css_class = 'mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90'
-
-                field.widget.attrs.update({'class': css_class})
+        for field_name, field in self.fields.items():
+            if field and not isinstance(field.widget, forms.CheckboxInput):
+                existing_classes = field.widget.attrs.get('class', '')
+                base_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+                field.widget.attrs['class'] = f"{existing_classes} {base_class}".strip()
 
 
 
@@ -377,3 +332,108 @@ class CVSubidoForm(forms.Form):
             'class': 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary',
             'placeholder': 'Ej: Desarrollador Full-Stack'
         })
+from .models import OfertaLaboral, Categoria, Jornada, Modalidad
+from django.utils import timezone
+from datetime import timedelta
+
+class OfertaLaboralForm(forms.ModelForm):
+    categoria = forms.ModelChoiceField(
+        queryset=Categoria.objects.all(),
+        label="Categoría",
+        required=False,
+        empty_label="Selecciona una categoría"
+    )
+    nueva_categoria = forms.CharField(
+        label="Nueva Categoría",
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Escribe un nombre para la nueva categoría'})
+    )
+    duracion_oferta = forms.ChoiceField(
+        choices=[
+            ('7', '1 semana'),
+            ('14', '2 semanas'),
+            ('21', '3 semanas'),
+            ('30', '1 mes'),
+            ('custom', 'Personalizada'),
+        ],
+        label='Duración de la Oferta'
+    )
+    fecha_cierre_personalizada = forms.DateField(
+        label='Fecha de Cierre Personalizada',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+    class Meta:
+        model = OfertaLaboral
+        fields = [
+            'titulo_puesto', 'categoria', 'nueva_categoria', 'jornada', 'modalidad', 
+            'salario_min', 'salario_max', 'nivel_experiencia', 
+            'descripcion_puesto', 'requisitos_puesto', 
+            'habilidades_clave', 'beneficios'
+        ]
+        widgets = {
+            'descripcion_puesto': forms.Textarea(attrs={'rows': 5, 'class': 'form-textarea'}),
+            'requisitos_puesto': forms.Textarea(attrs={'rows': 5, 'class': 'form-textarea'}),
+            'habilidades_clave': forms.TextInput(attrs={'placeholder': 'Python, SQL, etc.'}),
+            'beneficios': forms.TextInput(attrs={'placeholder': 'Seguro médico, etc.'}),
+        }
+        labels = {
+            'titulo_puesto': 'Título del Puesto',
+            'jornada': 'Jornada Laboral',
+            'modalidad': 'Modalidad de Trabajo',
+            'salario_min': 'Salario Mínimo (CLP)',
+            'salario_max': 'Salario Máximo (CLP)',
+            'nivel_experiencia': 'Nivel de Experiencia Requerido',
+            'descripcion_puesto': 'Descripción del Puesto',
+            'requisitos_puesto': 'Requisitos del Puesto',
+            'habilidades_clave': 'Habilidades Clave',
+            'beneficios': 'Beneficios Ofrecidos',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.fields['jornada'].queryset = Jornada.objects.all()
+        self.fields['modalidad'].queryset = Modalidad.objects.all()
+
+        base_css_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+        
+        for field_name, field in self.fields.items():
+            if field_name not in self.Meta.widgets:
+                field.widget.attrs.update({'class': base_css_class})
+            elif field_name in self.Meta.widgets:
+                if 'class' not in field.widget.attrs:
+                    field.widget.attrs['class'] = base_css_class
+
+            if field_name == 'salario_min':
+                field.widget.attrs['placeholder'] = 'Ej: 800000'
+            if field_name == 'salario_max':
+                field.widget.attrs['placeholder'] = 'Ej: 1200000'
+            if field_name == 'nivel_experiencia':
+                field.widget.attrs['placeholder'] = 'Ej: Semi-Senior, Junior, Senior...'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        categoria = cleaned_data.get('categoria')
+        nueva_categoria = cleaned_data.get('nueva_categoria')
+        duracion = cleaned_data.get('duracion_oferta')
+        fecha_personalizada = cleaned_data.get('fecha_cierre_personalizada')
+
+        if not categoria and not nueva_categoria:
+            raise forms.ValidationError('Debe seleccionar una categoría o crear una nueva.', code='categoria_required')
+        
+        if categoria and nueva_categoria:
+            raise forms.ValidationError('No puede seleccionar una categoría y crear una nueva al mismo tiempo.', code='categoria_ambiguous')
+
+        if duracion == 'custom':
+            if not fecha_personalizada:
+                self.add_error('fecha_cierre_personalizada', 'Debe seleccionar una fecha si elige la opción personalizada.')
+            else:
+                today = timezone.now().date()
+                max_date = today + timedelta(days=30)
+                if not (today <= fecha_personalizada <= max_date):
+                    self.add_error('fecha_cierre_personalizada', f'La fecha debe estar entre hoy y el {max_date.strftime("%d-%m-%Y")}.')
+        
+        return cleaned_data
