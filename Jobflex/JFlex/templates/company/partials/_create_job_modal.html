@@ -110,7 +110,7 @@
                     <div class="border p-4 rounded-lg bg-white shadow-md">
                         <!-- Header -->
                         <div class="flex items-center mb-4">
-                            <img src="{% if company.imagen_perfil %}{{ company.imagen_perfil.url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
+                            <img src="{% if company_logo_url %}{{ company_logo_url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
                             <div>
                                 <h4 id="preview-titulo" class="text-lg font-bold text-dark">Título de la Oferta</h4>
                                 <p class="text-sm text-secondary">{{ company.nombre_comercial }}</p>
