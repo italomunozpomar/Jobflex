@@ -137,6 +137,11 @@ class Modalidad(models.Model):
         return self.tipo_modalidad
 
 class OfertaLaboral(models.Model):
+    ESTADO_CHOICES = [
+        ('activa', 'Activa'),
+        ('pausada', 'Pausada'),
+        ('cerrada', 'Cerrada'),
+    ]
     id_oferta = models.AutoField(primary_key=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE) # Relación inferida
     titulo_puesto = models.CharField(max_length=150)
@@ -149,6 +154,7 @@ class OfertaLaboral(models.Model):
     salario_max = models.IntegerField()
     fecha_publicacion = models.DateField(auto_now_add=True)
     fecha_cierre = models.DateField()
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='activa')
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True) # Relación inferida
     jornada = models.ForeignKey(Jornada, on_delete=models.SET_NULL, null=True) # Relación inferida
     modalidad = models.ForeignKey(Modalidad, on_delete=models.SET_NULL, null=True) # Relación inferida

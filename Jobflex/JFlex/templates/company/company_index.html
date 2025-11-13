@@ -13,9 +13,9 @@
         </div>
         <nav class="mt-2">
             <div class="px-6 py-4">
-                <a href="#" class="w-full block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 text-center mb-3">
+                <button data-modal-toggle="create-job-modal" class="w-full block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 text-center mb-3">
                     Crear Empleo
-                </a>
+                </button>
                 {% if is_admin %}
                 <button data-modal-toggle="invitation-modal" class="w-full block bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 text-center">
                     Crear Usuario
@@ -445,7 +445,7 @@
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
                     <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z"></path></svg>
                     </div>
                     <h3 class="text-lg font-semibold text-primary">Asistente IA para Descripciones</h3>
                     <p class="text-dark mt-2">Genera descripciones de trabajo atractivas y efectivas con la ayuda de inteligencia artificial.</p>
@@ -457,6 +457,173 @@
 </div>
 
 <!-- Modals Section -->
+
+<!-- Create Job Offer Modal -->
+<div id="create-job-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-5 mx-auto p-5 border w-[80vw] shadow-lg rounded-md bg-white">
+        <form id="create-job-form" method="POST" action="{% url 'company_index' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_job_offer">
+            <div class="grid grid-cols-10 gap-6">
+                <!-- Left Column: Form -->
+                <div class="col-span-6 p-4 border-r">
+                    <h3 class="text-2xl font-bold text-dark mb-6">Crear Nueva Oferta Laboral</h3>
+                    
+                    <!-- Información Principal -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Información Principal</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label for="id_titulo_puesto" class="block text-sm font-medium text-dark">Título del Puesto</label>
+                                {{ job_offer_form.titulo_puesto }}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mt-4">
+                            <div id="categoria-fields">
+                                <div id="categoria-select-container">
+                                    <label for="id_categoria" class="block text-sm font-medium text-dark">Categoría</label>
+                                    {{ job_offer_form.categoria }}
+                                </div>
+                                <div id="nueva-categoria-container" class="hidden">
+                                    <label for="id_nueva_categoria" class="block text-sm font-medium text-dark">Nueva Categoría</label>
+                                    {{ job_offer_form.nueva_categoria }}
+                                </div>
+                                <div class="mt-2">
+                                    <input type="checkbox" id="crear-nueva-categoria-checkbox" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                                    <label for="crear-nueva-categoria-checkbox" class="ml-2 text-sm text-dark">Crear nueva categoría</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="id_jornada" class="block text-sm font-medium text-dark">Jornada</label>
+                                {{ job_offer_form.jornada }}
+                            </div>
+                            <div>
+                                <label for="id_modalidad" class="block text-sm font-medium text-dark">Modalidad</label>
+                                {{ job_offer_form.modalidad }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalles del Puesto -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Detalles del Puesto</h4>
+                        <div>
+                             <label for="id_descripcion_puesto" class="block text-sm font-medium text-dark">Descripción</label>
+                            <div id="quill-descripcion" style="height: 150px;"></div>
+                            {{ job_offer_form.descripcion_puesto }}
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_requisitos_puesto" class="block text-sm font-medium text-dark">Requisitos</label>
+                            <div id="quill-requisitos" style="height: 150px;"></div>
+                            {{ job_offer_form.requisitos_puesto }}
+                        </div>
+                    </div>
+
+                    <!-- Condiciones -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Condiciones</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="id_salario_min" class="block text-sm font-medium text-dark">Salario Mínimo (CLP)</label>
+                                {{ job_offer_form.salario_min }}
+                            </div>
+                            <div>
+                                <label for="id_salario_max" class="block text-sm font-medium text-dark">Salario Máximo (CLP)</label>
+                                {{ job_offer_form.salario_max }}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_nivel_experiencia" class="block text-sm font-medium text-dark">Nivel de Experiencia</label>
+                            {{ job_offer_form.nivel_experiencia }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="id_duracion_oferta" class="block text-sm font-medium text-dark">Duración de la Oferta</label>
+                                {{ job_offer_form.duracion_oferta }}
+                            </div>
+                            <div id="custom-date-container" class="hidden">
+                                <label for="id_fecha_cierre_personalizada" class="block text-sm font-medium text-dark">Fecha de Cierre</label>
+                                {{ job_offer_form.fecha_cierre_personalizada }}
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Habilidades y Beneficios -->
+                     <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-primary mb-3">Habilidades y Beneficios</h4>
+                        <div class="mt-4">
+                            <label for="id_habilidades_clave" class="block text-sm font-medium text-dark">Habilidades Clave (separadas por coma)</label>
+                            {{ job_offer_form.habilidades_clave }}
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_beneficios" class="block text-sm font-medium text-dark">Beneficios (separados por coma)</label>
+                            {{ job_offer_form.beneficios }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Preview -->
+                <div class="col-span-4 p-4 bg-gray-50 rounded-r-md">
+                    <h3 class="text-xl font-bold text-dark mb-4">Vista Previa</h3>
+                    <div class="border p-4 rounded-lg bg-white shadow-md">
+                        <!-- Header -->
+                        <div class="flex items-center mb-4">
+                            <img src="{% if company.imagen_perfil %}{{ company.imagen_perfil.url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 id="preview-titulo" class="text-lg font-bold text-dark">Título de la Oferta</h4>
+                                <p class="text-sm text-secondary">{{ company.nombre_comercial }}</p>
+                            </div>
+                        </div>
+                        <!-- Details -->
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-4">
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm0 0l6.5 6.5M17 17h-.01"></path></svg> <span id="preview-categoria">Categoría</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> <span id="preview-modalidad">Modalidad</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="preview-jornada">Jornada</span></span>
+                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg>
+                                CLP$ <span id="preview-sal-min">Salario Min</span> - <span id="preview-sal-max">Salario Max</span>
+                            </span>
+                        </div>
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Descripción del Puesto</h5>
+                            <div id="preview-descripcion" class="text-sm text-dark prose">
+                                <p>Aquí aparecerá la descripción del puesto...</p>
+                            </div>
+                        </div>
+                        <!-- Requirements -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Requisitos</h5>
+                            <div id="preview-requisitos" class="text-sm text-dark prose">
+                                <p>Aquí aparecerán los requisitos del puesto...</p>
+                            </div>
+                        </div>
+                        <!-- Skills -->
+                        <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Habilidades Clave</h5>
+                            <div id="preview-habilidades" class="flex flex-wrap gap-2">
+                                <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Habilidad 1</span>
+                            </div>
+                        </div>
+
+                         <!-- Benefits -->
+                         <div class="mb-4">
+                            <h5 class="font-bold text-dark mb-2">Beneficios</h5>
+                            <div id="preview-beneficios" class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Beneficio 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end space-x-4 pt-4 mt-4 border-t">
+                <button data-modal-hide="create-job-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none">Cancelar</button>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none">Publicar Oferta</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <!-- Company Data Modal -->
 {% if is_admin %}
@@ -619,6 +786,21 @@
         border-left: 4px solid #8CA01A; /* border-primary */
         color: #111827; /* text-gray-900 */
     }
+    /* Estilos para Quill */
+    .ql-editor {
+        font-family: inherit;
+        font-size: inherit;
+        color: #312F32;
+    }
+    .ql-toolbar {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+    .ql-container {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+
 </style>
 
 <script>
@@ -756,6 +938,163 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('jobs-submenu').classList.toggle('hidden');
         document.getElementById('submenu-arrow').classList.toggle('rotate-180');
     }
+
+    // --- Create Job Offer Modal Logic ---
+    const createJobModal = document.getElementById('create-job-modal');
+    if (createJobModal) {
+        // Quill Editors
+        const quillDescripcion = new Quill('#quill-descripcion', {
+            theme: 'snow',
+            placeholder: 'Describe las responsabilidades y el propósito del puesto...'
+        });
+        const quillRequisitos = new Quill('#quill-requisitos', {
+            theme: 'snow',
+            placeholder: 'Detalla la experiencia, educación y habilidades necesarias...'
+        });
+
+        // Tagify Inputs
+        const habilidadesInput = document.querySelector('input[name=habilidades_clave]');
+        const tagifyHabilidades = new Tagify(habilidadesInput);
+        
+        const beneficiosInput = document.querySelector('input[name=beneficios]');
+        const tagifyBeneficios = new Tagify(beneficiosInput);
+
+        // --- Categoria Toggle Logic ---
+        const categoriaCheckbox = document.getElementById('crear-nueva-categoria-checkbox');
+        const categoriaSelectContainer = document.getElementById('categoria-select-container');
+        const nuevaCategoriaContainer = document.getElementById('nueva-categoria-container');
+        const categoriaSelect = document.getElementById('id_categoria');
+        const nuevaCategoriaInput = document.getElementById('id_nueva_categoria');
+
+        categoriaCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            categoriaSelectContainer.classList.toggle('hidden', isChecked);
+            nuevaCategoriaContainer.classList.toggle('hidden', !isChecked);
+
+            if (isChecked) {
+                categoriaSelect.disabled = true;
+                nuevaCategoriaInput.disabled = false;
+                // Clear the select when switching to new input
+                categoriaSelect.value = ''; 
+            } else {
+                categoriaSelect.disabled = false;
+                nuevaCategoriaInput.disabled = true;
+                // Clear the text input when switching to select
+                nuevaCategoriaInput.value = '';
+            }
+        });
+        // Initial state
+        nuevaCategoriaInput.disabled = true;
+
+
+        // Link form fields to preview
+        const form = document.getElementById('create-job-form');
+        const hiddenDesc = document.querySelector('textarea[name=descripcion_puesto]');
+        const hiddenReq = document.querySelector('textarea[name=requisitos_puesto]');
+        
+        hiddenDesc.style.display = 'none';
+        hiddenReq.style.display = 'none';
+
+
+        const fieldsToSync = {
+            'titulo_puesto': { target: 'preview-titulo', default: 'Título de la Oferta' },
+            'categoria': { target: 'preview-categoria', default: 'Categoría', isSelect: true },
+            'salario_min': { target: 'preview-sal-min', default: 'Salario Min' },
+            'salario_max': { target: 'preview-sal-max', default: 'Salario Max' },
+            'modalidad': { target: 'preview-modalidad', default: 'Modalidad', isSelect: true},
+            'jornada': { target: 'preview-jornada', default: 'Jornada', isSelect: true},
+        };
+
+        // Sync on input/change
+        form.addEventListener('input', (e) => {
+            const fieldName = e.target.name;
+            if (fieldsToSync[fieldName]) {
+                const config = fieldsToSync[fieldName];
+                const previewEl = document.getElementById(config.target);
+                let value = e.target.value.trim();
+
+                if (config.isSelect) {
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    value = selectedOption.text;
+                } else if (fieldName === 'salario_min' || fieldName === 'salario_max') {
+                    const num = parseInt(value.replace(/\./g, ''), 10);
+                    if (!isNaN(num)) {
+                        value = new Intl.NumberFormat('es-CL').format(num);
+                    } else {
+                        value = '';
+                    }
+                }
+
+                previewEl.innerText = value || config.default;
+            }
+        });
+
+        // Sync Quill editors
+        quillDescripcion.on('text-change', function() {
+            const html = quillDescripcion.root.innerHTML;
+            document.getElementById('preview-descripcion').innerHTML = html;
+            hiddenDesc.value = html;
+        });
+
+        quillRequisitos.on('text-change', function() {
+            const html = quillRequisitos.root.innerHTML;
+            document.getElementById('preview-requisitos').innerHTML = html;
+            hiddenReq.value = html;
+        });
+        
+        // Sync Tagify inputs
+        const updateTagsPreview = (tags, previewId) => {
+            const container = document.getElementById(previewId);
+            container.innerHTML = ''; // Clear existing tags
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                let className = 'bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full';
+                if(previewId === 'preview-beneficios'){
+                    className = 'bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full';
+                }
+                span.className = className;
+                span.innerText = tag.value;
+                container.appendChild(span);
+            });
+        };
+
+        tagifyHabilidades.on('change', (e) => {
+            updateTagsPreview(e.detail.tagify.value, 'preview-habilidades');
+        });
+
+        tagifyBeneficios.on('change', (e) => {
+            updateTagsPreview(e.detail.tagify.value, 'preview-beneficios');
+        });
+
+        // --- Custom Duration Logic ---
+        const duracionSelect = document.getElementById('id_duracion_oferta');
+        const customDateContainer = document.getElementById('custom-date-container');
+        const customDateInput = document.getElementById('id_fecha_cierre_personalizada');
+
+        duracionSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customDateContainer.classList.remove('hidden');
+                
+                const today = new Date();
+                const maxDate = new Date();
+                maxDate.setDate(today.getDate() + 30);
+
+                const formatDate = (date) => {
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, '0');
+                    const dd = String(date.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+
+                customDateInput.min = formatDate(today);
+                customDateInput.max = formatDate(maxDate);
+
+            } else {
+                customDateContainer.classList.add('hidden');
+            }
+        });
+    }
+
 });
 </script>
 {% endblock %}

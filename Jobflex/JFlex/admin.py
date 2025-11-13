@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import (
-    RegistroUsuarios, Empresa, EmpresaUsuario, RolesEmpresa, Candidato, TipoUsuario
+    RegistroUsuarios, Empresa, EmpresaUsuario, RolesEmpresa, Candidato, TipoUsuario,
+    Jornada, Modalidad, Categoria
 )
-
 @admin.register(RegistroUsuarios)
 class RegistroUsuariosAdmin(admin.ModelAdmin):
     list_display = ('id_registro_id', 'tipo_usuario', 'fecha_creacion', 'activo')
@@ -32,3 +32,6 @@ class CandidatoAdmin(admin.ModelAdmin):
     raw_id_fields = ('id_candidato',)
 
 admin.site.register(TipoUsuario)
+admin.site.register(Jornada)
+admin.site.register(Modalidad)
+admin.site.register(Categoria)

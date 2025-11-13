@@ -6,7 +6,7 @@ import uuid
 import boto3
 from django.conf import settings as django_settings
  # Added here
-
+from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
 
@@ -27,7 +27,7 @@ from playwright.sync_api import sync_playwright
 # ... (rest of the imports)
 
 # 1. Importar los formularios y modelos necesarios y limpios
-from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm
+from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
 from django.http import JsonResponse, HttpResponse
 
@@ -504,6 +504,7 @@ from django.http import JsonResponse
 
 # ... (rest of the views)
 
+from django.utils import timezone
 @login_required
 def company_index(request):
     # 1. Get the current user's company and role
@@ -521,7 +522,40 @@ def company_index(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        if action == 'update_company_data' and is_admin:
+        if action == 'create_job_offer' and is_admin:
+            job_offer_form = OfertaLaboralForm(request.POST)
+            if job_offer_form.is_valid():
+                nueva_categoria_str = job_offer_form.cleaned_data.get('nueva_categoria')
+                categoria_obj = job_offer_form.cleaned_data.get('categoria')
+
+                if nueva_categoria_str:
+                    categoria_obj, created = Categoria.objects.get_or_create(
+                        tipo_categoria__iexact=nueva_categoria_str,
+                        defaults={'tipo_categoria': nueva_categoria_str}
+                    )
+                
+                # Remove fields that are not part of the OfertaLaboral model
+                job_offer_form.cleaned_data.pop('nueva_categoria', None)
+                job_offer_form.cleaned_data.pop('categoria', None)
+                duracion = job_offer_form.cleaned_data.pop('duracion_oferta')
+                fecha_personalizada = job_offer_form.cleaned_data.pop('fecha_cierre_personalizada')
+
+                new_offer = job_offer_form.save(commit=False)
+                new_offer.empresa = company
+                new_offer.categoria = categoria_obj
+
+                if duracion == 'custom':
+                    new_offer.fecha_cierre = fecha_personalizada
+                else:
+                    new_offer.fecha_cierre = timezone.now() + timedelta(days=int(duracion))
+                
+                new_offer.save()
+                messages.success(request, "La oferta de trabajo ha sido creada exitosamente.")
+                return redirect('company_index')
+            else:
+                messages.error(request, "Error al crear la oferta. Por favor, revisa el formulario.")
+
+        elif action == 'update_company_data' and is_admin:
             company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
             if company_data_form.is_valid():
                 company_data_form.save()
@@ -529,7 +563,6 @@ def company_index(request):
                 return redirect('company_index')
             else:
                 messages.error(request, "Error al actualizar los datos. Por favor, revisa el formulario.")
-                # The form with errors will be passed in the context, but we need to handle it in the template
 
         elif action == 'invite_user' and is_admin: # Only admins can invite
             form = InvitationForm(request.POST)
@@ -537,14 +570,11 @@ def company_index(request):
                 email = form.cleaned_data['email']
                 role = form.cleaned_data['role'] # This is a RolesEmpresa object
 
-                # Check if user already exists in Django's User model
                 try:
                     invited_user = User.objects.get(email=email)
-                    # Check if the user is already part of this company
                     if EmpresaUsuario.objects.filter(empresa=company, id_empresa_user=invited_user).exists():
                         messages.warning(request, f"El usuario {email} ya es parte de esta empresa.")
                     else:
-                        # Link existing user to the company
                         EmpresaUsuario.objects.create(
                             id_empresa_user=invited_user,
                             empresa=company,
@@ -552,17 +582,11 @@ def company_index(request):
                         )
                         messages.success(request, f"El usuario existente {email} ha sido añadido a la empresa como {role.nombre_rol}.")
                 except User.DoesNotExist:
-                    # User does not exist, create an inactive user and send invitation
-                    # This part needs a proper invitation flow (e.g., email with a link to set password)
-                    # For now, let's create an inactive user and link them.
-                    # A more robust solution would involve a temporary token and a dedicated registration view.
-                    
-                    # Create a dummy username for the inactive user
                     username = f"temp_{uuid.uuid4().hex[:10]}"
                     new_user = User.objects.create_user(username=username, email=email, password="temporarypassword123")
                     new_user.is_active = False
-                    new_user.first_name = "Invitado" # Placeholder
-                    new_user.last_name = "Pendiente" # Placeholder
+                    new_user.first_name = "Invitado"
+                    new_user.last_name = "Pendiente"
                     new_user.save()
 
                     EmpresaUsuario.objects.create(
@@ -571,23 +595,20 @@ def company_index(request):
                         rol=role
                     )
                     
-                    # Generate invitation token
                     invitation_token = uuid.uuid4().hex
-                    expires_at = timezone.now() + timedelta(days=1) # Token valid for 24 hours
+                    expires_at = timezone.now() + timedelta(days=1)
 
                     CompanyInvitationToken.objects.using('jflex_db').create(
-                        user_id=new_user.id, # Assign the user's ID, not the user object
+                        user_id=new_user.id,
                         company=company,
                         token=invitation_token,
                         expires_at=expires_at
                     )
 
-                    # Construct invitation URL
                     invitation_link = request.build_absolute_uri(
                         reverse('accept_company_invitation', kwargs={'token': invitation_token})
                     )
 
-                    # Send invitation email
                     mail_subject = f'Invitación para unirte a {company.nombre_comercial} en JobFlex'
                     message = render_to_string('company/invitation_email.html', {
                         'company_name': company.nombre_comercial,
@@ -600,11 +621,9 @@ def company_index(request):
 
                     messages.success(request, f"Se ha enviado una invitación a {email} para unirse a la empresa como {role.nombre_rol}.")
                 
-                return redirect('company_index') # Redirect to refresh the page and show messages
+                return redirect('company_index')
             else:
-                # Form is invalid, re-render with errors
                 messages.error(request, "Error al invitar usuario. Por favor, revisa los datos.")
-                # The form with errors will be passed to the context below
         
         elif action == 'edit_user' and is_admin:
             member_id = request.POST.get('member_id')
@@ -623,7 +642,6 @@ def company_index(request):
             member_id = request.POST.get('member_id')
             try:
                 member_to_delete = EmpresaUsuario.objects.get(pk=member_id, empresa=company)
-                # Prevent deleting the last admin/representative
                 if (member_to_delete.rol.nombre_rol == 'Representante' or member_to_delete.rol.nombre_rol == 'Administrador'):
                     admin_count = EmpresaUsuario.objects.filter(empresa=company, rol__nombre_rol__in=['Representante', 'Administrador']).count()
                     if admin_count <= 1:
@@ -638,7 +656,7 @@ def company_index(request):
             return redirect('company_index')
 
     # For GET requests or after POST handling, prepare context
-    empresa_usuarios_qs = EmpresaUsuario.objects.using('jflex_db').filter(empresa=company).select_related('rol') # Removed .order_by('id_empresa_user__email')
+    empresa_usuarios_qs = EmpresaUsuario.objects.using('jflex_db').filter(empresa=company).select_related('rol')
     
     user_ids = [eu.id_empresa_user_id for eu in empresa_usuarios_qs]
     users_from_default = User.objects.using('default').filter(pk__in=user_ids)
@@ -647,7 +665,7 @@ def company_index(request):
     members_for_template = []
     for eu in empresa_usuarios_qs:
         user_obj = user_map.get(eu.id_empresa_user_id)
-        if user_obj: # Ensure user exists
+        if user_obj:
             members_for_template.append({
                 'pk': eu.pk,
                 'user_full_name': user_obj.get_full_name(),
@@ -656,30 +674,31 @@ def company_index(request):
                 'role_display': eu.rol.nombre_rol,
             })
     
-    # Sort the list of dictionaries by user_email in Python
     members_for_template.sort(key=lambda x: x['user_email'])
 
-    # Initialize forms for modals
     invitation_form = InvitationForm()
     company_data_form = EmpresaDataForm(instance=company)
+    job_offer_form = OfertaLaboralForm()
+    all_categorias = Categoria.objects.all()
 
-    # If a specific form had an error on POST, we might need to replace the empty one
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'invite_user' and 'form' in locals() and not form.is_valid():
-            invitation_form = form # Pass the form with errors back to the template
+            invitation_form = form
         elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
-            # This form is already the one with errors, so no need to reassign
             pass
-
+        elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
+            pass
 
     context = {
         'company': company,
         'is_admin': is_admin,
-        'members': members_for_template, # Use the list of dictionaries
+        'members': members_for_template,
         'invitation_form': invitation_form,
         'company_data_form': company_data_form,
-        'user_role': user_role, # For displaying current user's role
+        'job_offer_form': job_offer_form,
+        'all_categorias': all_categorias,
+        'user_role': user_role,
     }
     return render(request, 'company/company_index.html', context)
 
