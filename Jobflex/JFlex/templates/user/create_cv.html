@@ -1022,7 +1022,7 @@
         }
     }
 
-    // --- MANEJO DE MODALES ---
+    // #region Modals --- MANEJO DE MODALES --- 
     // Función para abrir un modal
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -1061,6 +1061,7 @@
             closeModal(e.target.id);
         }
     });
+		// #endregion 
 
     // --- LÓGICA DE GUARDADO Y ACTUALIZACIÓN DE VISTA PREVIA ---
     function setSectionAsFilled(sectionKey) {

@@ -207,7 +207,7 @@
         <!-- Sección 2: Búsqueda y Ofertas Destacadas -->
         <section class="bg-white p-8 rounded-lg shadow-md">
             <!-- Buscador Principal -->
-            <form action="#" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl mb-6">
+            <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl mb-6">
                 <div class="flex flex-col md:flex-row gap-4 items-stretch">
                     <div class="flex-grow">
                         <div class="relative">
@@ -221,7 +221,7 @@
                         </div>
                     </div>
                     <div class="relative md:w-48">
-                        <select name="location" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                        <select name="mode" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
                             <option value="">Ubicación</option>
                             <option value="remoto">Remoto</option>
                             <option value="hibrido">Híbrido</option>
@@ -243,31 +243,31 @@
 
                 <!-- Filtros Rápidos -->
                 <div class="mt-4 flex flex-wrap gap-2">
-                    <button type="button" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                        Tiempo Completo
-                    </button>
-                    <button type="button" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+										<a href="{%url 'job_offers' %}?time=fulltime" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-color">
+											Tiempo Completo
+										</a>
+                    <a href="{%url 'job_offers' %}?time=part-time" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
                         Medio Tiempo
-                    </button>
-                    <button type="button" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                    </a>
+                    <a href="{%url 'job_offers' %}?time=freelance" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
                         Freelance
-                    </button>
-                    <button type="button" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                    </a>
+                    <a href="{%url 'job_offers' %}?time=internship" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
                         Prácticas
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Búsquedas Populares -->
                 <div class="mt-4">
                     <p class="text-sm text-secondary mb-2">Búsquedas populares:</p>
                     <div class="flex flex-wrap gap-2">
-                        <a href="#" class="text-primary hover:underline text-sm">Desarrollador Frontend</a>
+                        <a href="{%url 'job_offers' %}?q=Desarrollador%20Frontend" class="text-primary hover:underline text-sm">Desarrollador Frontend</a>
                         <span class="text-gray-300">•</span>
-                        <a href="#" class="text-primary hover:underline text-sm">Marketing Digital</a>
+                        <a href="{%url 'job_offers' %}?q=Marketing%20Digital" class="text-primary hover:underline text-sm">Marketing Digital</a>
                         <span class="text-gray-300">•</span>
-                        <a href="#" class="text-primary hover:underline text-sm">Diseñador UX/UI</a>
+                        <a href="{%url 'job_offers' %}?q=Diseñador%20UX%2FUI" class="text-primary hover:underline text-sm">Diseñador UX/UI</a>
                         <span class="text-gray-300">•</span>
-                        <a href="#" class="text-primary hover:underline text-sm">Data Scientist</a>
+                        <a href="{%url 'job_offers' %}?q=Data%20Scientist" class="text-primary hover:underline text-sm">Data Scientist</a>
                     </div>
                 </div>
             </form>

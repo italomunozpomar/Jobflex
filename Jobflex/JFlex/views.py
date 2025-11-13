@@ -29,7 +29,7 @@ from playwright.sync_api import sync_playwright
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpRequest, JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
 def signup(request):
@@ -1850,8 +1850,22 @@ def accept_company_invitation(request, token):
     return render(request, 'company/accept_invitation.html', context)
 
 
-def job_offers(request):
-    return render(request, 'offers/job_offers.html')
+def job_offers(request:HttpRequest):
+    q=request.GET.get('q','')
+    mode=request.GET.get('mode','')
+    place=request.GET.get('location','')
+    time=request.GET.get('time','fulltime')
+    ofertas=OfertaLaboral.objects.all()
+    ctx={
+			'search':{
+				'q':q,
+				'location':place,
+				'mode':mode,
+				'time':time
+			},
+      'ofertas':ofertas
+		}
+    return render(request, 'offers/job_offers.html',ctx)
 
 
 def company_profile(request, company_id):
