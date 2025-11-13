@@ -1,0 +1,63 @@
+{% if is_admin %}
+<div id="company-data-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-8 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <h3 class="text-2xl font-bold text-center text-dark mb-6">Actualizar Datos de la Empresa</h3>
+        
+        <form method="POST" action="{% url 'company_index' %}" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_company_data">
+            
+            <div>
+                <label for="{{ company_data_form.nombre_comercial.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.nombre_comercial.label }}</label>
+                {{ company_data_form.nombre_comercial }}
+            </div>
+
+            <div>
+                <label for="{{ company_data_form.resumen_empresa.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.resumen_empresa.label }}</label>
+                {{ company_data_form.resumen_empresa }}
+            </div>
+
+            <div>
+                <label for="{{ company_data_form.mision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.mision.label }}</label>
+                {{ company_data_form.mision }}
+            </div>
+
+            <div>
+                <label for="{{ company_data_form.vision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.vision.label }}</label>
+                {{ company_data_form.vision }}
+            </div>
+
+            <div>
+                <label for="{{ company_data_form.sitio_web.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.sitio_web.label }}</label>
+                {{ company_data_form.sitio_web }}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ company_data_form.imagen_perfil.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_perfil.label }}</label>
+                    {% if company.imagen_perfil %}
+                        <img id="logo-preview" src="{{ company.imagen_perfil.url }}" alt="Logo actual" class="mt-2 h-24 w-24 object-cover rounded-md">
+                    {% else %}
+                        <img id="logo-preview" src="https://via.placeholder.com/96" alt="Logo preview" class="mt-2 h-24 w-24 object-cover rounded-md">
+                    {% endif %}
+                    {{ company_data_form.imagen_perfil }}
+                </div>
+                <div>
+                    <label for="{{ company_data_form.imagen_portada.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_portada.label }}</label>
+                    {% if company.imagen_portada %}
+                        <img id="banner-preview" src="{{ company.imagen_portada.url }}" alt="Banner actual" class="mt-2 h-24 w-full object-cover rounded-md">
+                    {% else %}
+                        <img id="banner-preview" src="https://via.placeholder.com/300x100" alt="Banner preview" class="mt-2 h-24 w-full object-cover rounded-md">
+                    {% endif %}
+                    {{ company_data_form.imagen_portada }}
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-4 pt-4">
+                <button data-modal-hide="company-data-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Cancelar</button>
+                <button type="submit" class="px-6 py-2 bg-primary text-white text-base font-medium rounded-md shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}

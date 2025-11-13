@@ -421,8 +421,8 @@ class OfertaLaboralForm(forms.ModelForm):
         widgets = {
             'descripcion_puesto': forms.Textarea(attrs={'rows': 5, 'class': 'form-textarea'}),
             'requisitos_puesto': forms.Textarea(attrs={'rows': 5, 'class': 'form-textarea'}),
-            'habilidades_clave': forms.TextInput(attrs={'placeholder': 'Habilidad y Enter'}),
-            'beneficios': forms.TextInput(attrs={'placeholder': 'Beneficio y Enter'}),
+            'habilidades_clave': forms.TextInput(attrs={'placeholder': 'Python, SQL, etc.'}),
+            'beneficios': forms.TextInput(attrs={'placeholder': 'Seguro médico, etc.'}),
         }
         labels = {
             'titulo_puesto': 'Título del Puesto',

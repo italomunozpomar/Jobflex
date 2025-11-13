@@ -9,7 +9,7 @@ from django.conf import settings as django_settings
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
-
+from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash, logout
 from django.contrib.auth import views as auth_views
@@ -501,6 +501,7 @@ import uuid # Add this import at the top
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, EmpresaDataForm
 from .models import *
 from django.http import JsonResponse
+import json
 
 # ... (rest of the views)
 
@@ -549,11 +550,34 @@ def company_index(request):
                 else:
                     new_offer.fecha_cierre = timezone.now() + timedelta(days=int(duracion))
                 
+                print(f"DEBUG: Creating offer. Selected duration: {duracion}, Calculated fecha_cierre: {new_offer.fecha_cierre}, Fecha Publicacion: {new_offer.fecha_publicacion}")
                 new_offer.save()
                 messages.success(request, "La oferta de trabajo ha sido creada exitosamente.")
                 return redirect('company_index')
             else:
                 messages.error(request, "Error al crear la oferta. Por favor, revisa el formulario.")
+
+        elif action == 'archive_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                offer = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                offer.estado = 'cerrada'
+                offer.save()
+                messages.success(request, f"La oferta '{offer.titulo_puesto}' ha sido archivada.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas archivar no existe o no tienes permiso.")
+            return redirect('company_index')
+
+        elif action == 'delete_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                offer = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                title = offer.titulo_puesto
+                offer.delete()
+                messages.success(request, f"La oferta '{title}' ha sido eliminada permanentemente.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas eliminar no existe o no tienes permiso.")
+            return redirect('company_index')
 
         elif action == 'update_company_data' and is_admin:
             company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
@@ -680,6 +704,40 @@ def company_index(request):
     company_data_form = EmpresaDataForm(instance=company)
     job_offer_form = OfertaLaboralForm()
     all_categorias = Categoria.objects.all()
+    all_offers = OfertaLaboral.objects.filter(empresa=company).select_related('categoria', 'jornada', 'modalidad').annotate(
+        candidate_count=Count('postulacion')
+    ).order_by('-fecha_publicacion')
+
+    # Pre-process offers for duplication
+    for offer in all_offers:
+        # Calculate duration for duplication
+        if offer.fecha_cierre and offer.fecha_publicacion:
+            duration_days = (offer.fecha_cierre - offer.fecha_publicacion).days
+            if duration_days == 7:
+                offer.calculated_duration = '7'
+            elif duration_days == 14:
+                offer.calculated_duration = '14'
+            elif duration_days == 21:
+                offer.calculated_duration = '21'
+            elif duration_days == 30:
+                offer.calculated_duration = '30'
+            else:
+                offer.calculated_duration = 'custom'
+        else:
+            offer.calculated_duration = '' # Default to empty if dates are missing
+
+        print(f"Offer ID: {offer.id_oferta}, Title: {offer.titulo_puesto}, Fecha Publicacion: {offer.fecha_publicacion}, Fecha Cierre: {offer.fecha_cierre}, Calculated Duration: {offer.calculated_duration}, Raw Duration Days: {duration_days}") # Debug print
+        try:
+            habilidades_list = json.loads(offer.habilidades_clave)
+            offer.habilidades_str = ",".join([item['value'] for item in habilidades_list])
+        except (json.JSONDecodeError, TypeError):
+            offer.habilidades_str = ""
+        try:
+            beneficios_list = json.loads(offer.beneficios)
+            offer.beneficios_str = ",".join([item['value'] for item in beneficios_list])
+        except (json.JSONDecodeError, TypeError):
+            offer.beneficios_str = ""
+
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -698,6 +756,7 @@ def company_index(request):
         'company_data_form': company_data_form,
         'job_offer_form': job_offer_form,
         'all_categorias': all_categorias,
+        'all_offers': all_offers,
         'user_role': user_role,
     }
     return render(request, 'company/company_index.html', context)

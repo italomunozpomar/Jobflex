@@ -1,0 +1,83 @@
+<div id="all-jobs" class="tab-content hidden">
+    <h1 class="text-3xl font-bold text-dark mb-6">Todos los Empleos</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-4">
+            <div class="relative w-full max-w-xs">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+                </div>
+                <input type="text" placeholder="Buscar empleo..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+            </div>
+            <div>
+                <select class="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                    <option>Filtrar por estado</option>
+                    <option>Activo</option>
+                    <option>En Pausa</option>
+                    <option>Cerrado</option>
+                </select>
+            </div>
+        </div>
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-b">
+                    <th class="py-2">Título del Puesto</th>
+                    <th class="py-2">Estado</th>
+                    <th class="py-2">Candidatos</th>
+                    <th class="py-2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in all_offers %}
+                <tr class="border-b">
+                    <td class="py-4">{{ offer.titulo_puesto }}</td>
+                    <td class="py-4">
+                        {% if offer.estado == 'activa' %}
+                            <span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Activo</span>
+                        {% elif offer.estado == 'pausada' %}
+                            <span class="bg-yellow-200 text-yellow-800 py-1 px-3 rounded-full text-xs">En Pausa</span>
+                        {% elif offer.estado == 'cerrada' %}
+                            <span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs">Cerrado</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4">{{ offer.candidate_count }}</td>
+                    <td class="py-4 flex items-center space-x-2">
+                        <a href="#" class="text-primary hover:underline text-sm">Ver</a>
+                        <button type="button" class="text-gray-500 hover:underline text-sm duplicate-offer-btn"
+                            data-offer-id="{{ offer.id_oferta }}"
+                            data-titulo="{{ offer.titulo_puesto }}"
+                            data-categoria-id="{{ offer.categoria_id }}"
+                            data-jornada-id="{{ offer.jornada_id }}"
+                            data-modalidad-id="{{ offer.modalidad_id }}"
+                            data-salario-min="{{ offer.salario_min }}"
+                            data-salario-max="{{ offer.salario_max }}"
+                            data-nivel-experiencia="{{ offer.nivel_experiencia }}"
+                            data-descripcion='{{ offer.descripcion_puesto|safe }}'
+                            data-requisitos='{{ offer.requisitos_puesto|safe }}'
+                            data-habilidades="{{ offer.habilidades_str }}"
+                            data-beneficios="{{ offer.beneficios_str }}"
+                            data-duracion-oferta="{{ offer.calculated_duration }}">
+                            Duplicar
+                        </button>
+                        <form method="POST" action="{% url 'company_index' %}" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="archive_offer">
+                            <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
+                            <button type="submit" class="text-gray-500 hover:underline text-sm">Archivar</button>
+                        </form>
+                        <form method="POST" action="{% url 'company_index' %}" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta oferta permanentemente?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete_offer">
+                            <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
+                            <button type="submit" class="text-red-500 hover:underline text-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="py-4 text-center text-gray-500">No has creado ninguna oferta de trabajo todavía.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
