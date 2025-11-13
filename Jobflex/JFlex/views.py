@@ -1,6 +1,7 @@
 import re
 import os
 import json
+import unicodedata
 from urllib.parse import urlparse
 import uuid
 import boto3
@@ -119,12 +120,37 @@ def upload_to_s3(file, bucket_name, object_key):
         aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY,
     )
-    s3.upload_fileobj(file, bucket_name, object_key, ExtraArgs={
-        'ContentType': file.content_type
-    })
+    if hasattr(file, 'seek'):
+        file.seek(0)
+    extra_args = {'ContentType': file.content_type}
+    s3.upload_fileobj(file, bucket_name, object_key, ExtraArgs=extra_args)
     # La URL del objeto no cambia en su formato base
     file_url = f"https://{bucket_name}.s3.{django_settings.AWS_S3_REGION_NAME}.amazonaws.com/{object_key}"
     return file_url
+
+def sanitize_company_folder_name(name: str) -> str:
+    if not name:
+        return "Empresa"
+    if not isinstance(name, str):
+        if hasattr(name, 'name'):
+            name = name.name  # e.g., InMemoryUploadedFile
+        else:
+            try:
+                name = name.decode('utf-8')  # type: ignore[attr-defined]
+            except AttributeError:
+                name = str(name)
+    normalized = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+    cleaned = re.sub(r'[^A-Za-z0-9]+', ' ', normalized).strip()
+    sanitized = re.sub(r'\s+', '_', cleaned)
+    return sanitized or "Empresa"
+
+def build_company_asset_key(company_obj, asset_folder: str, filename: str) -> str:
+    base_folder = sanitize_company_folder_name(
+        getattr(company_obj, 'nombre_comercial', '') or 
+        getattr(company_obj, 'razon_social', '') or 
+        getattr(company_obj, 'rut_empresa', 'Empresa')
+    )
+    return f"Empresas/{base_folder}/{asset_folder}/{filename}"
 
 @login_required
 def user_index(request):
@@ -509,6 +535,9 @@ from django.utils import timezone
 @login_required
 def company_index(request):
     # 1. Get the current user's company and role
+    company = None # Initialize company to None
+    user_role = None # Initialize user_role to None
+
     try:
         empresa_usuario = EmpresaUsuario.objects.select_related('empresa', 'rol').get(id_empresa_user=request.user)
         company = empresa_usuario.empresa
@@ -557,6 +586,47 @@ def company_index(request):
             else:
                 messages.error(request, "Error al crear la oferta. Por favor, revisa el formulario.")
 
+        elif action == 'edit_job_offer' and is_admin:
+            offer_id = request.POST.get('offer_id')
+            try:
+                # Get the offer to edit
+                offer_to_edit = OfertaLaboral.objects.get(pk=offer_id, empresa=company)
+                job_offer_form = OfertaLaboralForm(request.POST, instance=offer_to_edit)
+                
+                if job_offer_form.is_valid():
+                    nueva_categoria_str = job_offer_form.cleaned_data.get('nueva_categoria')
+                    categoria_obj = job_offer_form.cleaned_data.get('categoria')
+
+                    if nueva_categoria_str:
+                        categoria_obj, created = Categoria.objects.get_or_create(
+                            tipo_categoria__iexact=nueva_categoria_str,
+                            defaults={'tipo_categoria': nueva_categoria_str}
+                        )
+                    
+                    # Remove fields that are not part of the OfertaLaboral model
+                    job_offer_form.cleaned_data.pop('nueva_categoria', None)
+                    job_offer_form.cleaned_data.pop('categoria', None)
+                    duracion = job_offer_form.cleaned_data.pop('duracion_oferta')
+                    fecha_personalizada = job_offer_form.cleaned_data.pop('fecha_cierre_personalizada')
+
+                    updated_offer = job_offer_form.save(commit=False)
+                    updated_offer.categoria = categoria_obj
+
+                    if duracion == 'custom':
+                        updated_offer.fecha_cierre = fecha_personalizada
+                    else:
+                        updated_offer.fecha_cierre = timezone.now() + timedelta(days=int(duracion))
+                    
+                    print(f"DEBUG: Updating offer {offer_id}. Selected duration: {duracion}, Calculated fecha_cierre: {updated_offer.fecha_cierre}")
+                    updated_offer.save()
+                    messages.success(request, "La oferta de trabajo ha sido actualizada exitosamente.")
+                    return redirect('company_index')
+                else:
+                    messages.error(request, "Error al editar la oferta. Por favor, revisa el formulario.")
+            except OfertaLaboral.DoesNotExist:
+                messages.error(request, "La oferta que intentas editar no existe o no tienes permiso.")
+                return redirect('company_index')
+
         elif action == 'archive_offer' and is_admin:
             offer_id = request.POST.get('offer_id')
             try:
@@ -582,10 +652,36 @@ def company_index(request):
         elif action == 'update_company_data' and is_admin:
             company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
             if company_data_form.is_valid():
-                company_data_form.save()
+                # Save the form instance without committing to get the updated company object
+                # but without saving the image fields yet.
+                updated_company = company_data_form.save(commit=False)
+
+                # Handle image uploads to S3
+                if 'imagen_perfil' in request.FILES:
+                    file = request.FILES['imagen_perfil']
+                    file_ext = os.path.splitext(file.name)[1].lower()
+                    filename = f"logo_{uuid.uuid4().hex[:8]}{file_ext}"
+                    s3_key = build_company_asset_key(updated_company, 'Logo', filename)
+                    file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
+                    updated_company.imagen_perfil = file_url
+                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
+                
+                if 'imagen_portada' in request.FILES:
+                    file = request.FILES['imagen_portada']
+                    file_ext = os.path.splitext(file.name)[1].lower()
+                    filename = f"banner_{uuid.uuid4().hex[:8]}{file_ext}"
+                    s3_key = build_company_asset_key(updated_company, 'Banner', filename)
+                    file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
+                    updated_company.imagen_portada = file_url
+                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
+                
+                # Now save the updated company object to the database
+                updated_company.save()
                 messages.success(request, "Los datos de la empresa han sido actualizados.")
+                company = updated_company # Update the company object in the view's scope
                 return redirect('company_index')
             else:
+                print("DEBUG: EmpresaDataForm errors ->", company_data_form.errors)
                 messages.error(request, "Error al actualizar los datos. Por favor, revisa el formulario.")
 
         elif action == 'invite_user' and is_admin: # Only admins can invite
@@ -680,6 +776,41 @@ def company_index(request):
             return redirect('company_index')
 
     # For GET requests or after POST handling, prepare context
+    # At this point, 'company' is guaranteed to be defined from the initial try-except block,
+    # or potentially updated by a successful POST request.
+
+    # Explicitly check for and clear problematic default filenames just before context creation
+    # This needs to happen AFTER any potential POST updates to 'company'
+    if company.imagen_perfil and ('codelco_default640x360.png' in company.imagen_perfil or 'logo_color.png' in company.imagen_perfil):
+        company.imagen_perfil = ""
+    if company.imagen_portada and ('codelco_default640x360.png' in company.imagen_portada or 'logo_color.png' in company.imagen_portada):
+        company.imagen_portada = ""
+
+    logo_value = company.imagen_perfil
+    banner_value = company.imagen_portada
+
+    def coerce_to_url(value):
+        if not value:
+            return ""
+        if isinstance(value, str):
+            return value
+        if hasattr(value, 'url'):
+            return getattr(value, 'url', '') or ""
+        if hasattr(value, 'name'):
+            return getattr(value, 'name', '') or ""
+        try:
+            return value.decode('utf-8')  # type: ignore[attr-defined]
+        except AttributeError:
+            return str(value)
+
+    logo_url = coerce_to_url(logo_value)
+    banner_url = coerce_to_url(banner_value)
+
+    if logo_url and not urlparse(logo_url).scheme:
+        logo_url = ""
+    if banner_url and not urlparse(banner_url).scheme:
+        banner_url = ""
+
     empresa_usuarios_qs = EmpresaUsuario.objects.using('jflex_db').filter(empresa=company).select_related('rol')
     
     user_ids = [eu.id_empresa_user_id for eu in empresa_usuarios_qs]
@@ -738,18 +869,24 @@ def company_index(request):
         except (json.JSONDecodeError, TypeError):
             offer.beneficios_str = ""
 
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'invite_user' and 'form' in locals() and not form.is_valid():
-            invitation_form = form
-        elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
-            pass
-        elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
-            pass
+    # This block was incorrectly placed and caused the SyntaxError.
+    # It should not be here, as it was already handled above in the POST section.
+    # The forms are initialized for GET requests or after a POST that didn't redirect.
+    # The logic for handling form submission is already in the 'if request.method == 'POST':' block.
+    # This block is redundant and was causing issues.
+    # if request.method == 'POST':
+    #     action = request.POST.get('action')
+    #     if action == 'invite_user' and 'form' in locals() and not form.is_valid():
+    #         invitation_form = form
+    #     elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
+    #         pass
+    #     elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
+    #         pass
 
     context = {
         'company': company,
+        'company_logo_url': logo_url,
+        'company_banner_url': banner_url,
         'is_admin': is_admin,
         'members': members_for_template,
         'invitation_form': invitation_form,
@@ -1919,8 +2056,17 @@ def job_offers(request):
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404
     company = get_object_or_404(Empresa, pk=company_id)
+    
+    # Get active job offers for this company
+    ofertas_activas = OfertaLaboral.objects.filter(
+        empresa=company,
+        estado='activa'
+    ).order_by('-fecha_publicacion')
+    
     context = {
-        'empresa': company
+        'empresa': company,
+        'ofertas_activas': ofertas_activas,
+        'total_ofertas': ofertas_activas.count()
     }
     return render(request, 'company/company_profile.html', context)
 

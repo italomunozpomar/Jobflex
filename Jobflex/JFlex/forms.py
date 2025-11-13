@@ -283,80 +283,35 @@ from .models import Empresa, CVSubido
 
 
 class EmpresaDataForm(forms.ModelForm):
-
     class Meta:
-
         model = Empresa
-
-        fields = ['nombre_comercial', 'resumen_empresa', 'sitio_web', 'mision', 'vision', 'imagen_perfil', 'imagen_portada']
-
+        fields = ['nombre_comercial', 'resumen_empresa', 'sitio_web', 'mision', 'vision']
         labels = {
-
             'nombre_comercial': 'Nombre Comercial',
-
             'resumen_empresa': 'Resumen de la Empresa',
-
             'sitio_web': 'Sitio Web',
-
             'mision': 'Misión',
-
             'vision': 'Visión',
-
-            'imagen_perfil': 'Logo de la Empresa',
-
-            'imagen_portada': 'Banner de la Empresa',
-
         }
-
         widgets = {
-
             'resumen_empresa': forms.Textarea(attrs={'rows': 4}),
-
             'mision': forms.Textarea(attrs={'rows': 3}),
-
             'vision': forms.Textarea(attrs={'rows': 3}),
-
         }
-
-
 
     def clean_sitio_web(self):
-
         sitio_web = self.cleaned_data.get('sitio_web')
-
         if sitio_web and not sitio_web.startswith(('http://', 'https://')):
-
             sitio_web = 'https://' + sitio_web
-
         return sitio_web
 
-
-
-
-
-
-
-
-
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
-
-
-
-        for field_name in self.fields:
-
-            field = self.fields.get(field_name)
-
-            if field:
-
-                css_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
-
-                if isinstance(field.widget, forms.FileInput):
-
-                    css_class = 'mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90'
-
-                field.widget.attrs.update({'class': css_class})
+        for field_name, field in self.fields.items():
+            if field and not isinstance(field.widget, forms.CheckboxInput):
+                existing_classes = field.widget.attrs.get('class', '')
+                base_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+                field.widget.attrs['class'] = f"{existing_classes} {base_class}".strip()
 
 
 

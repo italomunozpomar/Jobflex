@@ -1,63 +1,340 @@
 {% if is_admin %}
-<div id="company-data-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-8 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-        <h3 class="text-2xl font-bold text-center text-dark mb-6">Actualizar Datos de la Empresa</h3>
-        
-        <form method="POST" action="{% url 'company_index' %}" enctype="multipart/form-data" class="space-y-6">
+<div id="company-data-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-gradient-to-r from-primary to-primary/80 px-6 py-6 flex items-center justify-between border-b">
+            <div>
+                <h3 class="text-2xl font-bold text-white">Actualizar Datos de la Empresa</h3>
+                <p class="text-primary-100 text-sm mt-1">Modifica la información principal de tu empresa</p>
+            </div>
+            <button data-modal-hide="company-data-modal" type="button" class="text-white hover:bg-white/10 rounded-lg p-2 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'company_index' %}" enctype="multipart/form-data" class="p-6">
             {% csrf_token %}
             <input type="hidden" name="action" value="update_company_data">
-            
-            <div>
-                <label for="{{ company_data_form.nombre_comercial.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.nombre_comercial.label }}</label>
-                {{ company_data_form.nombre_comercial }}
-            </div>
 
-            <div>
-                <label for="{{ company_data_form.resumen_empresa.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.resumen_empresa.label }}</label>
-                {{ company_data_form.resumen_empresa }}
-            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Columna Izquierda: Formulario -->
+                <div class="space-y-6">
+                    <!-- Nombre Comercial -->
+                    <div>
+                        <label for="{{ company_data_form.nombre_comercial.id_for_label }}" class="block text-sm font-semibold text-dark mb-2">
+                            Nombre Comercial <span class="text-red-500">*</span>
+                        </label>
+                        {{ company_data_form.nombre_comercial }}
+                        <style>
+                            #{{ company_data_form.nombre_comercial.id_for_label }} {
+                                width: 100%;
+                                padding: 0.75rem;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 0.5rem;
+                                font-size: 1rem;
+                            }
+                            #{{ company_data_form.nombre_comercial.id_for_label }}:focus {
+                                outline: none;
+                                border-color: #8CA01A;
+                                box-shadow: 0 0 0 3px rgba(140, 160, 26, 0.1);
+                            }
+                        </style>
+                    </div>
 
-            <div>
-                <label for="{{ company_data_form.mision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.mision.label }}</label>
-                {{ company_data_form.mision }}
-            </div>
+                    <!-- Resumen Empresa -->
+                    <div>
+                        <label for="{{ company_data_form.resumen_empresa.id_for_label }}" class="block text-sm font-semibold text-dark mb-2">
+                            Resumen Empresa
+                        </label>
+                        {{ company_data_form.resumen_empresa }}
+                        <p class="text-xs text-gray-500 mt-1">Máximo 1000 caracteres</p>
+                        <style>
+                            #{{ company_data_form.resumen_empresa.id_for_label }} {
+                                width: 100%;
+                                padding: 0.75rem;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 0.5rem;
+                                font-size: 0.875rem;
+                                min-height: 5rem;
+                                font-family: inherit;
+                            }
+                            #{{ company_data_form.resumen_empresa.id_for_label }}:focus {
+                                outline: none;
+                                border-color: #8CA01A;
+                                box-shadow: 0 0 0 3px rgba(140, 160, 26, 0.1);
+                            }
+                        </style>
+                    </div>
 
-            <div>
-                <label for="{{ company_data_form.vision.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.vision.label }}</label>
-                {{ company_data_form.vision }}
-            </div>
+                    <!-- Misión -->
+                    <div>
+                        <label for="{{ company_data_form.mision.id_for_label }}" class="block text-sm font-semibold text-dark mb-2">
+                            Misión
+                        </label>
+                        {{ company_data_form.mision }}
+                        <p class="text-xs text-gray-500 mt-1">Máximo 500 caracteres</p>
+                        <style>
+                            #{{ company_data_form.mision.id_for_label }} {
+                                width: 100%;
+                                padding: 0.75rem;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 0.5rem;
+                                font-size: 0.875rem;
+                                min-height: 4rem;
+                                font-family: inherit;
+                            }
+                            #{{ company_data_form.mision.id_for_label }}:focus {
+                                outline: none;
+                                border-color: #8CA01A;
+                                box-shadow: 0 0 0 3px rgba(140, 160, 26, 0.1);
+                            }
+                        </style>
+                    </div>
 
-            <div>
-                <label for="{{ company_data_form.sitio_web.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.sitio_web.label }}</label>
-                {{ company_data_form.sitio_web }}
-            </div>
+                    <!-- Visión -->
+                    <div>
+                        <label for="{{ company_data_form.vision.id_for_label }}" class="block text-sm font-semibold text-dark mb-2">
+                            Visión
+                        </label>
+                        {{ company_data_form.vision }}
+                        <p class="text-xs text-gray-500 mt-1">Máximo 500 caracteres</p>
+                        <style>
+                            #{{ company_data_form.vision.id_for_label }} {
+                                width: 100%;
+                                padding: 0.75rem;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 0.5rem;
+                                font-size: 0.875rem;
+                                min-height: 4rem;
+                                font-family: inherit;
+                            }
+                            #{{ company_data_form.vision.id_for_label }}:focus {
+                                outline: none;
+                                border-color: #8CA01A;
+                                box-shadow: 0 0 0 3px rgba(140, 160, 26, 0.1);
+                            }
+                        </style>
+                    </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="{{ company_data_form.imagen_perfil.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_perfil.label }}</label>
-                    {% if company.imagen_perfil %}
-                        <img id="logo-preview" src="{{ company.imagen_perfil.url }}" alt="Logo actual" class="mt-2 h-24 w-24 object-cover rounded-md">
-                    {% else %}
-                        <img id="logo-preview" src="https://via.placeholder.com/96" alt="Logo preview" class="mt-2 h-24 w-24 object-cover rounded-md">
-                    {% endif %}
-                    {{ company_data_form.imagen_perfil }}
+                    <!-- Sitio Web -->
+                    <div>
+                        <label for="{{ company_data_form.sitio_web.id_for_label }}" class="block text-sm font-semibold text-dark mb-2">
+                            Sitio Web
+                        </label>
+                        {{ company_data_form.sitio_web }}
+                        <style>
+                            #{{ company_data_form.sitio_web.id_for_label }} {
+                                width: 100%;
+                                padding: 0.75rem;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 0.5rem;
+                                font-size: 0.875rem;
+                            }
+                            #{{ company_data_form.sitio_web.id_for_label }}:focus {
+                                outline: none;
+                                border-color: #8CA01A;
+                                box-shadow: 0 0 0 3px rgba(140, 160, 26, 0.1);
+                            }
+                        </style>
+                    </div>
                 </div>
-                <div>
-                    <label for="{{ company_data_form.imagen_portada.id_for_label }}" class="block text-sm font-medium text-dark">{{ company_data_form.imagen_portada.label }}</label>
-                    {% if company.imagen_portada %}
-                        <img id="banner-preview" src="{{ company.imagen_portada.url }}" alt="Banner actual" class="mt-2 h-24 w-full object-cover rounded-md">
-                    {% else %}
-                        <img id="banner-preview" src="https://via.placeholder.com/300x100" alt="Banner preview" class="mt-2 h-24 w-full object-cover rounded-md">
-                    {% endif %}
-                    {{ company_data_form.imagen_portada }}
+
+                <!-- Columna Derecha: Preview de Imágenes -->
+                <div class="space-y-6">
+                    <!-- Logo (Imagen de Perfil) -->
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200 cursor-pointer drag-drop-zone">
+                        <h4 class="text-sm font-semibold text-dark mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Logo de Empresa
+                        </h4>
+                        <div class="flex flex-col items-center">
+                            <div class="w-32 h-32 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center overflow-hidden shadow-md mb-4" id="logo-container">
+                                {% if company_logo_url %}
+                                    <img id="logo-preview" src="{{ company_logo_url }}" alt="Logo actual" class="w-full h-full object-cover">
+                                {% else %}
+                                    <img id="logo-preview" src="" alt="Logo preview" class="w-full h-full object-cover hidden">
+                                    <div id="logo-placeholder" class="w-full h-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-white text-2xl font-bold">
+                                        {{ company.nombre_comercial|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <label for="id_imagen_perfil" class="w-full">
+                                <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary transition-colors text-center">
+                                    <svg class="w-6 h-6 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    <p class="text-xs font-medium text-dark">Selecciona una imagen</p>
+                                    <p class="text-xs text-gray-500">o arrastra aquí</p>
+                                </div>
+                                <input type="file" id="id_imagen_perfil" name="imagen_perfil" accept="image/*" class="hidden" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Banner (Imagen de Portada) -->
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200 cursor-pointer drag-drop-zone">
+                        <h4 class="text-sm font-semibold text-dark mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Banner de Portada
+                        </h4>
+                        <div class="mb-4 rounded-lg overflow-hidden border-2 border-gray-300" id="banner-container">
+                            {% if company_banner_url %}
+                                <img id="banner-preview" src="{{ company_banner_url }}" alt="Banner actual" class="w-full h-40 object-cover">
+                            {% else %}
+                                <img id="banner-preview" src="" alt="Banner preview" class="w-full h-40 object-cover hidden">
+                                <div id="banner-placeholder" class="w-full h-40 bg-gradient-to-r from-primary/30 to-primary/10 flex items-center justify-center text-gray-400">
+                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <label for="id_imagen_portada" class="w-full">
+                            <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary transition-colors text-center">
+                                <svg class="w-6 h-6 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <p class="text-xs font-medium text-dark">Selecciona una imagen</p>
+                                <p class="text-xs text-gray-500">o arrastra aquí</p>
+                            </div>
+                            <input type="file" id="id_imagen_portada" name="imagen_portada" accept="image/*" class="hidden" style="display: none;">
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex items-center justify-end space-x-4 pt-4">
-                <button data-modal-hide="company-data-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Cancelar</button>
-                <button type="submit" class="px-6 py-2 bg-primary text-white text-base font-medium rounded-md shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">Guardar Cambios</button>
+            <!-- Footer con Botones -->
+            <div class="flex items-center justify-end space-x-3 pt-8 border-t mt-8">
+                <button data-modal-hide="company-data-modal" type="button" class="px-6 py-2.5 bg-gray-100 text-dark font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Guardar Cambios
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// Drag-drop functionality for file inputs
+document.querySelectorAll('.drag-drop-zone').forEach(zone => {
+    const input = zone.querySelector('input[type="file"]');
+    if (!input) {
+        console.log('No file input found in zone:', zone);
+        return;
+    }
+
+    const dragArea = zone.querySelector('[class*="border-dashed"]');
+    if (!dragArea) {
+        console.log('No drag area found in zone:', zone);
+        return;
+    }
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dragArea.classList.add('border-primary', 'bg-primary/5');
+    }
+
+    function unhighlight(e) {
+        dragArea.classList.remove('border-primary', 'bg-primary/5');
+    }
+
+    dragArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        console.log('handleDrop called for input:', input.name);
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (!files || !files.length) {
+            return;
+        }
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor, selecciona un archivo de imagen.');
+            return;
+        }
+
+        // Create a new DataTransfer object to ensure a single file assignment
+        if (typeof DataTransfer !== 'undefined') {
+            const newDt = new DataTransfer();
+            newDt.items.add(file);
+            input.files = newDt.files;
+        } else {
+            input.files = files;
+        }
+
+        // Trigger preview update
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        console.log('Change event dispatched for input:', input.name);
+    }
+
+    // Preview on file selection
+    input.addEventListener('change', function() {
+        console.log('Change event fired for input:', this.name, 'Files:', this.files);
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecciona un archivo de imagen.');
+                this.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let previewId, containerId, placeholderId;
+
+                if (input.name === 'imagen_perfil') {
+                    previewId = 'logo-preview';
+                    containerId = 'logo-container';
+                    placeholderId = 'logo-placeholder';
+                } else if (input.name === 'imagen_portada') {
+                    previewId = 'banner-preview';
+                    containerId = 'banner-container';
+                    placeholderId = 'banner-placeholder';
+                }
+
+                const preview = document.getElementById(previewId);
+                const placeholder = document.getElementById(placeholderId);
+
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.style.objectFit = 'cover';
+                    preview.classList.remove('hidden');
+
+                    // Hide placeholder if it exists
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
 {% endif %}
