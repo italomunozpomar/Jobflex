@@ -42,7 +42,9 @@
             <p>&copy; 2025 JobFlex. Todos los derechos reservados.</p>
         </div>
     </footer>
-
+{% endblock %}
+{% block extra_js %}
+    {{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const sections = document.querySelectorAll('.fade-in-section');

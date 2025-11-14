@@ -1,14 +1,15 @@
 {% load static %}
+{% load jobflex_filters %}
 {% for oferta in page_obj %}
     <div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-transparent hover:bg-gray-50 transition-colors duration-200"
          data-job-id="{{ oferta.id_oferta|add:0 }}">
         <div class="flex items-start mb-2">
-            <img src="{% if oferta.empresa.imagen_perfil %}{{ oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ oferta.empresa.nombre_comercial }}" class="w-12 h-12 rounded-md mr-4">
+            <img src="{% if oferta.empresa.imagen_perfil %}{{ oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ oferta.empresa.nombre_comercial }}" class="w-12 h-12 rounded-lg object-cover mr-4">
             <div class="flex-grow">
                 <h3 class="font-bold text-dark text-lg group-hover:text-primary transition-colors duration-200">{{ oferta.titulo_puesto }}</h3>
                 <p class="text-sm text-dark font-semibold">{{ oferta.empresa.nombre_comercial }}</p>
             </div>
-            <span class="text-xs text-secondary whitespace-nowrap">{{ oferta.fecha_publicacion|timesince }}</span>
+            <span class="text-xs text-secondary whitespace-nowrap">{{ oferta.fecha_publicacion|custom_timesince }}</span>
         </div>
         <div class="pl-16">
             <div class="flex items-center text-sm text-secondary mb-2">
@@ -17,6 +18,8 @@
                     {{ oferta.ciudad.nombre }}
                 {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
                     {{ oferta.ciudad.region.nombre }}
+                {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower == 'cualquier región' %}
+                    Chile
                 {% else %}
                     Remoto (Toda Latam)
                 {% endif %}

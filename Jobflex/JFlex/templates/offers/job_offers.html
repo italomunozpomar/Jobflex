@@ -42,7 +42,7 @@
         }
     </style>
 </head>
-<body class="bg-white font-sans flex flex-col min-h-screen">
+
 		<!-- Loader Overlay -->
 		<div id="page-loader" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
 			<div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -55,6 +55,7 @@
             
             <div class="flex items-center space-x-2 md:space-x-4">
                 {% if user.is_authenticated %}
+                <a href="{% url 'user_index' %}" id="nav-inicio" class="hidden md:block font-semibold text-dark hover:text-primary transition-colors">Volver a Inicio</a>
                     <button class="relative">
                         <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                         <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
@@ -65,10 +66,11 @@
                             <span class="font-semibold text-dark">{{ user.first_name }}</span>
                             <svg class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                            <a href="{% url 'user_index' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Inicio</a>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
                             <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mi Perfil</a>
-                            <a href="{% url 'postulaciones' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Postulaciones</a>
+                                <a href="{% url 'postulaciones' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Postulaciones</a>
+                                <a href="{% url 'perfiles_profesionales' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Perfiles Profesionales</a>
+                                <a href="{% url 'settings' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Configuración</a>
                             <form action="{% url 'logout' %}" method="post" class="w-full">
                                 {% csrf_token %}
                                 <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
@@ -175,57 +177,62 @@
                 </button>
             </div>
 
-            <!-- Menú de Filtros Desplegable -->
-            <div id="filter-menu" class="hidden mt-6 pt-6 border-t border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <!-- Filtro de Región -->
-                    <div>
-                        <label for="search_region_offers" class="block text-sm font-medium text-secondary mb-1">Región</label>
-                        <select name="region" id="search_region_offers" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Todas las Regiones</option>
-                            {% for region in all_regions %}
-                                <option value="{{ region.id_region }}" {% if search_params.region_id == region.id_region|stringformat:"s" %} selected {% endif %}>{{ region.nombre }}</option>
-                            {% endfor %}
-                        </select>
+            <!-- Improved Filter Menu -->
+            <div id="filter-menu" class="filter-menu-container">
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Location Group -->
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-dark">Ubicación</h4>
+                            <div>
+                                <label for="search_region_offers" class="block text-sm font-medium text-secondary mb-1">Región</label>
+                                <select name="region" id="search_region_offers" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-gray-50">
+                                    <option value="">Todas las Regiones</option>
+                                    {% for region in all_regions %}
+                                        <option value="{{ region.id_region }}" {% if search_params.region_id == region.id_region|stringformat:"s" %} selected {% endif %}>{{ region.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="search_ciudad_offers" class="block text-sm font-medium text-secondary mb-1">Ciudad</label>
+                                <select name="ciudad" id="search_ciudad_offers" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-gray-50">
+                                    <option value="">Todas las Ciudades</option>
+                                    {% if selected_region %}
+                                        {% for ciudad in selected_region.ciudad_set.all %}
+                                            <option value="{{ ciudad.id_ciudad }}" {% if search_params.ciudad_id == ciudad.id_ciudad|stringformat:"s" %} selected {% endif %}>{{ ciudad.nombre }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Job Type Group -->
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-dark">Tipo de Trabajo</h4>
+                            <div>
+                                <label for="search_mode" class="block text-sm font-medium text-secondary mb-1">Modalidad</label>
+                                <select name="mode" id="search_mode" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-gray-50">
+                                    <option value="">Cualquier Modalidad</option>
+                                    <option value="3" {% if search_params.mode == "3" %} selected {% endif %}>Remoto</option>
+                                    <option value="2" {% if search_params.mode == "2" %} selected {% endif %}>Híbrido</option>
+                                    <option value="1" {% if search_params.mode == "1" %} selected {% endif %}>Presencial</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="search_time" class="block text-sm font-medium text-secondary mb-1">Jornada</label>
+                                <select name="time" id="search_time" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-gray-50">
+                                    <option value="">Cualquier Jornada</option>
+                                    <option value="1" {% if search_params.time == "1" %} selected {% endif %}>Tiempo Completo</option>
+                                    <option value="2" {% if search_params.time == "2" %} selected {% endif %}>Medio Tiempo</option>
+                                    <option value="3" {% if search_params.time == "3" %} selected {% endif %}>Freelance</option>
+                                    <option value="4" {% if search_params.time == "4" %} selected {% endif %}>Práctica</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Filtro de Ciudad -->
-                    <div>
-                        <label for="search_ciudad_offers" class="block text-sm font-medium text-secondary mb-1">Ciudad</label>
-                        <select name="ciudad" id="search_ciudad_offers" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Todas las Ciudades</option>
-                            {% if selected_region %}
-                                {% for ciudad in selected_region.ciudad_set.all %}
-                                    <option value="{{ ciudad.id_ciudad }}" {% if search_params.ciudad_id == ciudad.id_ciudad|stringformat:"s" %} selected {% endif %}>{{ ciudad.nombre }}</option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
+                    <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end items-center gap-4">
+                        <a href="{% url 'job_offers' %}" class="text-sm font-semibold text-secondary hover:underline">Limpiar Filtros</a>
+                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Aplicar</button>
                     </div>
-                    <!-- Filtro de Modalidad -->
-                    <div>
-                        <label for="search_mode" class="block text-sm font-medium text-secondary mb-1">Modalidad</label>
-                        <select name="mode" id="search_mode" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Modalidad</option>
-                            <option value="3" {% if search_params.mode == "3" %} selected {% endif %}>Remoto</option>
-                            <option value="2" {% if search_params.mode == "2" %} selected {% endif %}>Híbrido</option>
-                            <option value="1" {% if search_params.mode == "1" %} selected {% endif %}>Presencial</option>
-                        </select>
-                    </div>
-                    <!-- Filtro de Jornada -->
-                    <div>
-                        <label for="search_time" class="block text-sm font-medium text-secondary mb-1">Jornada</label>
-                        <select name="time" id="search_time" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Jornada</option>
-                            <option value="1" {% if search_params.time == "1" %} selected {% endif %}>Tiempo Completo</option>
-                            <option value="2" {% if search_params.time == "2" %} selected {% endif %}>Medio Tiempo</option>
-                            <option value="3" {% if search_params.time == "3" %} selected {% endif %}>Freelance</option>
-                            <option value="4" {% if search_params.time == "4" %} selected {% endif %}>Practica</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <a href="{% url 'job_offers' %}" class="bg-gray-200 text-dark font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all">
-                        Limpiar Filtros
-                    </a>
                 </div>
             </div>
         </div>
@@ -268,12 +275,9 @@
 
                 showLoader();
                 try {
-                    // Construct the correct URL for fetching job details
                     const url = `/offers/${jobId}`;
                     const response = await fetch(url, {
-                        headers: {
-                            "x-requested-with": "XMLHttpRequest"
-                        }
+                        headers: { "x-requested-with": "XMLHttpRequest" }
                     });
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -314,7 +318,7 @@
                 const jobCards = document.querySelectorAll('.job-card');
                 if (jobCards.length === 0) {
                     const detailContainer = document.querySelector('.job-detail');
-                    if(detailContainer) detailContainer.innerHTML = ''; // Clear details if no jobs
+                    if(detailContainer) detailContainer.innerHTML = '';
                     return;
                 };
 
@@ -322,7 +326,6 @@
                     card.addEventListener('click', () => showJob(jobCards, card));
                 });
 
-                // Automatically load the first job's details if it's not already active
                 const activeCard = document.querySelector('.job-card.active-card');
                 if (!activeCard && jobCards.length > 0) {
                     showJob(jobCards, jobCards[0]);
@@ -363,7 +366,6 @@
             function initializePagination() {
                 const pageLinks = document.querySelectorAll(".pagination a");
                 pageLinks.forEach(element => {
-                    // Remove old listeners to prevent duplicates
                     const newElement = element.cloneNode(true);
                     element.parentNode.replaceChild(newElement, element);
                     
@@ -375,13 +377,20 @@
                 });
             }
 
-            // Filter menu toggle
+            // Improved Filter menu toggle
             const filterToggleBtn = document.getElementById('filter-toggle-btn');
             const filterMenu = document.getElementById('filter-menu');
             if (filterToggleBtn && filterMenu) {
+                // Open filters by default if any filter is active
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('region') || urlParams.get('ciudad') || urlParams.get('mode') || urlParams.get('time')) {
+                    filterMenu.classList.add('open');
+                    filterToggleBtn.classList.add('bg-primary', 'text-white');
+                }
+
                 filterToggleBtn.addEventListener('click', () => {
-                    filterMenu.classList.toggle('hidden');
-                    const isOpen = !filterMenu.classList.contains('hidden');
+                    filterMenu.classList.toggle('open');
+                    const isOpen = filterMenu.classList.contains('open');
                     filterToggleBtn.classList.toggle('bg-primary', isOpen);
                     filterToggleBtn.classList.toggle('text-white', isOpen);
                 });
@@ -399,7 +408,6 @@
                 }
             };
 
-            // Initial Load
             initializeJobCards();
             initializePagination();
 

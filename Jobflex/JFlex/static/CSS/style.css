@@ -125,3 +125,41 @@ body {
 .content-with-bullets li {
     margin-bottom: 0.5em;
 }
+
+/* Estilos para la vista de búsqueda de ofertas */
+#job-search-main {
+    height: calc(100vh - 160px); /* Ajustar altura para la navbar y la barra de búsqueda */
+}
+
+@media (max-width: 767px) {
+    #job-search-main {
+        height: auto;
+    }
+    .mobile-detail-view #job-list-aside {
+        display: none;
+    }
+    .mobile-detail-view #job-detail-section {
+        display: block;
+    }
+}
+
+/* Estilos para el panel de filtros off-canvas */
+#filter-sidebar {
+    transition: transform 0.3s ease-in-out;
+}
+
+#filter-sidebar-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Improved Collapsible Filter Menu */
+.filter-menu-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+    margin-top: 1.5rem; /* mt-6 */
+}
+
+.filter-menu-container.open {
+    max-height: 500px; /* Adjust as needed to fit content */
+}

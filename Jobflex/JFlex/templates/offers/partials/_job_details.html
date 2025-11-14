@@ -39,6 +39,8 @@
                         {{ oferta.ciudad.nombre }}, {{ oferta.ciudad.region.nombre }}
                     {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
                         {{ oferta.ciudad.region.nombre }}
+                    {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower == 'cualquier región' %}
+                        Chile
                     {% else %}
                         Remoto (Toda Latam)
                     {% endif %}

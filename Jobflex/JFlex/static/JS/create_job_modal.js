@@ -118,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
     tagifyHabilidades.on('change', (e) => updateTagsPreview(e.detail.tagify.value, 'preview-habilidades', false));
     tagifyBeneficios.on('change', (e) => updateTagsPreview(e.detail.tagify.value, 'preview-beneficios', true));
 
+    let isPopulating = false; // Flag to prevent unwanted event triggers
+
     // --- Chained Dropdown Logic for Region and Ciudad ---
     const regionSelect = form.querySelector('[name=region]');
     const ciudadSelect = form.querySelector('[name=ciudad]');
@@ -170,14 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
             
             if (selectedCiudadId) {
                 ciudadSelect.value = selectedCiudadId;
-            } else {
-                // Set "Cualquier comuna" as default if available and it's the only option
-                const cualquierComunaOption = Array.from(ciudadSelect.options).find(option => option.textContent === 'Cualquier comuna');
-                if (cualquierComunaOption && cities.length === 1) { // Only auto-select if it's the only city
-                    ciudadSelect.value = cualquierComunaOption.value;
-                } else if (cities.length > 0) {
-                    ciudadSelect.value = cities[0].id_ciudad; // Select the first city by default
-                }
             }
             ciudadSelect.disabled = false; // Re-enable after loading
             updateLocationPreview(); // Update preview after cities are populated
@@ -192,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (regionSelect && ciudadSelect) {
         regionSelect.addEventListener('change', (event) => {
+            if (isPopulating) return; // Do not run if the form is being populated programmatically
             populateCities(event.target.value);
         });
         ciudadSelect.addEventListener('change', updateLocationPreview); // Update preview when city changes
@@ -206,7 +201,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // --- Helper function to populate offer fields ---
-    const populateOfferFields = (button) => {
+    const populateOfferFields = async (button) => {
+        isPopulating = true; // Set the flag
+
         function setFieldValue(selector, value) {
             const element = form.querySelector(selector);
             if (element) {
@@ -231,9 +228,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const initialCiudadId = button.dataset.ciudadId;
 
         setFieldValue('[name=region]', initialRegionId);
-        // Trigger change event to populate cities for the selected region
+        
+        // AWAIT the population of cities before continuing
         if (initialRegionId) {
-            populateCities(initialRegionId, initialCiudadId);
+            await populateCities(initialRegionId, initialCiudadId);
         } else {
             // If no region is set, clear cities and update preview
             ciudadSelect.innerHTML = '<option value="">Selecciona una región</option>';
@@ -272,10 +270,12 @@ document.addEventListener('DOMContentLoaded', function () {
             el.dispatchEvent(new Event(eventType, { bubbles: true }));
         });
         updateLocationPreview(); // Ensure location preview is updated after populating fields
+        
+        isPopulating = false; // Unset the flag
     };
 
     // --- DUPLICATE OFFER LOGIC ---
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', async function(event) {
         const button = event.target.closest('.duplicate-offer-btn');
         if (button) {
             // Clear the offer_id to create a new one
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('submit-btn').textContent = 'Publicar Oferta';
             delete form.dataset.fechaPublicacion;
             
-            populateOfferFields(button);
+            await populateOfferFields(button);
 
             // 4. Open the modal
             createJobModal.classList.remove('hidden');
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- EDIT OFFER LOGIC ---
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', async function(event) {
         const button = event.target.closest('.edit-offer-btn');
         if (button) {
             const offerId = button.dataset.offerId;
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('modal-title').textContent = 'Editar Oferta Laboral';
             document.getElementById('submit-btn').textContent = 'Guardar Cambios';
             
-            populateOfferFields(button);
+            await populateOfferFields(button);
 
             // Open the modal
             createJobModal.classList.remove('hidden');
