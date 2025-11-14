@@ -1,14 +1,27 @@
 {% for ofertas in page_obj %}
 	<div class="job-card cursor-pointer p-4 border-b border-l-4 border-l-primary bg-gray-50"
 		data-job-id="{{ ofertas.id_oferta|add:0 }}">
-		<div class="non-select flex items-center"><img src="{{ofertas.empresa.imagen_perfil}}"
-				class="w-12 h-12 rounded-md mr-4">
+		<div class="non-select flex items-center mb-2">
+            <img src="{{ofertas.empresa.imagen_perfil}}" class="w-12 h-12 rounded-md mr-4">
 			<div class="flex-grow">
-				<h3 class="non-select font-bold text-primary">{{ ofertas.titulo_puesto }}</h3>
-				<p class="non-select text-sm text-dark font-semibold">{{ ofertas.empresa }}</p>
-				<p class="non-select text-sm text-secondary">{{ofertas.modalidad }}</p>
+				<h3 class="non-select font-bold text-primary text-lg">{{ ofertas.titulo_puesto }}</h3>
+				<p class="non-select text-sm text-dark font-semibold">{{ ofertas.empresa.nombre_comercial }}</p>
 			</div>
 		</div>
+        <div class="flex items-center text-sm text-secondary mb-1">
+            <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            {% if ofertas.ciudad and ofertas.ciudad.nombre|lower != 'cualquier comuna' %}
+                {{ ofertas.ciudad.nombre }}
+            {% elif ofertas.ciudad and ofertas.ciudad.nombre|lower == 'cualquier comuna' and ofertas.ciudad.region and ofertas.ciudad.region.nombre|lower != 'cualquier región' %}
+                {{ ofertas.ciudad.region.nombre }}
+            {% else %}
+                Chile
+            {% endif %}
+        </div>
+        <div class="flex items-center text-sm text-secondary">
+            <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            {{ ofertas.modalidad.tipo_modalidad }}
+        </div>
 	</div>
 {% empty %}
 	<p>No se encontraron Ofertas</p>
@@ -16,8 +29,8 @@
 <div class="flex justify-center items-center mt-2 pr-2">
 	<div class="pagination">
 		{% if page_obj.has_previous %}
-			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search.q}}&mode={{search.mode}}&location={{search.location}}&time={{search.time}}&page=1">&laquo; first</a>
-			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search.q}}&mode={{search.mode}}&location={{search.location}}&time={{search.time}}&page={{ page_obj.previous_page_number }}">previous</a>
+			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search_params.q}}&mode={{search_params.mode}}&region={{search_params.region_id}}&ciudad={{search_params.ciudad_id}}&time={{search_params.time}}&page=1">&laquo; first</a>
+			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search_params.q}}&mode={{search_params.mode}}&region={{search_params.region_id}}&ciudad={{search_params.ciudad_id}}&time={{search_params.time}}&page={{ page_obj.previous_page_number }}">previous</a>
 		{% else %}
 			<button disabled class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 focus:outline-none non-select">&laquo;</button>
 		{% endif %}
@@ -25,8 +38,8 @@
 		<span class="non-select">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
 	
 		{% if page_obj.has_next %}
-			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search.q}}&mode={{search.mode}}&location={{search.location}}&time={{search.time}}&page={{ page_obj.next_page_number }}">next</a>
-			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search.q}}&mode={{search.mode}}&location={{search.location}}&time={{search.time}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search_params.q}}&mode={{search_params.mode}}&region={{search_params.region_id}}&ciudad={{search_params.ciudad_id}}&time={{search_params.time}}&page={{ page_obj.next_page_number }}">next</a>
+			<a class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 hover:text-gray-700 focus:outline-none non-select" href="?q={{search_params.q}}&mode={{search_params.mode}}&region={{search_params.region_id}}&ciudad={{search_params.ciudad_id}}&time={{search_params.time}}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
 		{% else %}
 			<button disabled class="rounded-lg bg-gray-200 px-2 py-1 text-gray-500 focus:outline-none non-select">&raquo;</button>
 		{% endif %}

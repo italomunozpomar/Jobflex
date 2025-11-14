@@ -153,37 +153,62 @@
     <!-- Search Bar -->
     <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray p-4 border-b border-gray-200 w-full z-20 flex-shrink-0">
         <div class="container mx-auto flex flex-col md:flex-row gap-2">
-            <input type="text" name="q" value="{{search.q}}" placeholder="Puesto, palabra clave o empresa" class="w-full md:w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-            <input type="text" name="location" value="{{search.location}}" placeholder="Ciudad, región o país" class="w-full md:w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-						<div name="mode" class="relative md:w-46">
-								<select name="mode"
-								class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-										<option value=0>Modalidad</option>
-										<option value=3 {% if search.mode == "remoto" %} selected {% endif %}>Remoto</option>
-										<option value=2 {% if search.mode == "hibrido" %} selected {% endif %}>Híbrido</option>
-										<option value=1 {% if search.mode == "presencial" %} selected {% endif %} >Presencial</option>
-								</select>
-								<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-										<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-										</svg>
-								</div>
-						</div>
-						<div name="time" class="relative md:w-46">
-							<select name="time"
-							class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-										<option value="0">Jornada</option>
-										<option value="1" {% if search.time == 1 %} selected {% endif %}>Tiempo Completo</option>
-										<option value="2" {% if search.time == 2 %} selected {% endif %}>Medio Tiempo</option>
-										<option value="3" {% if search.time == 3 %} selected {% endif %}>Freelance</option>
-										<option value="4" {% if search.time == 4 %} selected {% endif %}>Practica</option>
-								</select>
-								<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-										<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-										</svg>
-								</div>
-						</div>
+            <input type="text" name="q" value="{{ search_params.q }}" placeholder="Puesto, palabra clave o empresa" class="w-full md:w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            <div class="relative md:w-46">
+                <select name="region" id="search_region_offers" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                    <option value="">Todas las Regiones</option>
+                    {% for region in all_regions %}
+                        <option value="{{ region.id_region }}" {% if search_params.region_id == region.id_region|stringformat:"s" %} selected {% endif %}>{{ region.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="relative md:w-46">
+                <select name="ciudad" id="search_ciudad_offers" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                    <option value="">Todas las Ciudades</option>
+                    {% if selected_region %}
+                        {% for ciudad in selected_region.ciudad_set.all %}
+                            <option value="{{ ciudad.id_ciudad }}" {% if search_params.ciudad_id == ciudad.id_ciudad|stringformat:"s" %} selected {% endif %}>{{ ciudad.nombre }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="relative md:w-46">
+                <select name="mode" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                    <option value="">Modalidad</option>
+                    <option value="3" {% if search_params.mode == "3" %} selected {% endif %}>Remoto</option>
+                    <option value="2" {% if search_params.mode == "2" %} selected {% endif %}>Híbrido</option>
+                    <option value="1" {% if search_params.mode == "1" %} selected {% endif %}>Presencial</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="relative md:w-46">
+                <select name="time" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                    <option value="">Jornada</option>
+                    <option value="1" {% if search_params.time == "1" %} selected {% endif %}>Tiempo Completo</option>
+                    <option value="2" {% if search_params.time == "2" %} selected {% endif %}>Medio Tiempo</option>
+                    <option value="3" {% if search_params.time == "3" %} selected {% endif %}>Freelance</option>
+                    <option value="4" {% if search_params.time == "4" %} selected {% endif %}>Practica</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
             <button class="w-full md:w-auto bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90">Buscar</button>
             <!-- <button class="w-full md:w-auto bg-white text-dark font-bold py-3 px-6 rounded-lg border-2 border-gray-300 hover:bg-gray-100">Filtros</button> -->
         </div>
@@ -327,6 +352,49 @@
 						};
             // Initial load
             await loadFirstJobDetail();
+
+            // Dependent Dropdowns for Job Search Form in job_offers.html
+            const searchRegionSelectOffers = document.getElementById('search_region_offers');
+            const searchCiudadSelectOffers = document.getElementById('search_ciudad_offers');
+
+            if (searchRegionSelectOffers && searchCiudadSelectOffers) {
+                const urlTemplate = "{% url 'get_ciudades' 0 %}"; // Use the same URL template
+
+                const populateSearchCitiesOffers = (regionId, initialCiudadId = null) => {
+                    searchCiudadSelectOffers.innerHTML = '<option value="">Todas las Ciudades</option>';
+                    if (!regionId) {
+                        return;
+                    }
+                    const url = urlTemplate.replace('0', regionId);
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) { console.error(data.error); return; }
+                            data.forEach(ciudad => {
+                                const option = document.createElement('option');
+                                option.value = ciudad.id_ciudad;
+                                option.textContent = ciudad.nombre;
+                                if (String(ciudad.id_ciudad) === String(initialCiudadId)) {
+                                    option.selected = true;
+                                }
+                                searchCiudadSelectOffers.add(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching cities for search:', error));
+                };
+
+                searchRegionSelectOffers.addEventListener('change', function() {
+                    const selectedRegionId = this.value;
+                    populateSearchCitiesOffers(selectedRegionId);
+                });
+
+                // Initial population if a region is pre-selected (e.g., from previous search)
+                const initialRegionId = searchRegionSelectOffers.value;
+                const initialCiudadId = "{{ search_params.ciudad_id }}";
+                if (initialRegionId) {
+                    populateSearchCitiesOffers(initialRegionId, initialCiudadId);
+                }
+            }
         });
 
         // User menu dropdown

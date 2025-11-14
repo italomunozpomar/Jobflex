@@ -205,7 +205,8 @@ def user_index(request):
             context = {
                 'show_modal': show_modal, 
                 'form': completar_perfil_form,
-                'cv_subido_form': cv_subido_form
+                'cv_subido_form': cv_subido_form,
+                'all_regions': Region.objects.all() # Add this line
             }
             return render(request, 'user/user_index.html', context)
 
@@ -2084,43 +2085,107 @@ def accept_company_invitation(request, token):
 
 from django.core.paginator import Paginator
 def job_offers(request:HttpRequest):
-    q=request.GET.get('q','').lower()
-    place=request.GET.get('location','').lower()
-    mode=int(request.GET.get('mode','0'))
-    time=int(request.GET.get('time','0'))
-    ofertas = (
-        OfertaLaboral.objects
-        .select_related("empresa__ubicacion", "jornada", "modalidad")
-        .filter(
-            Q(titulo_puesto__icontains=q) |
-            Q(descripcion_puesto__icontains=q) |
-            Q(empresa__nombre_comercial__icontains=q) |
-            
-            Q(empresa__ubicacion__region__icontains=q) |
-            Q(empresa__ubicacion__ciudad__icontains=q) |
-            
-            Q(jornada_id=time) |
-            Q(modalidad_id=mode)
-        )
-    )
+    q = request.GET.get('q', '').lower()
+    region_id = request.GET.get('region', '')
+    ciudad_id = request.GET.get('ciudad', '')
+    mode = request.GET.get('mode', '') # Keep as string to handle empty value
+    time = request.GET.get('time', '') # Keep as string to handle empty value
+
+    ofertas_query = OfertaLaboral.objects.select_related("empresa", "jornada", "modalidad", "ciudad__region")
+
+    # Apply keyword search
+    if q:
+        # Split the query into individual terms
+        search_terms = q.split()
+        
+        # Create a Q object for combining all keyword filters
+        keyword_query = Q()
+        for term in search_terms:
+            keyword_query |= (
+                Q(titulo_puesto__icontains=term) |
+                Q(descripcion_puesto__icontains=term) |
+                Q(empresa__nombre_comercial__icontains=term) |
+                Q(habilidades_clave__icontains=term)
+            )
+        ofertas_query = ofertas_query.filter(keyword_query)
+
+    # Apply modality filter
+    if mode:
+        try:
+            mode_int = int(mode)
+            if mode_int > 0: # Assuming 0 means "any modality"
+                ofertas_query = ofertas_query.filter(modalidad_id=mode_int)
+        except ValueError:
+            pass # Ignore invalid mode values
+
+    # Apply time (jornada) filter
+    if time:
+        try:
+            time_int = int(time)
+            if time_int > 0: # Assuming 0 means "any time"
+                ofertas_query = ofertas_query.filter(jornada_id=time_int)
+        except ValueError:
+            pass # Ignore invalid time values
+
+    # Apply location filters
+    if region_id:
+        try:
+            region_obj = Region.objects.get(pk=region_id)
+            # If "Cualquier Región" is selected, don't filter by region
+            if region_obj.nombre != 'Cualquier Región':
+                ofertas_query = ofertas_query.filter(ciudad__region=region_obj)
+                
+                if ciudad_id:
+                    try:
+                        ciudad_obj = Ciudad.objects.get(pk=ciudad_id)
+                        # If "Cualquier comuna" is selected, don't filter by city
+                        if ciudad_obj.nombre != 'Cualquier comuna':
+                            ofertas_query = ofertas_query.filter(ciudad=ciudad_obj)
+                    except Ciudad.DoesNotExist:
+                        pass # Invalid ciudad_id, ignore filter
+        except Region.DoesNotExist:
+            pass # Invalid region_id, ignore filter
+
+    ofertas = ofertas_query.order_by('-fecha_publicacion')
     
     paginator = Paginator(ofertas, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    ctx={
+
+    all_regions = Region.objects.all().order_by('nombre')
+    selected_region_obj = None
+    selected_ciudad_obj = None
+
+    if region_id:
+        try:
+            selected_region_obj = Region.objects.get(pk=region_id)
+        except Region.DoesNotExist:
+            pass
+    
+    if ciudad_id:
+        try:
+            selected_ciudad_obj = Ciudad.objects.get(pk=ciudad_id)
+        except Ciudad.DoesNotExist:
+            pass
+
+    ctx = {
       'page_obj': page_obj,
-      'search':{
-        'q':q,
-        'location':place,
-        'mode':mode,
-        'time':time
+      'search_params': { # Renamed to avoid conflict with 'search' in user_index
+        'q': q,
+        'region_id': region_id,
+        'ciudad_id': ciudad_id,
+        'mode': mode,
+        'time': time
       },
-      'ofertas':ofertas
+      'all_regions': all_regions,
+      'selected_region': selected_region_obj,
+      'selected_ciudad': selected_ciudad_obj,
+      'ofertas': ofertas # This might be redundant if page_obj is used for iteration
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         html = render(request, 'offers/partials/_job_paginator.html', ctx).content.decode('utf-8')
         return JsonResponse({'html': html})
-    return render(request, 'offers/job_offers.html',ctx)
+    return render(request, 'offers/job_offers.html', ctx)
 
 def job_details(request:HttpRequest,id_oferta:int):
     oferta=get_object_or_404(OfertaLaboral,pk=int(id_oferta))

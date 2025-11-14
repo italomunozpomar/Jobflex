@@ -89,11 +89,34 @@
                         </div>
                     </div>
                     <div class="relative md:w-48">
+                        <select name="region" id="search_region" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                            <option value="">Todas las Regiones</option>
+                            {% for region in all_regions %}
+                                <option value="{{ region.id_region }}">{{ region.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative md:w-48">
+                        <select name="ciudad" id="search_ciudad" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                            <option value="">Todas las Ciudades</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative md:w-48">
                         <select name="mode" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value=0>Modalidad</option>
-                            <option value=3>Remoto</option>
-                            <option value=2>Híbrido</option>
-                            <option value=1>Presencial</option>
+                            <option value="">Modalidad</option>
+                            <option value="3">Remoto</option>
+                            <option value="2">Híbrido</option>
+                            <option value="1">Presencial</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,7 +504,7 @@
     </div>
     {% endif %}
 
-<footer class="bg-dark text-light-gray pt-12">
+    <footer class="bg-dark text-light-gray pt-12">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 <!-- Logo and Info -->
@@ -636,22 +659,49 @@
             }
 
             if (regionSelect && ciudadSelect) {
-                regionSelect.addEventListener('change', function() {
-                    const regionNombre = this.value;
-                    if (regionNombre) {
-                        fetch(`/ajax/ciudades/${regionNombre}/`)
-                            .then(response => response.json())
-                            .then(data => {
-                                ciudadSelect.innerHTML = '<option value="">Selecciona una comuna</option>';
-                                data.forEach(function(ciudad) {
-                                    const option = new Option(ciudad, ciudad);
-                                    ciudadSelect.add(option);
-                                });
-                            });
-                    } else {
-                        ciudadSelect.innerHTML = '<option value="">Selecciona una comuna</option>';
+                // This block is for the complete-profile-modal, which uses regionSelect and ciudadSelect
+                // The new search dropdowns will use different IDs: search_region and search_ciudad
+                // The logic for the complete-profile-modal's region/ciudad dropdowns remains as is.
+            }
+
+            // Dependent Dropdowns for Job Search Form
+            const searchRegionSelect = document.getElementById('search_region');
+            const searchCiudadSelect = document.getElementById('search_ciudad');
+
+            if (searchRegionSelect && searchCiudadSelect) {
+                const urlTemplate = "{% url 'get_ciudades' 0 %}"; // Use the same URL template
+
+                const populateSearchCities = (regionId, initialCiudadId = null) => {
+                    searchCiudadSelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+                    if (!regionId) {
+                        return;
                     }
+                    const url = urlTemplate.replace('0', regionId);
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) { console.error(data.error); return; }
+                            data.forEach(ciudad => {
+                                const option = document.createElement('option');
+                                option.value = ciudad.id_ciudad;
+                                option.textContent = ciudad.nombre;
+                                if (String(ciudad.id_ciudad) === String(initialCiudadId)) {
+                                    option.selected = true;
+                                }
+                                searchCiudadSelect.add(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching cities for search:', error));
+                };
+
+                searchRegionSelect.addEventListener('change', function() {
+                    const selectedRegionId = this.value;
+                    populateSearchCities(selectedRegionId);
                 });
+
+                // Initial population if a region is pre-selected (e.g., from previous search)
+                // This would require passing initial values from the view
+                // For now, we'll assume no initial selection on page load for search.
             }
 
             // --- CV Upload Modal Drag & Drop ---

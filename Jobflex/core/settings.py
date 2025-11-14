@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize', # Added for intcomma filter
     'django.contrib.sites',
     'allauth',
     'allauth.account',
