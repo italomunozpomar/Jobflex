@@ -192,10 +192,10 @@
                                     <div class="col-span-2"><p class="font-bold text-dark">{{ cv.nombre_cv }}</p><p class="text-sm text-secondary">{{ cv.cargo_asociado }}</p></div>
                                     <div class="col-span-1"><span class="py-1 px-3 rounded-full {% if cv.tipo_cv == 'creado' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %} text-xs font-semibold">{{ cv.tipo_cv|capfirst }}</span></div>
                                     <div class="col-span-2">{{ cv.ultima_actualizacion|date:"d M, Y" }}</div>
-                                    <div class="col-span-1 text-center">-</div>
-                                    <div class="col-span-1 text-center">-</div>
-                                    <div class="col-span-1 text-center">-</div>
-                                    <div class="col-span-1 text-center">-</div>
+                                    <div class="col-span-1 text-center">{{cv.stats.total}}</div>
+                                    <div class="col-span-1 text-center">{{cv.stats.aceptado}}</div>
+                                    <div class="col-span-1 text-center">{{cv.stats.rechazado}}</div>
+                                    <div class="col-span-1 text-center">{{cv.stats.entrevistas}}</div>
                                     <div class="col-span-1 flex justify-center space-x-2">
                                         {% if cv.tipo_cv == 'creado' %}
                                             <button class="view-cv-btn text-gray-400 hover:text-primary" data-cv-json='{{ cv.cv_data_json|safe }}' data-cv-id="{{ cv.id_cv_user }}" title="Vista Previa">

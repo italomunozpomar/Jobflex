@@ -1,5 +1,23 @@
+function showLoader() {
+	const loader = document.querySelector('#page-loader');
+	loader.classList.remove('hidden','animate-fade-out');
+	loader.classList.add('animate-fade-in');
+
+}
+function hideLoader() {
+	const loader = document.querySelector('#page-loader');
+	loader.classList.remove('animate-fade-in');
+	loader.classList.add('animate-fade-out');
+	
+	// Hide completely after animation ends
+	loader.addEventListener('animationend', () => {
+		if (loader.classList.contains('animate-fade-out')) {
+			loader.classList.add('hidden');
+		}
+	});
+}
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize Swiper only if it exists (for homepage carousels)
+	// Initialize Swiper only if it exists (for homepage carousels)
     if (typeof Swiper !== 'undefined') {
         // Company carousel
         const companyCarousel = document.querySelector('.company-carousel');

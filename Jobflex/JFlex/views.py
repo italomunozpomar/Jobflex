@@ -30,7 +30,7 @@ from playwright.sync_api import sync_playwright
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpRequest, JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
 def signup(request):
@@ -948,7 +948,23 @@ def perfiles_profesionales(request):
             'url': None,
             'ultima_actualizacion': None
         }
-
+        cv_item['stats']=(
+              CVCandidato.objects
+              .filter(id_cv_user=cv.id_cv_user)
+              .annotate(
+                  total=Count('postulacion', distinct=True),
+                  aceptado=Count('postulacion', filter=Q(postulacion__estado_postulacion='aprobado'), distinct=True),
+                  rechazado=Count('postulacion', filter=Q(postulacion__estado_postulacion='rechazado'), distinct=True),
+                  entrevistas=Count('postulacion__entrevista', distinct=True),
+              )
+              .values(
+                  'total',
+                  'aceptado',
+                  'rechazado',
+                  'entrevistas'
+              )
+              .first()
+          )
         if cv.tipo_cv == 'creado' and hasattr(cv, 'cvcreado'):
             cv_creado = cv.cvcreado
             cv_item['ultima_actualizacion'] = cv_creado.ultima_actualizacion
@@ -2048,10 +2064,58 @@ def accept_company_invitation(request, token):
     }
     return render(request, 'company/accept_invitation.html', context)
 
+from django.core.paginator import Paginator
+def job_offers(request:HttpRequest):
+    q=request.GET.get('q','').lower()
+    place=request.GET.get('location','').lower()
+    mode=int(request.GET.get('mode','0'))
+    time=int(request.GET.get('time','0'))
+    ofertas = (
+        OfertaLaboral.objects
+        .select_related("empresa__ubicacion", "jornada", "modalidad")
+        .filter(
+            Q(titulo_puesto__icontains=q) |
+            Q(descripcion_puesto__icontains=q) |
+            Q(empresa__nombre_comercial__icontains=q) |
+            
+            Q(empresa__ubicacion__region__icontains=q) |
+            Q(empresa__ubicacion__ciudad__icontains=q) |
+            
+            Q(jornada_id=time) |
+            Q(modalidad_id=mode)
+        )
+    )
+    
+    paginator = Paginator(ofertas, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    ctx={
+      'page_obj': page_obj,
+      'search':{
+        'q':q,
+        'location':place,
+        'mode':mode,
+        'time':time
+      },
+      'ofertas':ofertas
+    }
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render(request, 'offers/partials/_job_paginator.html', ctx).content.decode('utf-8')
+        return JsonResponse({'html': html})
+    return render(request, 'offers/job_offers.html',ctx)
 
-def job_offers(request):
-    return render(request, 'offers/job_offers.html')
-
+def job_details(request:HttpRequest,id_oferta:int):
+    oferta=get_object_or_404(OfertaLaboral,pk=int(id_oferta))
+    skills = json.loads(oferta.habilidades_clave)
+    skills = [s["value"] for s in skills]
+    boons= json.loads(oferta.beneficios)
+    boons = [s["value"] for s in boons]
+    ctx={
+      'oferta':oferta,
+      'habilidad':skills,
+      'beneficios':boons
+    }
+    return render(request,'offers/partials/_job_details.html',ctx)
 
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404

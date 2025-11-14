@@ -59,7 +59,14 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
+@keyframes fadeIn{
+		0% { opacity: 0 }
+		100% { opacity: 1 }
+}
+@keyframes fadeOut{
+		0% { opacity: 1 }
+		100% { opacity: 0 }
+}
 /* Fix for navbar hover issue */
 #nav-register {
     display: inline-block;
