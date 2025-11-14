@@ -15,6 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('submit-btn').textContent = 'Publicar Oferta';
             // Clear the stored publication date
             delete form.dataset.fechaPublicacion;
+
+            // Reset location fields
+            const regionSelect = form.querySelector('[name=region]');
+            const ciudadSelect = form.querySelector('[name=ciudad]');
+            regionSelect.value = ''; // Clear region selection
+            ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            ciudadSelect.value = '';
+            
+            // Trigger change on regionSelect to re-populate cities and update preview
+            regionSelect.dispatchEvent(new Event('change', { bubbles: true }));
         });
     }
 
@@ -108,6 +118,93 @@ document.addEventListener('DOMContentLoaded', function () {
     tagifyHabilidades.on('change', (e) => updateTagsPreview(e.detail.tagify.value, 'preview-habilidades', false));
     tagifyBeneficios.on('change', (e) => updateTagsPreview(e.detail.tagify.value, 'preview-beneficios', true));
 
+    // --- Chained Dropdown Logic for Region and Ciudad ---
+    const regionSelect = form.querySelector('[name=region]');
+    const ciudadSelect = form.querySelector('[name=ciudad]');
+    const previewLocation = document.getElementById('preview-location');
+
+    const updateLocationPreview = () => {
+        const selectedRegionText = regionSelect.options[regionSelect.selectedIndex]?.text || 'Región';
+        const selectedCiudadText = ciudadSelect.options[ciudadSelect.selectedIndex]?.text || 'Ciudad';
+        
+        if (selectedRegionText === 'Cualquier Región' && selectedCiudadText === 'Cualquier Comuna') {
+            previewLocation.innerText = 'Chile';
+        } else if (selectedCiudadText === 'Cualquier Comuna' && selectedRegionText !== 'Cualquier Región') {
+            // If a specific region is selected and city is "Cualquier Comuna", show only the region
+            previewLocation.innerText = selectedRegionText;
+        } else if (selectedRegionText && selectedCiudadText) {
+            previewLocation.innerText = `${selectedCiudadText}, ${selectedRegionText}`;
+        } else if (selectedRegionText) {
+            previewLocation.innerText = selectedRegionText;
+        } else {
+            previewLocation.innerText = 'Ubicación';
+        }
+    };
+
+    const populateCities = async (regionId, selectedCiudadId = null) => {
+        ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
+        ciudadSelect.disabled = true; // Disable while loading
+
+        if (!regionId) {
+            ciudadSelect.innerHTML = '<option value="">Selecciona una región</option>';
+            ciudadSelect.disabled = false;
+            updateLocationPreview(); // Update preview when region is cleared
+            return;
+        }
+        try {
+            const response = await fetch(`/ajax/ciudades/${regionId}/`);
+            const cities = await response.json();
+            
+            ciudadSelect.innerHTML = ''; // Clear previous options
+            
+            if (cities.length === 0) {
+                ciudadSelect.innerHTML = '<option value="">No hay ciudades disponibles</option>';
+            } else {
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id_ciudad; // Use id_ciudad as value
+                    option.textContent = city.nombre;
+                    ciudadSelect.appendChild(option);
+                });
+            }
+            
+            if (selectedCiudadId) {
+                ciudadSelect.value = selectedCiudadId;
+            } else {
+                // Set "Cualquier comuna" as default if available and it's the only option
+                const cualquierComunaOption = Array.from(ciudadSelect.options).find(option => option.textContent === 'Cualquier comuna');
+                if (cualquierComunaOption && cities.length === 1) { // Only auto-select if it's the only city
+                    ciudadSelect.value = cualquierComunaOption.value;
+                } else if (cities.length > 0) {
+                    ciudadSelect.value = cities[0].id_ciudad; // Select the first city by default
+                }
+            }
+            ciudadSelect.disabled = false; // Re-enable after loading
+            updateLocationPreview(); // Update preview after cities are populated
+
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+            ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+            ciudadSelect.disabled = false;
+            updateLocationPreview(); // Update preview on error
+        }
+    };
+
+    if (regionSelect && ciudadSelect) {
+        regionSelect.addEventListener('change', (event) => {
+            populateCities(event.target.value);
+        });
+        ciudadSelect.addEventListener('change', updateLocationPreview); // Update preview when city changes
+    }
+
+    // Initial population and preview update
+    if (regionSelect.value) {
+        populateCities(regionSelect.value);
+    } else {
+        updateLocationPreview(); // Initial preview update if no region is selected
+    }
+
+
     // --- Helper function to populate offer fields ---
     const populateOfferFields = (button) => {
         function setFieldValue(selector, value) {
@@ -129,6 +226,21 @@ document.addEventListener('DOMContentLoaded', function () {
         setFieldValue('[name=jornada]', button.dataset.jornadaId);
         setFieldValue('[name=modalidad]', button.dataset.modalidadId);
         
+        // Populate Region and then Cities
+        const initialRegionId = button.dataset.regionId;
+        const initialCiudadId = button.dataset.ciudadId;
+
+        setFieldValue('[name=region]', initialRegionId);
+        // Trigger change event to populate cities for the selected region
+        if (initialRegionId) {
+            populateCities(initialRegionId, initialCiudadId);
+        } else {
+            // If no region is set, clear cities and update preview
+            ciudadSelect.innerHTML = '<option value="">Selecciona una región</option>';
+            ciudadSelect.value = '';
+            updateLocationPreview();
+        }
+
         // Handle duration and custom date
         const duracion = button.dataset.duracionOferta;
         setFieldValue('[name=duracion_oferta]', duracion);
@@ -159,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
             el.dispatchEvent(new Event(eventType, { bubbles: true }));
         });
+        updateLocationPreview(); // Ensure location preview is updated after populating fields
     };
 
     // --- DUPLICATE OFFER LOGIC ---
@@ -231,6 +344,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 categoriaCheckbox.checked = false;
                 categoriaCheckbox.dispatchEvent(new Event('change'));
             }
+            // Reset location fields
+            const regionSelect = form.querySelector('[name=region]');
+            const ciudadSelect = form.querySelector('[name=ciudad]');
+            regionSelect.value = '';
+            ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            ciudadSelect.value = '';
+            updateLocationPreview(); // Update preview after clearing form
         });
     }
 

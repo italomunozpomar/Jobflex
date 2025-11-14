@@ -29,7 +29,7 @@ from playwright.sync_api import sync_playwright
 
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
-from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Ubicacion # Explicitly import models
+from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Region, Ciudad # Explicitly import models
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
@@ -159,7 +159,7 @@ def user_index(request):
         
         if registro.tipo_usuario and registro.tipo_usuario.nombre_user == 'candidato':
             candidato = request.user.candidato_profile
-            show_modal = not all([candidato.rut_candidato, candidato.fecha_nacimiento, candidato.telefono, candidato.ubicacion_id])
+            show_modal = not all([candidato.rut_candidato, candidato.fecha_nacimiento, candidato.telefono, candidato.ciudad_id])
             
             completar_perfil_form = CompletarPerfilForm(instance=candidato)
             cv_subido_form = CVSubidoForm()
@@ -230,6 +230,10 @@ def Profile(request):
         messages.error(request, "Perfil de candidato no encontrado.")
         return redirect('user_index')
 
+    # Initialize forms outside the if/else block to ensure they are always defined
+    form = CandidatoForm(instance=candidato)
+    cv_subido_form = CVSubidoForm()
+
     if request.method == 'POST':
         # Diferenciar entre los formularios
         if 'submit_profile' in request.POST:
@@ -263,9 +267,11 @@ def Profile(request):
                 
                 messages.success(request, "Tu CV ha sido subido exitosamente.")
                 return redirect('profile')
-    else:
-        form = CandidatoForm(instance=candidato)
-        cv_subido_form = CVSubidoForm()
+        # If neither 'submit_profile' nor 'submit_cv' is in request.POST,
+        # the forms will retain their initial (instance-based) values.
+    # else: # GET request - no longer needed as forms are initialized above
+    #     form = CandidatoForm(instance=candidato)
+    #     cv_subido_form = CVSubidoForm()
 
     # --- Lógica de serialización de CVs para la vista previa ---
     cvs_qs = CVCandidato.objects.filter(candidato=candidato).select_related('cvcreado', 'cvsubido')
@@ -516,8 +522,19 @@ def register_emp(request):
             messages.error(request, "El RUT proporcionado no es válido.")
             return redirect('validate')
 
-def get_ciudades(request, region_nombre):
-    ciudades = list(Ubicacion.objects.using('jflex_db').filter(region=region_nombre).values_list('ciudad', flat=True).distinct().order_by('ciudad'))
+def get_ciudades(request, region_id):
+    try:
+        cualquier_region = Region.objects.get(nombre='Cualquier Región')
+        if region_id == cualquier_region.id_region:
+            # If "Cualquier Región" is selected, return only "Cualquier comuna" for that region
+            ciudades = list(Ciudad.objects.filter(region=cualquier_region, nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
+        else:
+            # Otherwise, return cities for the selected region
+            ciudades = list(Ciudad.objects.filter(region_id=region_id).values('id_ciudad', 'nombre').order_by('nombre'))
+    except Region.DoesNotExist:
+        # Fallback if "Cualquier Región" doesn't exist (shouldn't happen if SQL was run)
+        ciudades = list(Ciudad.objects.filter(region_id=region_id).values('id_ciudad', 'nombre').order_by('nombre'))
+    
     return JsonResponse(ciudades, safe=False)
 
 import uuid # Add this import at the top
@@ -895,6 +912,7 @@ def company_index(request):
         'all_categorias': all_categorias,
         'all_offers': all_offers,
         'user_role': user_role,
+        'all_regions': Region.objects.all(), # Add this line
     }
     return render(request, 'company/company_index.html', context)
 

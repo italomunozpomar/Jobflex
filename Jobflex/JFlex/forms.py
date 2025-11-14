@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 import uuid
 # Se importan los nuevos modelos necesarios
-from .models import Candidato, Ubicacion, RolesEmpresa
+from .models import Candidato, Region, Ciudad, RolesEmpresa
 
 User = get_user_model()
 
@@ -68,39 +68,40 @@ class VerificationForm(forms.Form):
     code = forms.CharField(max_length=6, required=True, label="Código de Verificación")
 
 class CandidatoForm(forms.ModelForm):
-    region = forms.ChoiceField(choices=[], required=False, label="Región")
-    ciudad = forms.ChoiceField(choices=[], required=False, label="Comuna")
+    region = forms.ModelChoiceField(
+        queryset=Region.objects.all(),
+        required=False,
+        label="Región",
+        empty_label="Selecciona una región"
+    )
 
     class Meta:
         model = Candidato
         fields = ['rut_candidato', 'fecha_nacimiento', 'telefono', 'linkedin_url', 'region', 'ciudad']
-        exclude = ['ubicacion']
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
             'rut_candidato': forms.TextInput(attrs={'placeholder': '12345678-9'}),
             'telefono': forms.TextInput(attrs={'placeholder': '+56 9 XXXX XXXX'}),
             'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-usuario'}),
+            'ciudad': forms.Select(attrs={'class': 'form-control'}), # Será poblado por JS
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Poblar regiones desde la tabla Ubicacion
-        regiones = Ubicacion.objects.using('jflex_db').values_list('region', flat=True).distinct().order_by('region')
-        self.fields['region'].choices = [('', 'Selecciona una región')] + [(region, region) for region in regiones]
+        self.fields['ciudad'].queryset = Ciudad.objects.none()
 
-        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ubicacion:
+        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ciudad:
             instance = kwargs['instance']
-            self.fields['region'].initial = instance.ubicacion.region
-            
-            # Poblar ciudades para la región inicial desde la tabla Ubicacion
-            ciudades = Ubicacion.objects.using('jflex_db').filter(region=instance.ubicacion.region).values_list('ciudad', flat=True).distinct().order_by('ciudad')
-            self.fields['ciudad'].choices = [(ciudad, ciudad) for ciudad in ciudades]
-            self.fields['ciudad'].initial = instance.ubicacion.ciudad
-        elif self.data.get('region'): # Si es un POST y se ha seleccionado una región
-            selected_region_name = self.data.get('region')
-            ciudades = Ubicacion.objects.using('jflex_db').filter(region=selected_region_name).values_list('ciudad', flat=True).distinct().order_by('ciudad')
-            self.fields['ciudad'].choices = [('', 'Selecciona una ciudad')] + [(ciudad, ciudad) for ciudad in ciudades]
+            self.fields['region'].initial = instance.ciudad.region
+            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).order_by('nombre')
+            self.fields['ciudad'].initial = instance.ciudad
+        elif 'region' in self.data:
+            try:
+                region_id = int(self.data.get('region'))
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
+            except (ValueError, TypeError):
+                pass  # invalid input from browser; ignore and fallback to empty City queryset
         
         self.fields['rut_candidato'].label = "RUT"
         self.fields['fecha_nacimiento'].label = "Fecha de Nacimiento"
@@ -114,23 +115,8 @@ class CandidatoForm(forms.ModelForm):
                     'class': 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
                 })
 
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        region_nombre = self.cleaned_data.get('region')
-        ciudad_nombre = self.cleaned_data.get('ciudad')
-
-        if region_nombre and ciudad_nombre:
-            ubicacion, created = Ubicacion.objects.using('jflex_db').get_or_create(
-                region=region_nombre, 
-                ciudad=ciudad_nombre
-            )
-            instance.ubicacion = ubicacion
-        else:
-            instance.ubicacion = None
-
-        if commit:
-            instance.save()
-        return instance
+    # El método save ya no necesita lógica especial para la ubicación,
+    # el ModelForm se encarga de guardar la FK 'ciudad' directamente.
 
 class EmpresaSignUpForm(SignUpForm):
     terms = forms.BooleanField(required=True, label='Acepto los Términos y Condiciones')
@@ -142,7 +128,7 @@ class EmpresaSignUpForm(SignUpForm):
         self.fields['apellidos'].label = "Apellidos del Representante"
 
 
-from .models import Candidato, Ubicacion, CVCandidato
+from .models import CVCandidato
 
 class CVCandidatoForm(forms.ModelForm):
     class Meta:
@@ -163,37 +149,40 @@ class CVCandidatoForm(forms.ModelForm):
                 })
 
 class CompletarPerfilForm(forms.ModelForm):
-    region = forms.ChoiceField(choices=[], required=True, label="Región")
-    ciudad = forms.ChoiceField(choices=[], required=True, label="Comuna")
+    region = forms.ModelChoiceField(
+        queryset=Region.objects.all(),
+        required=True,
+        label="Región",
+        empty_label="Selecciona una región"
+    )
 
     class Meta:
         model = Candidato
         fields = ['rut_candidato', 'fecha_nacimiento', 'telefono', 'linkedin_url', 'region', 'ciudad']
-        exclude = ['ubicacion']
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
             'rut_candidato': forms.TextInput(attrs={'placeholder': '12345678-9'}),
             'telefono': forms.TextInput(attrs={'placeholder': '+56 9 XXXX XXXX'}),
             'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-usuario'}),
+            'ciudad': forms.Select(attrs={'class': 'form-control'}), # Será poblado por JS
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        regiones = Ubicacion.objects.using('jflex_db').values_list('region', flat=True).distinct().order_by('region')
-        self.fields['region'].choices = [('', 'Selecciona una región')] + [(region, region) for region in regiones]
+        self.fields['ciudad'].queryset = Ciudad.objects.none()
 
-        if 'instance' in kwargs and kwargs['instance'] and hasattr(kwargs['instance'], 'ubicacion') and kwargs['instance'].ubicacion:
+        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ciudad:
             instance = kwargs['instance']
-            self.fields['region'].initial = instance.ubicacion.region
-            
-            ciudades = Ubicacion.objects.using('jflex_db').filter(region=instance.ubicacion.region).values_list('ciudad', flat=True).distinct().order_by('ciudad')
-            self.fields['ciudad'].choices = [(ciudad, ciudad) for ciudad in ciudades]
-            self.fields['ciudad'].initial = instance.ubicacion.ciudad
-        elif self.data.get('region'):
-            selected_region_name = self.data.get('region')
-            ciudades = Ubicacion.objects.using('jflex_db').filter(region=selected_region_name).values_list('ciudad', flat=True).distinct().order_by('ciudad')
-            self.fields['ciudad'].choices = [('', 'Selecciona una ciudad')] + [(ciudad, ciudad) for ciudad in ciudades]
+            self.fields['region'].initial = instance.ciudad.region
+            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).order_by('nombre')
+            self.fields['ciudad'].initial = instance.ciudad
+        elif 'region' in self.data:
+            try:
+                region_id = int(self.data.get('region'))
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
         
         self.fields['rut_candidato'].label = "RUT"
         self.fields['fecha_nacimiento'].label = "Fecha de Nacimiento"
@@ -206,23 +195,6 @@ class CompletarPerfilForm(forms.ModelForm):
                 field.widget.attrs.update({
                     'class': 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
                 })
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        region_nombre = self.cleaned_data.get('region')
-        ciudad_nombre = self.cleaned_data.get('ciudad')
-
-        if region_nombre and ciudad_nombre:
-            ubicacion, created = Ubicacion.objects.using('jflex_db').get_or_create(
-                region=region_nombre, 
-                ciudad=ciudad_nombre
-            )
-            instance.ubicacion = ubicacion
-
-        if commit:
-            instance.save()
-        return instance
-
 
 from django.contrib.auth.forms import SetPasswordForm # Import SetPasswordForm
 
@@ -349,6 +321,12 @@ class OfertaLaboralForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={'placeholder': 'Escribe un nombre para la nueva categoría'})
     )
+    region = forms.ModelChoiceField(
+        queryset=Region.objects.all(),
+        required=False,
+        label="Región",
+        empty_label="Selecciona una región"
+    )
     duracion_oferta = forms.ChoiceField(
         choices=[
             ('7', '1 semana'),
@@ -368,7 +346,7 @@ class OfertaLaboralForm(forms.ModelForm):
     class Meta:
         model = OfertaLaboral
         fields = [
-            'titulo_puesto', 'categoria', 'nueva_categoria', 'jornada', 'modalidad', 
+            'titulo_puesto', 'categoria', 'nueva_categoria', 'region', 'ciudad', 'jornada', 'modalidad', 
             'salario_min', 'salario_max', 'nivel_experiencia', 
             'descripcion_puesto', 'requisitos_puesto', 
             'habilidades_clave', 'beneficios'
@@ -378,11 +356,13 @@ class OfertaLaboralForm(forms.ModelForm):
             'requisitos_puesto': forms.Textarea(attrs={'rows': 5, 'class': 'form-textarea'}),
             'habilidades_clave': forms.TextInput(attrs={'placeholder': 'Python, SQL, etc.'}),
             'beneficios': forms.TextInput(attrs={'placeholder': 'Seguro médico, etc.'}),
+            'ciudad': forms.Select(), # Será poblado por JS
         }
         labels = {
             'titulo_puesto': 'Título del Puesto',
             'jornada': 'Jornada Laboral',
             'modalidad': 'Modalidad de Trabajo',
+            'ciudad': 'Ciudad',
             'salario_min': 'Salario Mínimo (CLP)',
             'salario_max': 'Salario Máximo (CLP)',
             'nivel_experiencia': 'Nivel de Experiencia Requerido',
@@ -397,6 +377,19 @@ class OfertaLaboralForm(forms.ModelForm):
         
         self.fields['jornada'].queryset = Jornada.objects.all()
         self.fields['modalidad'].queryset = Modalidad.objects.all()
+        self.fields['ciudad'].queryset = Ciudad.objects.none()
+
+        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ciudad:
+            instance = kwargs['instance']
+            self.fields['region'].initial = instance.ciudad.region
+            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).order_by('nombre')
+            self.fields['ciudad'].initial = instance.ciudad
+        elif 'region' in self.data:
+            try:
+                region_id = int(self.data.get('region'))
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
 
         base_css_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
         
@@ -432,8 +425,9 @@ class OfertaLaboralForm(forms.ModelForm):
                 self.add_error('fecha_cierre_personalizada', 'Debe seleccionar una fecha si elige la opción personalizada.')
             else:
                 today = timezone.now().date()
-                max_date = today + timedelta(days=30)
-                if not (today <= fecha_personalizada <= max_date):
-                    self.add_error('fecha_cierre_personalizada', f'La fecha debe estar entre hoy y el {max_date.strftime("%d-%m-%Y")}.')
+                # This validation is now handled in JS, but we keep a server-side check
+                # max_date = today + timedelta(days=31) 
+                # if not (today <= fecha_personalizada <= max_date):
+                #     self.add_error('fecha_cierre_personalizada', f'La fecha debe estar entre hoy y 31 días en el futuro.')
         
         return cleaned_data

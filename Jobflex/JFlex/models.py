@@ -3,6 +3,28 @@ from django.contrib.auth.models import User
 from django.utils import timezone # Import timezone
 
 # ==============================================================================
+# Modelos de Ubicación (NUEVA ESTRUCTURA NORMALIZADA)
+# ==============================================================================
+
+class Region(models.Model):
+    id_region = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Ciudad(models.Model):
+    id_ciudad = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='ciudades')
+
+    class Meta:
+        unique_together = ('nombre', 'region')
+
+    def __str__(self):
+        return f"{self.nombre}, {self.region.nombre}"
+
+# ==============================================================================
 # Modelos de Usuarios y Perfiles
 # ==============================================================================
 
@@ -14,35 +36,32 @@ class TipoUsuario(models.Model):
         return self.nombre_user
 
 class RegistroUsuarios(models.Model):
-    # Este modelo parece un intento de un User model custom.
-    # Lo ideal es usar el User de Django y extenderlo con perfiles.
-    # Por ahora, lo mapeo directamente, pero recomiendo unificarlo con el User de Django.
     id_registro = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, db_constraint=False)
     nombres = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
-    contrasena = models.CharField(max_length=255) # Django maneja esto de forma segura, no almacenar aquí.
+    contrasena = models.CharField(max_length=255)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
     ultimo_ingreso = models.DateTimeField(null=True, blank=True)
-    tipo_usuario = models.ForeignKey(TipoUsuario, on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
+    tipo_usuario = models.ForeignKey(TipoUsuario, on_delete=models.SET_NULL, null=True, blank=True)
 
 class Candidato(models.Model):
-    id_candidato = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='candidato_profile', db_constraint=False) # Relación inferida
+    id_candidato = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='candidato_profile', db_constraint=False)
     rut_candidato = models.CharField(max_length=15)
     fecha_nacimiento = models.DateField()
     telefono = models.CharField(max_length=20)
     disponible = models.BooleanField(default=True)
     linkedin_url = models.URLField(max_length=255, null=True, blank=True)
-    ubicacion = models.ForeignKey('Ubicacion', on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
+    ciudad = models.ForeignKey(Ciudad, on_delete=models.SET_NULL, null=True, blank=True) # CAMBIADO
 
     def __str__(self):
         return f"Candidato: {self.id_candidato.get_full_name()}"
 
 class EmpresaUsuario(models.Model):
-    id_empresa_user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='empresa_profile', db_constraint=False) # Relación inferida
-    empresa = models.ForeignKey('Empresa', on_delete=models.CASCADE) # Relación inferida
-    rol = models.ForeignKey('RolesEmpresa', on_delete=models.SET_NULL, null=True) # Relación inferida
+    id_empresa_user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='empresa_profile', db_constraint=False)
+    empresa = models.ForeignKey('Empresa', on_delete=models.CASCADE)
+    rol = models.ForeignKey('RolesEmpresa', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.id_empresa_user.username} en {self.empresa.nombre_comercial}"
@@ -72,8 +91,8 @@ class Empresa(models.Model):
     imagen_portada = models.URLField(max_length=500, null=True, blank=True)
     imagen_perfil = models.URLField(max_length=500, null=True, blank=True)
     ultima_modificacion = models.DateTimeField(auto_now=True)
-    rubro = models.ForeignKey(RubroIndustria, on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
-    ubicacion = models.ForeignKey('Ubicacion', on_delete=models.SET_NULL, null=True, blank=True) # Relación inferida
+    rubro = models.ForeignKey(RubroIndustria, on_delete=models.SET_NULL, null=True, blank=True)
+    ciudad = models.ForeignKey(Ciudad, on_delete=models.SET_NULL, null=True, blank=True) # CAMBIADO
 
     def __str__(self):
         return self.nombre_comercial
@@ -87,7 +106,7 @@ class RolesEmpresa(models.Model):
         return self.nombre_rol
 
 class CompanyInvitationToken(models.Model):
-    user_id = models.BigIntegerField(unique=True) # Store user ID as a simple field
+    user_id = models.BigIntegerField(unique=True)
     company = models.ForeignKey(Empresa, on_delete=models.CASCADE)
     token = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -103,7 +122,6 @@ class CompanyInvitationToken(models.Model):
         return User.objects.using('default').get(pk=self.user_id)
 
     def __str__(self):
-        # Access user via the property
         try:
             user_email = self.user.email
         except User.DoesNotExist:
@@ -112,7 +130,7 @@ class CompanyInvitationToken(models.Model):
 
     class Meta:
         db_table = 'CompanyInvitationToken'
-        app_label = 'JFlex' # Ensure it's managed by jflex_db
+        app_label = 'JFlex'
         managed = True
 
 class Categoria(models.Model):
@@ -143,8 +161,9 @@ class OfertaLaboral(models.Model):
         ('cerrada', 'Cerrada'),
     ]
     id_oferta = models.AutoField(primary_key=True)
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE) # Relación inferida
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
     titulo_puesto = models.CharField(max_length=150)
+    ciudad = models.ForeignKey(Ciudad, on_delete=models.SET_NULL, null=True, blank=True) # AÑADIDO
     descripcion_puesto = models.TextField(max_length=2000)
     requisitos_puesto = models.TextField(max_length=1000)
     habilidades_clave = models.CharField(max_length=500, null=True, blank=True)
@@ -155,9 +174,9 @@ class OfertaLaboral(models.Model):
     fecha_publicacion = models.DateField(auto_now_add=True)
     fecha_cierre = models.DateField()
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='activa')
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True) # Relación inferida
-    jornada = models.ForeignKey(Jornada, on_delete=models.SET_NULL, null=True) # Relación inferida
-    modalidad = models.ForeignKey(Modalidad, on_delete=models.SET_NULL, null=True) # Relación inferida
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
+    jornada = models.ForeignKey(Jornada, on_delete=models.SET_NULL, null=True)
+    modalidad = models.ForeignKey(Modalidad, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.titulo_puesto
@@ -167,25 +186,22 @@ class OfertaLaboral(models.Model):
 # ==============================================================================
 
 class CVCandidato(models.Model):
-    # Tabla central que representa un CV
     id_cv_user = models.AutoField(primary_key=True)
-    candidato = models.ForeignKey(Candidato, on_delete=models.CASCADE) # Relación inferida
+    candidato = models.ForeignKey(Candidato, on_delete=models.CASCADE)
     nombre_cv = models.CharField(max_length=100)
     cargo_asociado = models.CharField(max_length=100)
-    tipo_cv = models.CharField(max_length=20) # 'creado' o 'subido'
+    tipo_cv = models.CharField(max_length=20)
 
     def __str__(self):
         return f"{self.nombre_cv} ({self.candidato})"
 
 class CVCreado(models.Model):
-    # CV creado con el wizard del sitio
-    id_cv_creado = models.OneToOneField(CVCandidato, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_cv_creado = models.OneToOneField(CVCandidato, on_delete=models.CASCADE, primary_key=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     ultima_actualizacion = models.DateTimeField(auto_now=True)
 
 class CVSubido(models.Model):
-    # CV subido como archivo
-    id_cv_subido = models.OneToOneField(CVCandidato, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_cv_subido = models.OneToOneField(CVCandidato, on_delete=models.CASCADE, primary_key=True)
     fecha_subido = models.DateTimeField(auto_now_add=True)
     ruta_archivo = models.URLField(max_length=500)
 
@@ -208,7 +224,7 @@ class ObjetivoProfesionalCV(models.Model):
 
 class EducacionCV(models.Model):
     id_educacion = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='educacion') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='educacion')
     institucion = models.CharField(max_length=100)
     carrera_titulo_nivel = models.CharField(max_length=100)
     fecha_inicio = models.DateField()
@@ -218,7 +234,7 @@ class EducacionCV(models.Model):
 
 class ExperienciaLaboralCV(models.Model):
     id_experiencia = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='experiencia') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='experiencia')
     cargo_puesto = models.CharField(max_length=100)
     empresa = models.CharField(max_length=100)
     ubicacion = models.CharField(max_length=100)
@@ -231,26 +247,26 @@ class ExperienciaLaboralCV(models.Model):
 
 class CertificacionesCV(models.Model):
     id_certificacion = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='certificaciones') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='certificaciones')
     nombre_certificacion = models.CharField(max_length=150)
     entidad_emisora = models.CharField(max_length=150)
     fecha_obtencion = models.DateField()
 
 class HabilidadCV(models.Model):
     id_habilidad = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='habilidades') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='habilidades')
     tipo_habilidad = models.CharField(max_length=50)
     texto_habilidad = models.CharField(max_length=150)
 
 class IdiomaCV(models.Model):
     id_idioma = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='idiomas') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='idiomas')
     nombre_idioma = models.CharField(max_length=50)
     nivel_idioma = models.CharField(max_length=30)
 
 class ProyectosCV(models.Model):
     id_proyecto = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='proyectos') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='proyectos')
     nombre_proyecto = models.CharField(max_length=100)
     fecha_proyecto = models.DateField()
     rol_participacion = models.CharField(max_length=100, null=True, blank=True)
@@ -259,7 +275,7 @@ class ProyectosCV(models.Model):
 
 class ReferenciasCV(models.Model):
     id_referencia = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='referencias') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='referencias')
     nombre_referente = models.CharField(max_length=100)
     cargo_referente = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20)
@@ -268,7 +284,7 @@ class ReferenciasCV(models.Model):
 
 class VoluntariadoCV(models.Model):
     id_voluntariado = models.AutoField(primary_key=True)
-    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='voluntariado') # Relación inferida
+    cv_creado = models.ForeignKey(CVCreado, on_delete=models.CASCADE, related_name='voluntariado')
     nombre_organizacion = models.CharField(max_length=100)
     puesto_rol = models.CharField(max_length=100)
     descripcion_actividades = models.TextField(max_length=1000)
@@ -285,28 +301,28 @@ class VoluntariadoCV(models.Model):
 
 class Postulacion(models.Model):
     id_postulacion = models.AutoField(primary_key=True)
-    oferta = models.ForeignKey(OfertaLaboral, on_delete=models.CASCADE) # Relación inferida
-    candidato = models.ForeignKey(Candidato, on_delete=models.CASCADE) # Relación inferida
-    cv_postulado = models.ForeignKey(CVCandidato, on_delete=models.CASCADE) # Relación inferida
+    oferta = models.ForeignKey(OfertaLaboral, on_delete=models.CASCADE)
+    candidato = models.ForeignKey(Candidato, on_delete=models.CASCADE)
+    cv_postulado = models.ForeignKey(CVCandidato, on_delete=models.CASCADE)
     fecha_postulacion = models.DateTimeField(auto_now_add=True)
     estado_postulacion = models.CharField(max_length=50)
 
 class Entrevista(models.Model):
     id_entrevista = models.AutoField(primary_key=True)
-    postulacion = models.ForeignKey(Postulacion, on_delete=models.CASCADE) # Relación inferida
+    postulacion = models.ForeignKey(Postulacion, on_delete=models.CASCADE)
     fecha_entrevista = models.DateField()
-    hora_entrevista = models.TimeField() # DDL usaba DATE, asumo que era para la hora
+    hora_entrevista = models.TimeField()
     nombre_reclutador = models.CharField(max_length=150)
-    modalidad = models.CharField(max_length=20) # 'online' o 'presencial'
+    modalidad = models.CharField(max_length=20)
     asistencia_confirmada = models.BooleanField(null=True, blank=True)
 
 class ModoOnline(models.Model):
-    id_modo_online = models.OneToOneField(Entrevista, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_modo_online = models.OneToOneField(Entrevista, on_delete=models.CASCADE, primary_key=True)
     plataforma = models.CharField(max_length=100)
     url_reunion = models.URLField(max_length=255)
 
 class ModoPresencial(models.Model):
-    id_modo_presencial = models.OneToOneField(Entrevista, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_modo_presencial = models.OneToOneField(Entrevista, on_delete=models.CASCADE, primary_key=True)
     direccion = models.CharField(max_length=150)
 
 # ==============================================================================
@@ -320,27 +336,17 @@ class TipoNotificacion(models.Model):
 
 class Notificaciones(models.Model):
     id_notificacion = models.AutoField(primary_key=True)
-    usuario_destino = models.ForeignKey(User, on_delete=models.CASCADE, db_constraint=False) # Relación inferida
-    tipo_notificacion = models.ForeignKey(TipoNotificacion, on_delete=models.CASCADE) # Relación inferida
+    usuario_destino = models.ForeignKey(User, on_delete=models.CASCADE, db_constraint=False)
+    tipo_notificacion = models.ForeignKey(TipoNotificacion, on_delete=models.CASCADE)
     mensaje = models.CharField(max_length=255)
     fecha_envio = models.DateTimeField(auto_now_add=True)
     leida = models.BooleanField(default=False)
     link_relacionado = models.URLField(max_length=255, null=True, blank=True)
 
 class NotificacionCandidato(models.Model):
-    # Esta tabla y la siguiente parecen innecesarias si se usa el modelo Notificaciones
-    id_notificacion_candidato = models.OneToOneField(Notificaciones, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_notificacion_candidato = models.OneToOneField(Notificaciones, on_delete=models.CASCADE, primary_key=True)
     motivo = models.CharField(max_length=100)
 
 class NotificacionEmpresa(models.Model):
-    id_notificacion_empresa = models.OneToOneField(Notificaciones, on_delete=models.CASCADE, primary_key=True) # Relación inferida
+    id_notificacion_empresa = models.OneToOneField(Notificaciones, on_delete=models.CASCADE, primary_key=True)
     motivo = models.CharField(max_length=100)
-
-class Ubicacion(models.Model):
-    id_ubicacion = models.AutoField(primary_key=True)
-    region = models.CharField(max_length=100)
-    ciudad = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.ciudad}, {self.region}"
-

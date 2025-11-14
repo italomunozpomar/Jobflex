@@ -32,7 +32,7 @@ urlpatterns = [
 
 
     
-    path('ajax/ciudades/<str:region_nombre>/', views.get_ciudades, name='get_ciudades'),
+    path('ajax/ciudades/<int:region_id>/', views.get_ciudades, name='get_ciudades'),
     # --- Rutas comentadas para funcionalidades futuras o de empresa ---
     path("register_emp/", views.register_emp, name="register_emp"),
     path("validate/", views.Validate, name="validate"),
