@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('form-action').value = 'create_job_offer';
             document.getElementById('modal-title').textContent = 'Crear Nueva Oferta Laboral';
             document.getElementById('submit-btn').textContent = 'Publicar Oferta';
+            // Clear the stored publication date
+            delete form.dataset.fechaPublicacion;
         });
     }
 
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const num = parseInt(String(value).replace(/\./g, ''), 10);
                 value = !isNaN(num) ? new Intl.NumberFormat('es-CL').format(num) : '';
                 if (value) {
-                    value = '$' + value;
+                    value = '$ ' + value;
                 }
             }
             previewEl.innerText = value || config.default;
@@ -108,65 +110,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Helper function to populate offer fields ---
     const populateOfferFields = (button) => {
-        function populateAndTrigger(selector, value) {
+        function setFieldValue(selector, value) {
             const element = form.querySelector(selector);
-            console.log(`Populating field. Selector: "${selector}", Value: "${value}"`);
-
-            if (!element) {
-                console.error(`   [Error] Element not found for selector.`);
-                return;
-            }
-
-            if (element.tagName === 'SELECT') {
-                let found = false;
-                // Iterate through options to find a match by value
-                for (let i = 0; i < element.options.length; i++) {
-                    if (element.options[i].value === String(value)) {
-                        element.selectedIndex = i;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && value === "") {
-                    // If value is empty and no direct match, try to select the empty option (usually the first one)
-                    for (let i = 0; i < element.options.length; i++) {
-                        if (element.options[i].value === "") {
-                            element.selectedIndex = i;
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) {
-                    element.selectedIndex = -1; // No option selected
-                }
-                
-                if (element.selectedIndex !== -1) {
-                    console.log(`   [Success] Element value set to "${element.options[element.selectedIndex].value}" (Text: "${element.options[element.selectedIndex].text}").`);
-                } else {
-                    console.warn(`   [Warning] No matching option found for value "${value}". Element value is now "${element.value}".`);
-                }
-
-            } else {
+            if (element) {
                 element.value = value;
-                console.log(`   [Success] Element value set to "${element.value}".`);
             }
-
-            // Dispatch the correct event to trigger previews or other dependent logic.
-            const eventType = element.tagName === 'SELECT' ? 'change' : 'input';
-            element.dispatchEvent(new Event(eventType, { bubbles: true }));
-            console.log(`   Dispatched "${eventType}" event.`);
         }
 
+        // Store publication date for later use in date calculations
+        form.dataset.fechaPublicacion = button.dataset.fechaPublicacion;
+
         // 1. Populate all fields
-        populateAndTrigger('[name=titulo_puesto]', button.dataset.titulo);
-        populateAndTrigger('[name=salario_min]', button.dataset.salarioMin);
-        populateAndTrigger('[name=salario_max]', button.dataset.salarioMax);
-        populateAndTrigger('[name=nivel_experiencia]', button.dataset.nivelExperiencia);
-        populateAndTrigger('[name=categoria]', button.dataset.categoriaId);
-        populateAndTrigger('[name=jornada]', button.dataset.jornadaId);
-        populateAndTrigger('[name=modalidad]', button.dataset.modalidadId);
-        populateAndTrigger('[name=duracion_oferta]', button.dataset.duracionOferta);
+        setFieldValue('[name=titulo_puesto]', button.dataset.titulo);
+        setFieldValue('[name=salario_min]', button.dataset.salarioMin);
+        setFieldValue('[name=salario_max]', button.dataset.salarioMax);
+        setFieldValue('[name=nivel_experiencia]', button.dataset.nivelExperiencia);
+        setFieldValue('[name=categoria]', button.dataset.categoriaId);
+        setFieldValue('[name=jornada]', button.dataset.jornadaId);
+        setFieldValue('[name=modalidad]', button.dataset.modalidadId);
+        
+        // Handle duration and custom date
+        const duracion = button.dataset.duracionOferta;
+        setFieldValue('[name=duracion_oferta]', duracion);
+
+        if (duracion === 'custom') {
+            setFieldValue('[name=fecha_cierre_personalizada]', button.dataset.fechaCierre);
+        }
+
+        // Manually trigger the change event on the duration select to show/hide the custom date field
+        form.querySelector('[name=duracion_oferta]').dispatchEvent(new Event('change', { bubbles: true }));
 
         // 2. Populate Quill editors
         quillDescripcion.root.innerHTML = button.dataset.descripcion;
@@ -181,6 +153,12 @@ document.addEventListener('DOMContentLoaded', function () {
         
         tagifyBeneficios.removeAllTags();
         if (button.dataset.beneficios) tagifyBeneficios.addTags(button.dataset.beneficios.split(','));
+
+        // Trigger previews for all fields
+        form.querySelectorAll('input, select').forEach(el => {
+            const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
+            el.dispatchEvent(new Event(eventType, { bubbles: true }));
+        });
     };
 
     // --- DUPLICATE OFFER LOGIC ---
@@ -192,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('form-action').value = 'create_job_offer';
             document.getElementById('modal-title').textContent = 'Crear Nueva Oferta Laboral';
             document.getElementById('submit-btn').textContent = 'Publicar Oferta';
+            delete form.dataset.fechaPublicacion;
             
             populateOfferFields(button);
 
@@ -228,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('form-action').value = 'create_job_offer';
             document.getElementById('modal-title').textContent = 'Crear Nueva Oferta Laboral';
             document.getElementById('submit-btn').textContent = 'Publicar Oferta';
+            delete form.dataset.fechaPublicacion;
             
             quillDescripcion.setText('');
             quillRequisitos.setText('');
@@ -281,12 +261,38 @@ document.addEventListener('DOMContentLoaded', function () {
         duracionSelect.addEventListener('change', function() {
             if (this.value === 'custom') {
                 customDateContainer.classList.remove('hidden');
-                const today = new Date();
-                const maxDate = new Date();
-                maxDate.setDate(today.getDate() + 30);
+                
                 const formatDate = (d) => d.toISOString().split('T')[0];
-                customDateInput.min = formatDate(today);
-                customDateInput.max = formatDate(maxDate);
+                
+                // Determine the start date for validation (publication date or today)
+                let startDate;
+                if (form.dataset.fechaPublicacion) {
+                    startDate = new Date(form.dataset.fechaPublicacion + 'T00:00:00');
+                } else {
+                    startDate = new Date();
+                }
+                customDateInput.min = formatDate(startDate);
+
+                // Calculate the standard maximum date (30 days from start)
+                const standardMaxDate = new Date(startDate);
+                standardMaxDate.setDate(startDate.getDate() + 30);
+
+                // Check if there's an existing closing date in the input
+                const existingClosingDateValue = customDateInput.value;
+                if (existingClosingDateValue) {
+                    // The value is already in YYYY-MM-DD format
+                    const existingClosingDate = new Date(existingClosingDateValue + 'T00:00:00');
+                    
+                    // If the existing date is after the standard max date, use it as the max
+                    if (existingClosingDate > standardMaxDate) {
+                        customDateInput.max = formatDate(existingClosingDate);
+                        return; // Exit early, validation is set
+                    }
+                }
+                
+                // Otherwise, use the standard 30-day max date
+                customDateInput.max = formatDate(standardMaxDate);
+
             } else {
                 customDateContainer.classList.add('hidden');
             }

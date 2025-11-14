@@ -230,8 +230,11 @@
             }
             
             // --- Efecto de Scroll en la Navbar ---
-            const allowedPaths = ['/', '/company/', '/user_index/'];
-            if (allowedPaths.includes(window.location.pathname)) {
+            const scrollEffectPaths = ['/', '/company/', '/user_index/'];
+            const path = window.location.pathname;
+            const isScrollEffectPage = scrollEffectPaths.includes(path) || path.startsWith('/company/profile/');
+
+            if (isScrollEffectPage) {
                 const mainNav = document.getElementById('main-nav');
                 if (mainNav) {
                     const navLogo = document.getElementById('nav-logo');
