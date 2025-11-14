@@ -2064,24 +2064,58 @@ def accept_company_invitation(request, token):
     }
     return render(request, 'company/accept_invitation.html', context)
 
-
+from django.core.paginator import Paginator
 def job_offers(request:HttpRequest):
-    q=request.GET.get('q','')
-    mode=request.GET.get('mode','')
-    place=request.GET.get('location','')
-    time=request.GET.get('time','fulltime')
-    ofertas=OfertaLaboral.objects.all()
+    q=request.GET.get('q','').lower()
+    place=request.GET.get('location','').lower()
+    mode=int(request.GET.get('mode','0'))
+    time=int(request.GET.get('time','0'))
+    ofertas = (
+        OfertaLaboral.objects
+        .select_related("empresa__ubicacion", "jornada", "modalidad")
+        .filter(
+            Q(titulo_puesto__icontains=q) |
+            Q(descripcion_puesto__icontains=q) |
+            Q(empresa__nombre_comercial__icontains=q) |
+            
+            Q(empresa__ubicacion__region__icontains=q) |
+            Q(empresa__ubicacion__ciudad__icontains=q) |
+            
+            Q(jornada_id=time) |
+            Q(modalidad_id=mode)
+        )
+    )
+    
+    paginator = Paginator(ofertas, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     ctx={
-			'search':{
-				'q':q,
-				'location':place,
-				'mode':mode,
-				'time':time
-			},
+      'page_obj': page_obj,
+      'search':{
+        'q':q,
+        'location':place,
+        'mode':mode,
+        'time':time
+      },
       'ofertas':ofertas
-		}
+    }
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render(request, 'offers/partials/_job_paginator.html', ctx).content.decode('utf-8')
+        return JsonResponse({'html': html})
     return render(request, 'offers/job_offers.html',ctx)
 
+def job_details(request:HttpRequest,id_oferta:int):
+    oferta=get_object_or_404(OfertaLaboral,pk=int(id_oferta))
+    skills = json.loads(oferta.habilidades_clave)
+    skills = [s["value"] for s in skills]
+    boons= json.loads(oferta.beneficios)
+    boons = [s["value"] for s in boons]
+    ctx={
+      'oferta':oferta,
+      'habilidad':skills,
+      'beneficios':boons
+    }
+    return render(request,'offers/partials/_job_details.html',ctx)
 
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404

@@ -25,7 +25,12 @@
                         'secondary': '#89746F',
                         'light-gray': '#D8D9DD',
                         'dark': '#312F32',
-                    }
+                    },
+										animation: {
+											//				@keyframe-args..................
+											'fade-in': 'fadeIn 0.2s ease-out forwards',
+											'fade-out':'fadeOut 0.2s ease-out forwards',
+										}
                 }
             }
         }
@@ -164,6 +169,10 @@
             transform: translateX(100%);
         }
     </style>
+		<!-- Loader Overlay -->
+		<div id="page-loader" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+			<div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+		</div>
 
     <main class="flex-grow pt-20 min-h-[calc(100vh-5rem)]"> <!-- Aumentado el padding top para la navbar fija -->
         {% block content %}
