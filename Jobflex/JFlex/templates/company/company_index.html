@@ -4,7 +4,7 @@
 {% block title %}Panel de Empresa{% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen bg-gray-100 font-sans">
+<div class="flex min-h-screen bg-gray-100 font-sans -mt-4">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md hidden sm:block">
         <div class="p-6">
@@ -76,7 +76,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-primary">Empleos Activos</h3>
-                    <p class="text-3xl font-bold text-dark mt-2">5</p>
+                    <p class="text-3xl font-bold text-dark mt-2"></p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-primary">Nuevos Candidatos</h3>
@@ -419,7 +419,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabId) switchTab(tabId);
         });
     });
-    switchTab('dashboard');
+    
+    // --- LOGIC TO OPEN EDIT MODAL FROM URL ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const offerIdToEdit = urlParams.get('edit_offer');
+    
+    if (offerIdToEdit) {
+        // Switch to the 'all-jobs' tab to make sure the offer is visible
+        switchTab('all-jobs');
+        
+        // Find the corresponding edit button and click it
+        const editButton = document.querySelector(`.edit-offer-btn[data-offer-id="${offerIdToEdit}"]`);
+        if (editButton) {
+            editButton.click();
+        }
+    } else {
+        // Default tab
+        switchTab('dashboard');
+    }
 });
 </script>
 {% endblock %}

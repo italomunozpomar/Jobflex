@@ -72,72 +72,82 @@
                 </div>
 
                 <!-- Pestaña "Ofertas de Trabajo" -->
-                <div id="jobs-content" class="tab-panel hidden space-y-4">
-                    {% if ofertas_activas %}
-                        <div class="space-y-4">
-                            {% for oferta in ofertas_activas %}
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow duration-300">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex-grow">
-                                            <h4 class="text-lg font-bold text-dark">{{ oferta.titulo_puesto }}</h4>
-                                            <p class="text-sm text-secondary flex items-center mt-1">
-                                                <svg class="w-4 h-4 mr-1.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7a4 4 0 100 8 4 4 0 000-8zM7 7a4 4 0 100 8 4 4 0 000-8zM7 7c0 1.1.9 2 2 2s2-.9 2-2-2-2-2-2-2 .9-2 2z"></path>
+                <div id="jobs-content" class="tab-panel hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200 bg-gray-50">
+                                    <th class="py-3 px-4 font-semibold text-gray-700">Título del Puesto</th>
+                                    <th class="py-3 px-4 font-semibold text-gray-700">Estado</th>
+                                    <th class="py-3 px-4 font-semibold text-gray-700">Candidatos</th>
+                                    <th class="py-3 px-4 font-semibold text-gray-700 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for oferta in ofertas_activas %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <td class="py-4 px-4">
+                                        <span class="font-medium text-gray-900">{{ oferta.titulo_puesto }}</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        {% if oferta.estado == 'activa' %}
+                                            <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Activo</span>
+                                        {% elif oferta.estado == 'pausada' %}
+                                            <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs font-semibold">En Pausa</span>
+                                        {% elif oferta.estado == 'cerrada' %}
+                                            <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs font-semibold">Cerrado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="font-semibold text-gray-700">{{ offer.candidate_count|default:0 }}</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex justify-center gap-3">
+                                            <!-- Ver -->
+                                            <a href="#" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors" title="Ver oferta">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
-                                                {% if oferta.categoria %}{{ oferta.categoria.tipo_categoria }}{% else %}Sin categoría{% endif %}
-                                            </p>
+                                            </a>
+                                            
+                                            <!-- Editar -->
+                                            <a href="{% url 'company_index' %}?edit_offer={{ oferta.id_oferta }}" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors" title="Editar oferta">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
+                                            
+                                            <!-- Eliminar -->
+                                            <form method="POST" action="{% url 'company_index' %}" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta oferta permanentemente?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_offer">
+                                                <input type="hidden" name="offer_id" value="{{ oferta.id_oferta }}">
+                                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors" title="Eliminar oferta">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
                                         </div>
-                                        <div class="text-right">
-                                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">Activa</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-gray-200">
-                                        <div>
-                                            <p class="text-xs text-secondary font-semibold">Jornada</p>
-                                            <p class="text-sm text-dark mt-1">{% if oferta.jornada %}{{ oferta.jornada.tipo_jornada }}{% else %}N/A{% endif %}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-secondary font-semibold">Modalidad</p>
-                                            <p class="text-sm text-dark mt-1">{% if oferta.modalidad %}{{ oferta.modalidad.tipo_modalidad }}{% else %}N/A{% endif %}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-secondary font-semibold">Experiencia</p>
-                                            <p class="text-sm text-dark mt-1">{{ oferta.nivel_experiencia }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-secondary font-semibold">Salario</p>
-                                            <p class="text-sm text-dark mt-1">${{ oferta.salario_min|stringformat:",.0f" }} - ${{ oferta.salario_max|stringformat:",.0f" }}</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <p class="text-sm text-gray-600 line-clamp-2">{{ oferta.descripcion_puesto|striptags|truncatewords:30 }}</p>
-                                    </div>
-
-                                    <div class="flex items-center justify-between">
-                                        <div class="text-xs text-secondary">
-                                            Publicado: {{ oferta.fecha_publicacion|date:"d \d\e M, Y" }}
-                                        </div>
-                                        <a href="#" class="inline-flex items-center text-primary font-semibold text-sm hover:underline">
-                                            Ver oferta completa
-                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                             </svg>
-                                        </a>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="text-gray-500 font-medium">No hay ofertas de trabajo activas en este momento.</p>
-                            <p class="text-gray-400 text-sm mt-1">Esta empresa aún no ha publicado sus oportunidades de empleo.</p>
-                        </div>
-                    {% endif %}
+                                            <p class="text-gray-500 font-medium">No hay ofertas de trabajo activas en este momento.</p>
+                                            <p class="text-gray-400 text-sm mt-1">Esta empresa aún no ha publicado sus oportunidades de empleo.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,4 +182,36 @@
 
 </main>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('#company-tabs .tab-btn');
+    const panels = document.querySelectorAll('#tab-content .tab-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+
+            // Update button styles
+            tabs.forEach(t => {
+                t.classList.remove('bg-primary', 'text-white');
+                t.classList.add('text-secondary', 'hover:bg-gray-100');
+            });
+            tab.classList.add('bg-primary', 'text-white');
+            tab.classList.remove('text-secondary', 'hover:bg-gray-100');
+
+            // Show/hide panels
+            panels.forEach(panel => {
+                if (panel.id === `${tabId}-content`) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
