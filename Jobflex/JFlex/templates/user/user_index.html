@@ -75,56 +75,27 @@
         <!-- Sección 2: Búsqueda y Ofertas Destacadas -->
         <section class="bg-white p-8 rounded-lg shadow-md">
             <!-- Buscador Principal -->
-            <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl mb-6">
-                <div class="flex flex-col md:flex-row gap-4 items-stretch">
-                    <div class="flex-grow">
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                            <input type="text" name="q" placeholder="Buscar empleo por puesto, palabra clave o empresa..." 
-                                class="w-full pl-10 p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white">
-                        </div>
-                    </div>
-                    <div class="relative md:w-48">
-                        <select name="region" id="search_region" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Todas las Regiones</option>
-                            {% for region in all_regions %}
-                                <option value="{{ region.id_region }}">{{ region.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl mb-6" id="search-form">
+                <div class="flex flex-col md:flex-row gap-2 items-center">
+                    <!-- Barra de búsqueda principal -->
+                    <div class="relative flex-grow w-full">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
+                        <input type="text" name="q" id="search_query" placeholder="Buscar empleo por puesto, palabra clave o empresa..." 
+                               class="w-full pl-12 p-4 text-lg border-2 border-light-gray rounded-full focus:outline-none focus:ring-2 focus:ring-primary bg-white shadow-sm">
                     </div>
-                    <div class="relative md:w-48">
-                        <select name="ciudad" id="search_ciudad" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Todas las Ciudades</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="relative md:w-48">
-                        <select name="mode" class="appearance-none w-full p-4 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
-                            <option value="">Modalidad</option>
-                            <option value="3">Remoto</option>
-                            <option value="2">Híbrido</option>
-                            <option value="1">Presencial</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <button type="submit" class="bg-primary text-white font-bold py-4 px-8 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
+                    
+                    <!-- Botón para abrir menú de filtros -->
+                    <button type="button" id="filter-toggle-btn" class="flex-shrink-0 bg-white border-2 border-primary text-primary font-bold py-4 px-6 rounded-full hover:bg-primary hover:text-white transition-all flex items-center justify-center w-full md:w-auto">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        Filtros
+                    </button>
+
+                    <!-- Botón de búsqueda -->
+                    <button type="submit" class="flex-shrink-0 bg-primary text-white font-bold py-4 px-8 rounded-full hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center w-full md:w-auto">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -132,20 +103,61 @@
                     </button>
                 </div>
 
-                <!-- Filtros Rápidos -->
-                <div class="mt-4 flex flex-wrap gap-2">
-										<a href="{%url 'job_offers' %}?time=1" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-color">
-											Tiempo Completo
-										</a>
-                    <a href="{%url 'job_offers' %}?time=2" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                        Medio Tiempo
-                    </a>
-                    <a href="{%url 'job_offers' %}?time=3" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                        Freelance
-                    </a>
-                    <a href="{%url 'job_offers' %}?time=4" class="bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                        Prácticas
-                    </a>
+                <!-- Menú de Filtros Desplegable -->
+                <div id="filter-menu" class="hidden mt-6 pt-6 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <!-- Filtro de Región -->
+                        <div>
+                            <label for="search_region" class="block text-sm font-medium text-secondary mb-1">Región</label>
+                            <select name="region" id="search_region" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                                <option value="">Todas las Regiones</option>
+                                {% for region in all_regions %}
+                                    <option value="{{ region.id_region }}">{{ region.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Filtro de Ciudad -->
+                        <div>
+                            <label for="search_ciudad" class="block text-sm font-medium text-secondary mb-1">Ciudad</label>
+                            <select name="ciudad" id="search_ciudad" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                                <option value="">Todas las Ciudades</option>
+                            </select>
+                        </div>
+                        <!-- Filtro de Modalidad -->
+                        <div>
+                            <label for="search_mode" class="block text-sm font-medium text-secondary mb-1">Modalidad</label>
+                            <select name="mode" id="search_mode" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
+                                <option value="">Modalidad</option>
+                                <option value="3">Remoto</option>
+                                <option value="2">Híbrido</option>
+                                <option value="1">Presencial</option>
+                            </select>
+                        </div>
+                        <!-- Botón Limpiar Filtros -->
+                        <div class="flex justify-start">
+                            <button type="button" id="clear-filters-btn" class="bg-gray-200 text-dark font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all w-full md:w-auto">
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Filtros Rápidos (Jornada) -->
+                    <div class="mt-6">
+                        <p class="text-sm font-semibold text-dark mb-2">Tipo de Jornada:</p>
+                        <div class="flex flex-wrap gap-2" id="time-filters">
+                            <button type="button" data-time-value="1" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                                Tiempo Completo
+                            </button>
+                            <button type="button" data-time-value="2" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                                Medio Tiempo
+                            </button>
+                            <button type="button" data-time-value="3" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                                Freelance
+                            </button>
+                            <button type="button" data-time-value="4" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
+                                Prácticas
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Búsquedas Populares -->
@@ -665,8 +677,22 @@
             }
 
             // Dependent Dropdowns for Job Search Form
+            const filterToggleBtn = document.getElementById('filter-toggle-btn');
+            const filterMenu = document.getElementById('filter-menu');
+
+            if (filterToggleBtn && filterMenu) {
+                filterToggleBtn.addEventListener('click', () => {
+                    filterMenu.classList.toggle('hidden');
+                });
+            }
+            
             const searchRegionSelect = document.getElementById('search_region');
             const searchCiudadSelect = document.getElementById('search_ciudad');
+            const searchForm = document.getElementById('search-form');
+            const searchQueryInput = document.getElementById('search_query');
+            const searchModeSelect = document.getElementById('search_mode');
+            const clearFiltersBtn = document.getElementById('clear-filters-btn');
+            const timeFilterButtons = document.querySelectorAll('#time-filters .filter-button');
 
             if (searchRegionSelect && searchCiudadSelect) {
                 const urlTemplate = "{% url 'get_ciudades' 0 %}"; // Use the same URL template
@@ -704,6 +730,49 @@
                 // For now, we'll assume no initial selection on page load for search.
             }
 
+            // Clear Filters functionality
+            if (clearFiltersBtn && searchForm) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    searchQueryInput.value = '';
+                    searchRegionSelect.value = '';
+                    searchCiudadSelect.innerHTML = '<option value="">Todas las Ciudades</option>'; // Reset cities
+                    searchModeSelect.value = '';
+                    
+                    // Remove active state from time filter buttons
+                    timeFilterButtons.forEach(button => {
+                        button.classList.remove('bg-primary', 'text-white');
+                        button.classList.add('bg-white', 'text-primary');
+                    });
+
+                    // Submit the form to clear results
+                    searchForm.submit();
+                });
+            }
+
+            // Time Filter Buttons functionality
+            if (timeFilterButtons.length > 0 && searchForm) {
+                timeFilterButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Remove active state from all buttons
+                        timeFilterButtons.forEach(btn => {
+                            btn.classList.remove('bg-primary', 'text-white');
+                            btn.classList.add('bg-white', 'text-primary');
+                        });
+
+                        // Add active state to the clicked button
+                        this.classList.remove('bg-white', 'text-primary');
+                        this.classList.add('bg-primary', 'text-white');
+
+                        // Update the form's action URL with the selected time filter
+                        const timeValue = this.dataset.timeValue;
+                        const currentUrl = new URL(searchForm.action);
+                        currentUrl.searchParams.set('time', timeValue);
+                        searchForm.action = currentUrl.toString();
+                        searchForm.submit(); // Submit the form with the new filter
+                    });
+                });
+            }
+
             // --- CV Upload Modal Drag & Drop ---
             const dropArea = document.getElementById('file-drop-area');
             const previewContainer = document.getElementById('pdf-preview-container');
@@ -712,7 +781,7 @@
 
             const resetModalState = () => {
                 if(cvFileInput) cvFileInput.value = '';
-                if(previewIframe) previewIframe.src = 'about:blank';
+                if(pdfPreviewIframe) pdfPreviewIframe.src = 'about:blank';
                 if(dropArea) dropArea.classList.remove('hidden');
                 if(previewContainer) previewContainer.classList.add('hidden');
                 if(saveBtn) saveBtn.disabled = true;
@@ -722,7 +791,7 @@
             const handleFile = (file) => {
                 if (file && file.type === 'application/pdf') {
                     const fileURL = URL.createObjectURL(file);
-                    if(previewIframe) previewIframe.src = fileURL;
+                    if(pdfPreviewIframe) pdfPreviewIframe.src = fileURL;
                     if(dropArea) dropArea.classList.add('hidden');
                     if(previewContainer) previewContainer.classList.remove('hidden');
                     if(saveBtn) saveBtn.disabled = false;

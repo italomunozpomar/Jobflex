@@ -1,61 +1,113 @@
-<!-- <h1 class="text-3xl font-bold text-dark">{{oferta.titulo_puesto}}</h1> -->
-<!-- <p class="text-lg text-secondary"><a href="/company-profile/" class="hover:underline hover:text-primary">{{oferta.empresa}}</a> • {{oferta.empresa.ubicacion}}</p> -->
+{% load static %}
 {% load humanize %}
-<!-- Header -->
-<div class="flex items-center mb-4">
-		<div>
-				<h4 id="preview-titulo" class="text-lg font-bold text-dark">{{oferta.titulo_puesto}}</h4>
-				<p class="text-sm text-secondary">{{oferta.empresa.nombre_comercial}}</p>
-		</div>
-</div>
-<!-- Details -->
-<div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-4">
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> <span id="preview-categoria">{{oferta.categoria}}</span></span>
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> 
-				{% if oferta.ciudad and oferta.ciudad.nombre|lower != 'cualquier comuna' %}
-						{{ oferta.ciudad.nombre }}, {{ oferta.ciudad.region.nombre }}
-				{% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
-						{{ oferta.ciudad.region.nombre }}
-				{% else %}
-						Chile
-				{% endif %}
-		</span>
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> <span id="preview-modalidad">{{oferta.modalidad}}</span></span>
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="preview-jornada">{{oferta.jornada}}</span></span>
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-		CLP $ <span id="preview-sal-min">{{oferta.salario_min|intcomma}}</span> - $ <span id="preview-sal-max">{{oferta.salario_max|intcomma}}</span>
-		</span>
-		<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> <span id="preview-experiencia">{{oferta.nivel_experiencia}}</span></span>
-</div>
-<!-- Description -->
-<div class="mb-4">
-		<h5 class="font-bold text-dark mb-2">Descripción del Puesto</h5>
-		<div id="preview-descripcion" class="text-sm text-dark prose">
-				<p>{{oferta.descripcion_puesto|safe}}</p>
-		</div>
-</div>
-<!-- Requirements -->
-<div class="mb-4">
-		<h5 class="font-bold text-dark mb-2">Requisitos</h5>
-		<div id="preview-requisitos" class="text-sm text-dark prose">
-				<p>{{oferta.requisitos_puesto|safe}}</p>
-		</div>
-</div>
-<!-- Skills -->
-<div class="mb-4">
-		<h5 class="font-bold text-dark mb-2">Habilidades Clave</h5>
-		<div id="preview-habilidades" class="flex flex-wrap gap-2">
-			{% for skill in habilidad %}
-				<span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ skill }}</span>
-			{% endfor %}
-		</div>
-</div>
-<!-- Benefits -->
-<div class="mb-4">
-	<h5 class="font-bold text-dark mb-2">Beneficios</h5>
-	<div id="preview-beneficios" class="flex flex-wrap gap-2">
-		{% for boon in beneficios %}
-			<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ boon }}</span>
-		{% endfor %}
-	</div>
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="pb-6 border-b border-gray-200">
+        <div class="flex items-center mb-2">
+            <img src="{% if oferta.empresa.imagen_perfil %}{{ oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ oferta.empresa.nombre_comercial }}" class="w-12 h-12 rounded-lg object-cover mr-4">
+            <div>
+                <h1 class="text-2xl font-bold text-dark">{{ oferta.titulo_puesto }}</h1>
+                <p class="text-lg text-secondary">{{ oferta.empresa.nombre_comercial }}</p>
+            </div>
+        </div>
+        <div class="mt-6 flex items-center gap-4">
+            <button class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 text-base w-auto">
+                Postular ahora
+            </button>
+            <button class="bg-gray-200 text-dark font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-all flex items-center justify-center w-auto">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.324 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.324-1.118L2.285 9.092c-.783-.57-.381-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
+                Favoritos
+            </button>
+        </div>
+    </div>
+
+    <!-- Job Details Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-8">
+        <div class="flex items-start">
+            <div class="p-2 bg-green-100 rounded-lg mr-3"><svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Salario</p>
+                <p class="font-bold text-dark">CLP ${{ oferta.salario_min|intcomma }} - ${{ oferta.salario_max|intcomma }}</p>
+            </div>
+        </div>
+        <div class="flex items-start">
+            <div class="p-2 bg-blue-100 rounded-lg mr-3"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Ubicación</p>
+                <p class="font-bold text-dark">
+                    {% if oferta.ciudad and oferta.ciudad.nombre|lower != 'cualquier comuna' %}
+                        {{ oferta.ciudad.nombre }}, {{ oferta.ciudad.region.nombre }}
+                    {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
+                        {{ oferta.ciudad.region.nombre }}
+                    {% else %}
+                        Remoto (Toda Latam)
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="flex items-start">
+            <div class="p-2 bg-purple-100 rounded-lg mr-3"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Modalidad</p>
+                <p class="font-bold text-dark">{{ oferta.modalidad }}</p>
+            </div>
+        </div>
+        <div class="flex items-start">
+            <div class="p-2 bg-yellow-100 rounded-lg mr-3"><svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Jornada</p>
+                <p class="font-bold text-dark">{{ oferta.jornada }}</p>
+            </div>
+        </div>
+        <div class="flex items-start">
+            <div class="p-2 bg-red-100 rounded-lg mr-3"><svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Experiencia</p>
+                <p class="font-bold text-dark">{{ oferta.nivel_experiencia }}</p>
+            </div>
+        </div>
+        <div class="flex items-start">
+            <div class="p-2 bg-indigo-100 rounded-lg mr-3"><svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></div>
+            <div>
+                <p class="text-sm text-secondary">Categoría</p>
+                <p class="font-bold text-dark">{{ oferta.categoria }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="max-w-none text-dark space-y-4">
+        <h2 class="font-bold text-xl text-dark">Descripción del Puesto</h2>
+        <div class="content-with-bullets">
+            {{ oferta.descripcion_puesto|safe }}
+        </div>
+        
+        <h2 class="font-bold text-xl text-dark pt-4">Requisitos</h2>
+        <div class="content-with-bullets">
+            {{ oferta.requisitos_puesto|safe }}
+        </div>
+    </div>
+
+    <!-- Skills -->
+    <div>
+        <h3 class="font-bold text-xl text-dark mb-4">Habilidades Clave</h3>
+        <div class="flex flex-wrap gap-3">
+            {% for skill in habilidad %}
+                <span class="bg-gray-200 text-gray-800 text-sm font-semibold px-4 py-2 rounded-full">{{ skill }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Benefits -->
+    <div>
+        <h3 class="font-bold text-xl text-dark mb-4">Beneficios</h3>
+        <div class="flex flex-wrap gap-3">
+            {% for boon in beneficios %}
+                <span class="bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    {{ boon }}
+                </span>
+            {% endfor %}
+        </div>
+    </div>
 </div>

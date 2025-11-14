@@ -78,3 +78,50 @@ body {
     opacity: 0.8 !important;
     transform: scale(1.05);
 }
+
+/* Custom class for list formatting with indentation */
+.list-disc-indent ul {
+    list-style-type: disc;
+    margin-left: 1.5em; /* Adjust as needed for indentation */
+}
+
+.list-disc-indent ol {
+    list-style-type: decimal;
+    margin-left: 1.5em; /* Adjust as needed for indentation */
+}
+
+.list-disc-indent li {
+    margin-bottom: 0.5em; /* Spacing between list items */
+}
+
+/* Custom styling for content that might contain "list-like" paragraphs */
+.content-with-bullets p {
+    position: relative;
+    padding-left: 1.5em; /* Space for the bullet */
+    margin-bottom: 0.5em; /* Spacing between "list items" */
+}
+
+.content-with-bullets p::before {
+    content: '•'; /* Bullet character */
+    position: absolute;
+    left: 0;
+    color: #312F32; /* Dark color for bullet */
+    font-weight: bold;
+}
+
+/* Ensure actual ul/ol within this content are also styled */
+.content-with-bullets ul {
+    list-style-type: disc;
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.content-with-bullets ol {
+    list-style-type: decimal;
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.content-with-bullets li {
+    margin-bottom: 0.5em;
+}
