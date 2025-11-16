@@ -72,8 +72,13 @@ def signup(request):
             to_email = form.cleaned_data.get('email')
             email = EmailMessage(mail_subject, message, to=[to_email])
             email.send()
-            
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect_url': reverse('verify_code')})
             return redirect('verify_code')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = SignUpForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -2008,6 +2013,18 @@ def delete_account(request):
             return redirect('settings')
 
     return redirect('settings')
+
+class CustomLoginView(auth_views.LoginView):
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            login(self.request, form.get_user())
+            return JsonResponse({'success': True})
+        return super().form_valid(form)
 @login_required
 def edit_cv_meta(request, cv_id):
     try:

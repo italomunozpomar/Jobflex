@@ -13,7 +13,7 @@ urlpatterns = [
 
 
     # Vistas de autenticación de Django (login, logout)
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('login/', views.CustomLoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Vistas de recuperación de contraseña

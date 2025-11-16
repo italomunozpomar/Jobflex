@@ -1,0 +1,94 @@
+{% load socialaccount %}
+<!-- Auth Modal -->
+<div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 relative transform transition-all duration-300 ease-in-out scale-95 opacity-0 max-h-screen overflow-y-auto sm:max-h-[90vh]" id="auth-modal-panel">
+        <!-- Close Button -->
+        <button id="auth-modal-close" class="absolute top-4 right-4 text-gray-400 hover:text-dark">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <div class="p-8">
+            <!-- Tab Buttons -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="show-register-tab" class="flex-1 py-3 font-semibold text-center text-primary border-b-2 border-primary">Crear Cuenta</button>
+                <button id="show-login-tab" class="flex-1 py-3 font-semibold text-center text-gray-500">Iniciar Sesión</button>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-view">
+                <h2 class="text-2xl font-bold text-dark mb-2 text-center">Crea tu Cuenta</h2>
+                <p class="text-secondary mb-6 text-center text-sm">Únete y encuentra tu próximo trabajo.</p>
+                <form id="modal-register-form" method="post" action="{% url 'signup' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div id="modal-register-errors" class="hidden"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="modal_id_nombres" class="block text-sm font-medium text-dark">Nombres</label>
+                            <input type="text" name="nombres" id="modal_id_nombres" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label for="modal_id_apellidos" class="block text-sm font-medium text-dark">Apellidos</label>
+                            <input type="text" name="apellidos" id="modal_id_apellidos" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="modal_id_email_register" class="block text-sm font-medium text-dark">Correo Electrónico</label>
+                        <input type="email" name="email" id="modal_id_email_register" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label for="modal_id_password1" class="block text-sm font-medium text-dark">Contraseña</label>
+                        <input type="password" name="password" id="modal_id_password1" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none">Crear Cuenta</button>
+                    </div>
+                </form>
+                <div class="mt-4 text-center text-sm text-dark">
+                    Al registrarte, aceptas nuestros <a href="#" class="font-medium text-primary hover:underline">Términos y Condiciones</a>.
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-view" class="hidden">
+                <h2 class="text-2xl font-bold text-dark mb-2 text-center">Iniciar Sesión</h2>
+                <p class="text-secondary mb-6 text-center text-sm">Ingresa para acceder a tu cuenta.</p>
+                <form id="modal-login-form" method="post" action="{% url 'login' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div id="modal-login-errors" class="hidden"></div>
+                    <div>
+                        <label for="modal_id_username" class="block text-sm font-medium text-dark">Correo Electrónico</label>
+                        <input type="email" name="username" id="modal_id_username" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label for="modal_id_password" class="block text-sm font-medium text-dark">Contraseña</label>
+                        <input type="password" name="password" id="modal_id_password" required class="mt-1 block w-full p-2 border border-light-gray rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center">
+                            <input id="modal-remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary border-light-gray rounded focus:ring-primary">
+                            <label for="modal-remember-me" class="ml-2 block text-dark">Mantenerme conectado</label>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="font-medium text-primary hover:underline">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none">Iniciar Sesión</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Social Login -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-light-gray"></div></div>
+                    <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-secondary">O continúa con</span></div>
+                </div>
+                <div class="mt-6">
+                    <a href="{% provider_login_url 'google' %}" class="w-full inline-flex justify-center py-3 px-4 border border-light-gray rounded-lg shadow-sm bg-white text-sm font-medium text-dark hover:bg-light-gray transition-all">
+                        <svg class="w-5 h-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.3v2.84C4.08 20.98 7.74 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.16H2.3C1.42 8.84 1 10.36 1 12s.42 3.16 1.2 4.84l3.54-2.75z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.74 1 4.08 3.02 2.3 6.16l3.54 2.75c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        <span>Continuar con Google</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

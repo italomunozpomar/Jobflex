@@ -61,31 +61,30 @@
         <div class="container mx-auto px-4">
             <h1 class="text-center text-3xl font-bold text-dark mb-8">¡Empresas que confían en nosotros!</h1>
 
-            <div class="swiper company-carousel relative ">
-                <div class="swiper-wrapper flex items-center">
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain">
+            <div class="relative">
+                <div class="my-slider">
+                    <div class="text-center">
+                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Logo_copec_2023_Cielo.jpg" alt="Logo Empresa B" class="rounded-full w-40 h-40 object-contain">
+                    <div class="text-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Logo_copec_2023_Cielo.jpg" alt="Logo Empresa B" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://yt3.googleusercontent.com/FfBZauU_gka8Hu-XEIZghGhCTgGbwBSfEJSY3Wc5T5j-6XrT-SUZMQJtuSCbqoPenZ9dX0XVSmg=s900-c-k-c0x00ffffff-no-rj" alt="Logo Empresa C" class="rounded-full w-40 h-40 object-contain">
+                    <div class="text-center">
+                        <img src="https://yt3.googleusercontent.com/FfBZauU_gka8Hu-XEIZghGhCTgGbwBSfEJSY3Wc5T5j-6XrT-SUZMQJtuSCbqoPenZ9dX0XVSmg=s900-c-k-c0x00ffffff-no-rj" alt="Logo Empresa C" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
-
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://thumbs.dreamstime.com/b/microsoft-logo-editorial-ilustrativo-sobre-fondo-blanco-icono-vectorial-logotipos-iconos-conjunto-redes-sociales-banner-plano-210443215.jpg" alt="Logo Empresa E" class="rounded-full w-40 h-40 object-contain">
+                    <div class="text-center">
+                        <img src="https://thumbs.dreamstime.com/b/microsoft-logo-editorial-ilustrativo-sobre-fondo-blanco-icono-vectorial-logotipos-iconos-conjunto-redes-sociales-banner-plano-210443215.jpg" alt="Logo Empresa E" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://logosdechile.cl/cdn/shop/products/codelco_1975_Mesadetrabajo1.jpg?v=1661123452&width=1445" alt="Logo Empresa F" class="rounded-full w-40 h-40 object-contain">
+                    <div class="text-center">
+                        <img src="https://logosdechile.cl/cdn/shop/products/codelco_1975_Mesadetrabajo1.jpg?v=1661123452&width=1445" alt="Logo Empresa F" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
-                    <div class="swiper-slide flex justify-center items-center">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ4AD03MQUEyk-f_VFhF1btszijndmDQkbHQ&s" alt="Logo Empresa D" class="rounded-full w-40 h-40 object-contain">
+                    <div class="text-center">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ4AD03MQUEyk-f_VFhF1btszijndmDQkbHQ&s" alt="Logo Empresa D" class="rounded-full w-40 h-40 object-contain inline-block">
+                    </div>
+                    <div class="text-center">
+                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain inline-block">
                     </div>
                 </div>
-                <!-- Navigation Buttons -->
-                <div class="swiper-button-next text-primary"></div>
-                <div class="swiper-button-prev text-primary"></div>
             </div>
         </div>
     </section>
@@ -255,66 +254,13 @@
 
 {% block extra_js %}
     {{ block.super }}
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <style>
-        /* Animación para el menú móvil */
-        #mobile-menu.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #mobile-menu.open #mobile-menu-panel {
-            transform: translateX(0);
-        }
-        #mobile-menu #mobile-menu-panel {
-            transform: translateX(100%);
-        }
-        /* Mejorar visibilidad del botón "Registrate" en móvil */
-        #mobile-menu-panel a:first-of-type {
-            font-size: 1.15rem;
-            font-weight: bold;
-            border-width: 2px;
-        }
+    <!-- Tiny Slider Assets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/min/tiny-slider.js"></script>
 
-        /* Animations for "Sobre Nosotros" section */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 1s ease-out forwards;
-        }
-
-        .animate-slide-up {
-            animation: slideUp 1s ease-out forwards;
-        }
-
-        .animate-slide-up-delay {
-            animation: slideUp 1s ease-out 0.3s forwards;
-            opacity: 0;
-        }
-    </style>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Smooth scroll para anclas
+        // Smooth scroll for anchors
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -322,7 +268,7 @@
                 const targetElement = document.querySelector(targetId);
 
                 if(targetElement) {
-                    // Cierra el menú móvil si está abierto
+                    // Close mobile menu if open
                     const mobileMenu = document.getElementById('mobile-menu');
                     if (mobileMenu && mobileMenu.classList.contains('open')) {
                         document.getElementById('mobile-menu-btn').click();
@@ -333,6 +279,79 @@
                 }
             });
         });
+
+        // Tiny Slider for Company Carousel
+        var sliderContainer = document.querySelector('.my-slider');
+        if (sliderContainer && sliderContainer.children.length > 0) {
+            var slider = tns({
+                container: '.my-slider',
+                items: 2,
+                slideBy: 1,
+                autoplay: true,
+                autoplayButtonOutput: false,
+                controls: true,
+                controlsText: [
+                    '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>',
+                    '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>'
+                ],
+                nav: false,
+                loop: true,
+                mouseDrag: true,
+                responsive: {
+                    768: {
+                        items: 4,
+                        gutter: 20
+                    },
+                    1024: {
+                        items: 6,
+                        gutter: 30
+                    }
+                }
+            });
+        }
     });
     </script>
+    <style>
+        .tns-outer {
+            position: relative;
+        }
+        .tns-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+        .tns-controls button {
+            pointer-events: auto; /* But allow clicks on buttons */
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        .tns-controls button:hover {
+            background: white;
+        }
+        .tns-controls button:first-child {
+            margin-left: -1rem;
+        }
+        .tns-controls button:last-child {
+            margin-right: -1rem;
+        }
+        .tns-controls button svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #333;
+        }
+    </style>
 {% endblock %}

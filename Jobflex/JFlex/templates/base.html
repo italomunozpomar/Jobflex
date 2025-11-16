@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    
     <link rel="stylesheet" href="{% static 'CSS/style.css'%}">
     
     <!-- Quill Rich Text Editor -->
@@ -158,8 +160,8 @@
                             {% endif %}
                         {% else %}
                             <!-- Enlaces Móvil para Anónimo -->
-                            <li><a href="#empresas" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Empresas</a></li>
-                            <li><a href="#publicar-oferta" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Publicar Oferta</a></li>
+                            <li><a href="{% url 'about_us' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Sobre Nosotros</a></li>
+                            <li><a href="{% url 'contact_us' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Contacto</a></li>
                         {% endif %}
                     </ul>
                 </nav>
@@ -202,9 +204,130 @@
         {% endblock %}
     </main>
 
+    {% include 'partials/_auth_modal.html' %}
+
     {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // --- Lógica del Modal de Autenticación ---
+            const authModal = document.getElementById('auth-modal');
+            const authModalPanel = document.getElementById('auth-modal-panel');
+            const closeModalBtn = document.getElementById('auth-modal-close');
+            
+            const loginView = document.getElementById('login-view');
+            const registerView = document.getElementById('register-view');
+            const showLoginTab = document.getElementById('show-login-tab');
+            const showRegisterTab = document.getElementById('show-register-tab');
+
+            const loginForm = document.getElementById('modal-login-form');
+            const registerForm = document.getElementById('modal-register-form');
+
+            function openAuthModal(view = 'register') {
+                if (!authModal) return;
+                authModal.classList.remove('hidden');
+                setTimeout(() => {
+                    authModalPanel.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+
+                if (view === 'login') {
+                    showLoginView();
+                } else {
+                    showRegisterView();
+                }
+            }
+
+            function closeAuthModal() {
+                if (!authModal) return;
+                authModalPanel.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    authModal.classList.add('hidden');
+                }, 300);
+            }
+
+            function showLoginView() {
+                loginView.classList.remove('hidden');
+                registerView.classList.add('hidden');
+                showLoginTab.classList.add('text-primary', 'border-primary');
+                showLoginTab.classList.remove('text-gray-500');
+                showRegisterTab.classList.add('text-gray-500');
+                showRegisterTab.classList.remove('text-primary', 'border-primary');
+            }
+
+            function showRegisterView() {
+                registerView.classList.remove('hidden');
+                loginView.classList.add('hidden');
+                showRegisterTab.classList.add('text-primary', 'border-primary');
+                showRegisterTab.classList.remove('text-gray-500');
+                showLoginTab.classList.add('text-gray-500');
+                showLoginTab.classList.remove('text-primary', 'border-primary');
+            }
+
+            async function handleFormSubmit(form, errorContainerId) {
+                const errorContainer = document.getElementById(errorContainerId);
+                errorContainer.innerHTML = '';
+                errorContainer.classList.add('hidden');
+
+                const formData = new FormData(form);
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        window.location.reload();
+                    } else if (data.errors) {
+                        let errorHtml = '<ul class="list-disc list-inside text-sm text-red-600">';
+                        for (const key in data.errors) {
+                            data.errors[key].forEach(error => {
+                                errorHtml += `<li>${error}</li>`;
+                            });
+                        }
+                        errorHtml += '</ul>';
+                        errorContainer.innerHTML = errorHtml;
+                        errorContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    errorContainer.innerHTML = 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+                    errorContainer.classList.remove('hidden');
+                }
+            }
+
+            // Event Listeners for modal
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeAuthModal);
+            if (authModal) authModal.addEventListener('click', (e) => {
+                if (e.target === authModal) closeAuthModal();
+            });
+            if (showLoginTab) showLoginTab.addEventListener('click', showLoginView);
+            if (showRegisterTab) showRegisterTab.addEventListener('click', showRegisterView);
+
+            if(loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleFormSubmit(this, 'modal-login-errors');
+                });
+            }
+
+            if(registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleFormSubmit(this, 'modal-register-errors');
+                });
+            }
+
+            // Attach to buttons that should open the modal
+            document.body.addEventListener('click', function(event) {
+                if (event.target.matches('.apply-btn-anon')) {
+                    openAuthModal();
+                }
+            });
+
             // --- Lógica del Menú de Usuario (Escritorio) ---
             const userMenuButton = document.getElementById('user-menu-button');
             const userMenu = document.getElementById('user-menu');
@@ -318,6 +441,7 @@
     
     <!-- Main JS -->
     <script src="{% static 'JS/main.js' %}"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
 </body>
 </html>

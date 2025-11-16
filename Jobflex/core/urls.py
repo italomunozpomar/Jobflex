@@ -19,9 +19,18 @@ from django.urls import path, include
 from JFlex import views as jflex_views  # Importamos las vistas de la app JFlex
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import StaticViewSitemap, OfertaLaboralSitemap, CompanyProfileSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+    'ofertas': OfertaLaboralSitemap,
+    'empresas': CompanyProfileSitemap,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('', include('JFlex.urls')),
 
     # Ruta para manejar la cancelación del login social
