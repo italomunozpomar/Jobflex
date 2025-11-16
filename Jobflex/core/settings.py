@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'storages',
+    'django.contrib.sitemaps'
 ]
 
 SITE_ID = 1
@@ -227,6 +228,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/user_index/'
 LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login'
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = env('EMAIL_HOST', default='')
 EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
