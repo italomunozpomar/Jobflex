@@ -79,7 +79,7 @@ class CandidatoForm(forms.ModelForm):
         model = Candidato
         fields = ['rut_candidato', 'fecha_nacimiento', 'telefono', 'linkedin_url', 'region', 'ciudad']
         widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_nacimiento': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'rut_candidato': forms.TextInput(attrs={'placeholder': '12345678-9'}),
             'telefono': forms.TextInput(attrs={'placeholder': '+56 9 XXXX XXXX'}),
             'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-usuario'}),
@@ -160,7 +160,7 @@ class CompletarPerfilForm(forms.ModelForm):
         model = Candidato
         fields = ['rut_candidato', 'fecha_nacimiento', 'telefono', 'linkedin_url', 'region', 'ciudad']
         widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_nacimiento': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'rut_candidato': forms.TextInput(attrs={'placeholder': '12345678-9'}),
             'telefono': forms.TextInput(attrs={'placeholder': '+56 9 XXXX XXXX'}),
             'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/tu-usuario'}),

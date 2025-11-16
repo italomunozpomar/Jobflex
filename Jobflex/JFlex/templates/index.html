@@ -5,16 +5,48 @@
 
 {% block content %}
     <!-- Hero Section -->
-    <section class="relative bg-white overflow-hidden -mt-20 pt-20">
-        <div class="container mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center relative z-10">
+    <section class="relative bg-white overflow-hidden -mt-20 pt-32 pb-16 md:pt-32 md:pb-20">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center relative z-10">
             <div class="md:w-3/5">
-                <div class="max-w-xl text-center md:text-left mx-auto md:mx-0">
+                <div class="max-w-2xl text-center md:text-left mx-auto md:mx-0">
                     <h2 class="text-5xl md:text-6xl font-bold text-dark mb-4">Encuentra el trabajo de tus <span class="text-primary">sueños</span></h2>
                     <p class="text-secondary mb-8 text-lg">Explora miles de oportunidades laborales y da el siguiente paso en tu carrera profesional.</p>
-                    <div class="flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
-                        <input type="text" placeholder="Puesto, palabra clave o empresa" class="w-full sm:w-auto flex-grow p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                        <button class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Buscar</button>
-                    </div>
+                    <form action="{% url 'job_offers' %}" method="get" class="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                            <div class="col-span-1 md:col-span-3">
+                                <label for="search_q_index" class="sr-only">Puesto, palabra clave o empresa</label>
+                                <input type="text" name="q" id="search_q_index" placeholder="Puesto, palabra clave o empresa" class="w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label for="search_region_index" class="sr-only">Región</label>
+                                <select name="region" id="search_region_index" class="w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                    <option value="">Región</option>
+                                    {% for region in all_regions %}
+                                        <option value="{{ region.id_region }}">{{ region.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="search_modalidad_index" class="sr-only">Modalidad</label>
+                                <select name="modalidad" id="search_modalidad_index" class="w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                    <option value="">Modalidad</option>
+                                    {% for modalidad in all_modalidades %}
+                                        <option value="{{ modalidad.id_modalidad }}">{{ modalidad.tipo_modalidad }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="search_jornada_index" class="sr-only">Jornada</label>
+                                <select name="jornada" id="search_jornada_index" class="w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                    <option value="">Jornada</option>
+                                    {% for jornada in all_jornadas %}
+                                        <option value="{{ jornada.id_jornada }}">{{ jornada.tipo_jornada }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-4 w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Buscar Empleos</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -172,7 +204,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light-gray pt-12">
+        <footer class="bg-dark text-light-gray pt-12">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 <!-- Logo and Info -->
@@ -187,8 +219,6 @@
                         <li><a href="{% url 'about_us' %}" class="hover:text-primary">Sobre nosotros</a></li>
                         <li><a href="{% url 'privacy_policy' %}" class="hover:text-primary">Política de Privacidad</a></li>
                         <li><a href="{% url 'terms_and_conditions' %}" class="hover:text-primary">Términos y Condiciones</a></li>
-                        <li><a href="#" class="hover:text-primary">Carreras</a></li>
-                        <li><a href="#" class="hover:text-primary">Prensa</a></li>
                     </ul>
                 </div>
                 <!-- Soporte -->

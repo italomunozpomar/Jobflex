@@ -112,7 +112,16 @@ def verify_code(request):
 def index(req):
     if req.user.is_authenticated:
         return redirect('user_index')
-    return render(req, 'index.html')
+    
+    all_regions = Region.objects.all()
+    all_modalidades = Modalidad.objects.all()
+    all_jornadas = Jornada.objects.all()
+    context = {
+        'all_regions': all_regions,
+        'all_modalidades': all_modalidades,
+        'all_jornadas': all_jornadas,
+    }
+    return render(req, 'index.html', context)
 
 def upload_to_s3(file, bucket_name, object_key):
     s3 = boto3.client(

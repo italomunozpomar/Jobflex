@@ -186,128 +186,140 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const openModal = () => {
             cvModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => modalPanel.classList.remove('opacity-0', 'scale-95'), 10);
+            if (modalPanel) {
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => modalPanel.classList.remove('opacity-0', 'scale-95'), 10);
+            }
         };
 
         const closeModal = () => {
-            modalPanel.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => {
-                cvModal.classList.add('hidden');
-                document.body.style.overflow = '';
-                resetModalState();
-            }, 300);
+            if (modalPanel) {
+                modalPanel.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    cvModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    resetModalState();
+                }, 300);
+            }
         };
 
         const resetModalState = () => {
             selectedFile = null;
-            fileInput.value = '';
-            fileNameDisplay.textContent = '';
-            profileNameInput.value = '';
+            if (fileInput) fileInput.value = '';
+            if (fileNameDisplay) fileNameDisplay.textContent = '';
+            if (profileNameInput) profileNameInput.value = '';
 
-            // Reset button to initial state
-            saveBtn.disabled = true;
-            saveBtn.classList.remove('bg-green-500');
-            saveBtn.classList.add('bg-primary');
-            successBtnContent.classList.add('hidden');
-            saveBtnContent.classList.remove('hidden');
-            saveSpinner.classList.add('hidden');
-            saveBtnContent.querySelector('span:last-child').classList.remove('hidden');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.remove('bg-green-500');
+                saveBtn.classList.add('bg-primary');
+            }
+            if (successBtnContent) successBtnContent.classList.add('hidden');
+            if (saveBtnContent) saveBtnContent.classList.remove('hidden');
+            if (saveSpinner) saveSpinner.classList.add('hidden');
+            if (saveBtnContent && saveBtnContent.querySelector('span:last-child')) {
+                saveBtnContent.querySelector('span:last-child').classList.remove('hidden');
+            }
 
-            // Reset progress bar
-            progressBar.style.width = '0%';
-            progressBarContainer.classList.add('hidden');
+            if (progressBar) progressBar.style.width = '0%';
+            if (progressBarContainer) progressBarContainer.classList.add('hidden');
 
-            // Reset file areas
-            fileDropArea.classList.remove('hidden', 'border-primary');
-            filePreviewContainer.classList.add('hidden');
-            fileNameDisplay.classList.add('hidden');
+            if (fileDropArea) fileDropArea.classList.remove('hidden', 'border-primary');
+            if (filePreviewContainer) filePreviewContainer.classList.add('hidden');
+            if (fileNameDisplay) fileNameDisplay.classList.add('hidden');
 
-            // Clean up PDF preview
             if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
                 objectUrl = null;
             }
-            pdfPreviewIframe.src = '';
+            if (pdfPreviewIframe) pdfPreviewIframe.src = '';
         };
 
         const handleFileSelect = (file) => {
             if (!file) return;
 
             selectedFile = file;
-            saveBtn.disabled = false;
-            fileNameDisplay.textContent = `Archivo: ${file.name}`;
+            if (saveBtn) saveBtn.disabled = false;
+            if (fileNameDisplay) fileNameDisplay.textContent = `Archivo: ${file.name}`;
 
             if (file.type === 'application/pdf') {
                 if (objectUrl) URL.revokeObjectURL(objectUrl);
                 objectUrl = URL.createObjectURL(file);
-                pdfPreviewIframe.src = objectUrl;
-                filePreviewContainer.classList.remove('hidden');
-                fileDropArea.classList.add('hidden');
-                fileNameDisplay.classList.add('hidden');
+                if (pdfPreviewIframe) pdfPreviewIframe.src = objectUrl;
+                if (filePreviewContainer) filePreviewContainer.classList.remove('hidden');
+                if (fileDropArea) fileDropArea.classList.add('hidden');
+                if (fileNameDisplay) fileNameDisplay.classList.add('hidden');
             } else {
-                filePreviewContainer.classList.add('hidden');
-                fileDropArea.classList.add('hidden');
-                fileNameDisplay.classList.remove('hidden');
+                if (filePreviewContainer) filePreviewContainer.classList.add('hidden');
+                if (fileDropArea) fileDropArea.classList.add('hidden');
+                if (fileNameDisplay) fileNameDisplay.classList.remove('hidden');
             }
         };
 
         // --- Event Listeners ---
-        openModalBtn.addEventListener('click', openModal);
-        closeModalBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
+        if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        
         cvModal.addEventListener('click', (e) => {
             if (e.target === cvModal) closeModal();
         });
+        
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !cvModal.classList.contains('hidden')) closeModal();
         });
 
-        fileInput.addEventListener('change', () => handleFileSelect(fileInput.files[0]));
-        changeFileBtn.addEventListener('click', () => fileInput.click());
+        if (fileInput) fileInput.addEventListener('change', () => handleFileSelect(fileInput.files[0]));
+        if (changeFileBtn) changeFileBtn.addEventListener('click', () => fileInput.click());
 
-        fileDropArea.addEventListener('dragover', (e) => { e.preventDefault(); fileDropArea.classList.add('border-primary'); });
-        fileDropArea.addEventListener('dragleave', () => fileDropArea.classList.remove('border-primary'));
-        fileDropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileDropArea.classList.remove('border-primary');
-            handleFileSelect(e.dataTransfer.files[0]);
-        });
+        if (fileDropArea) {
+            fileDropArea.addEventListener('dragover', (e) => { e.preventDefault(); fileDropArea.classList.add('border-primary'); });
+            fileDropArea.addEventListener('dragleave', () => fileDropArea.classList.remove('border-primary'));
+            fileDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileDropArea.classList.remove('border-primary');
+                handleFileSelect(e.dataTransfer.files[0]);
+            });
+        }
 
-        saveBtn.addEventListener('click', () => {
-            if (!selectedFile || profileNameInput.value.trim() === '') {
-                alert('Por favor, completa todos los campos y selecciona un archivo.');
-                return;
-            }
-
-            // --- Loading State ---
-            saveBtn.disabled = true;
-            saveSpinner.classList.remove('hidden');
-            saveBtnContent.querySelector('span:last-child').classList.add('hidden'); // Hide "Guardar" text
-            progressBarContainer.classList.remove('hidden');
-            progressBar.style.width = '0%';
-
-            // --- Simulate Upload ---
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                progressBar.style.width = `${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(interval);
-
-                    // --- Success State ---
-                    saveBtnContent.classList.add('hidden');
-                    successBtnContent.classList.remove('hidden');
-                    saveBtn.classList.remove('bg-primary');
-                    saveBtn.classList.add('bg-green-500');
-
-                    // --- Auto Close ---
-                    setTimeout(() => {
-                        closeModal();
-                    }, 1500); 
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                if (!selectedFile || (profileNameInput && profileNameInput.value.trim() === '')) {
+                    alert('Por favor, completa todos los campos y selecciona un archivo.');
+                    return;
                 }
-            }, 150);
-        });
+
+                // --- Loading State ---
+                saveBtn.disabled = true;
+                if (saveSpinner) saveSpinner.classList.remove('hidden');
+                if (saveBtnContent && saveBtnContent.querySelector('span:last-child')) {
+                    saveBtnContent.querySelector('span:last-child').classList.add('hidden');
+                }
+                if (progressBarContainer) progressBarContainer.classList.remove('hidden');
+                if (progressBar) progressBar.style.width = '0%';
+
+                // --- Simulate Upload ---
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    if (progressBar) progressBar.style.width = `${progress}%`;
+                    if (progress >= 100) {
+                        clearInterval(interval);
+
+                        // --- Success State ---
+                        if (saveBtnContent) saveBtnContent.classList.add('hidden');
+                        if (successBtnContent) successBtnContent.classList.remove('hidden');
+                        saveBtn.classList.remove('bg-primary');
+                        saveBtn.classList.add('bg-green-500');
+
+                        // --- Auto Close ---
+                        setTimeout(() => {
+                            closeModal();
+                        }, 1500); 
+                    }
+                }, 150);
+            });
+        }
     }
 
 

@@ -1,156 +1,9 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Ofertas - JobFlex</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#8CA01A',
-                        'secondary': '#89746F',
-                        'light-gray': '#D8D9DD',
-                        'dark': '#312F32',
-                    },
-										animation: {
-											//				@keyframe-args..................
-											'fade-in': 'fadeIn 0.2s ease-out forwards',
-											'fade-out':'fadeOut 0.2s ease-out forwards',
-										}
-                }
-            }
-        }
-    </script>
-    <style>
-        .job-list-container::-webkit-scrollbar { width: 8px; }
-        .job-list-container::-webkit-scrollbar-track { background: #f1f1f1; }
-        .job-list-container::-webkit-scrollbar-thumb { background: #D8D9DD; border-radius: 4px; }
-        .job-list-container::-webkit-scrollbar-thumb:hover { background: #89746F; }
-        /* Estilos para la vista móvil */
-        @media (max-width: 767px) {
-            .mobile-detail-view #job-list-aside {
-                display: none;
-            }
-            .mobile-detail-view #job-detail-section {
-                display: block;
-            }
-        }
-    </style>
-</head>
 
-		<!-- Loader Overlay -->
-		<div id="page-loader" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-			<div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-		</div>
+{% block title %}JobFlex - Tu Próximo Empleo{% endblock %}
 
-    <!-- Navbar -->
-    <nav id="main-nav" class="bg-white p-4 shadow-md w-full z-48 flex-shrink-0">
-        <div class="container mx-auto flex justify-between items-center relative">
-            <a href="{% url 'index'%}" id="nav-logo" class="text-2xl font-bold text-primary">JobFlex</a>
-            
-            <div class="flex items-center space-x-2 md:space-x-4">
-                {% if user.is_authenticated %}
-                <a href="{% url 'user_index' %}" id="nav-inicio" class="hidden md:block font-semibold text-dark hover:text-primary transition-colors">Volver a Inicio</a>
-                    <button class="relative">
-                        <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-                    </button>
-
-                    <div class="relative hidden md:block">
-                        <button id="user-menu-button" class="flex items-center space-x-2">
-                            <span class="font-semibold text-dark">{{ user.first_name }}</span>
-                            <svg class="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
-                            <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mi Perfil</a>
-                                <a href="{% url 'postulaciones' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Postulaciones</a>
-                                <a href="{% url 'perfiles_profesionales' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Mis Perfiles Profesionales</a>
-                                <a href="{% url 'settings' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Configuración</a>
-                            <form action="{% url 'logout' %}" method="post" class="w-full">
-                                {% csrf_token %}
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-light-gray">Cerrar Sesión</button>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <button id="mobile-menu-btn" class="md:hidden focus:outline-none relative z-50" aria-label="Abrir menú">
-                    <svg id="hamburger-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
-                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-            <!-- Menú móvil animado -->
-            <div id="mobile-menu"
-                class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex flex-col items-end md:hidden transition-all duration-300 ease-in-out pointer-events-none opacity-0"
-                style="z-index:49;">
-                <div class="w-3/4 sm:w-1/2 bg-white shadow-xl h-full p-8 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out relative"
-                    id="mobile-menu-panel">
-                    <h2 class="text-2xl font-bold text-dark mb-8">Menú</h2>
-
-                    <nav class="flex-grow">
-                        <ul class="space-y-2">
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="{% url 'profile' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
-                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-                                    <span class="ml-3">Mi Perfil</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'postulaciones' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group">
-                                    <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"></path></svg>
-                                    <span class="ml-3">Mis Postulaciones</span>
-                                </a>
-                            </li>
-                            <div class="py-2"><hr class="border-light-gray"></div>
-                            {% endif %}
-                        </ul>
-                    </nav>
-
-                    {% if user.is_authenticated %}
-                      <div class="border-t border-light-gray pt-6 space-y-4">
-                          <form action="{% url 'logout' %}" method="post" class="w-full">
-                              {% csrf_token %}
-                              <button type="submit" class="block w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 text-lg text-center">Cerrar Sesión</button>
-                          </form>
-                      </div>
-                      {% else %}
-                      <div class="border-t border-light-gray pt-6 space-y-4">
-                          <a href="{% url 'signup' %}" class="block text-primary font-bold border-2 border-primary py-2 px-4 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 text-lg text-center">Registrate</a>
-                          <a href="{% url 'login' %}" class="block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 transformhover:scale-105 text-lg text-center">Iniciar Sesión</a>
-                      </div>
-                      {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <style>
-        /* Animación para el menú móvil */
-        #mobile-menu.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #mobile-menu.open #mobile-menu-panel {
-            transform: translateX(0);
-        }
-        /* Mejorar visibilidad del botón "Registrate" en móvil */
-        #mobile-menu-panel a:first-of-type {
-            font-size: 1.15rem;
-            font-weight: bold;
-            border-width: 2px;
-        }
-    </style>
+{% block content %}
 
     <!-- Search Bar -->
     <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray p-4 border-b border-gray-200 w-full z-20 flex-shrink-0" id="search-form">
@@ -238,7 +91,7 @@
         </div>
     </form>
 		
-    <main id="job-search-main" class="flex-grow flex flex-row overflow-hidden">
+    <main id="job-search-main" class="flex-grow flex flex-row overflow-hidden bg-white">
         <!-- Columna Izquierda: Lista de Ofertas -->
         <aside id="job-list-aside" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 flex flex-col">
             <div class="p-4 border-b border-gray-200 flex-shrink-0">
@@ -251,10 +104,23 @@
         </aside>
         <section id="job-detail-section" class="w-full md:w-2/3 lg:w-3/5 overflow-y-auto p-8 hidden md:block">
             <button id="back-to-list-btn" class="md:hidden mb-4 flex items-center text-sm font-semibold text-primary hover:underline"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>Volver a la lista</button>
-            <div class="job-detail"></div>
+            <div class="job-detail">
+                <div class="h-full flex flex-col items-center justify-center text-center bg-white rounded-xl shadow-sm p-8">
+                    <svg class="w-20 h-20 text-light-gray mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <h2 class="text-2xl font-bold text-dark mb-2">Encuentra tu próxima oportunidad</h2>
+                    <p class="text-secondary max-w-md">Selecciona una oferta de la lista para ver todos los detalles y comenzar tu postulación.</p>
+                    <div class="mt-8 p-4 bg-primary/10 border border-primary/20 rounded-lg w-full max-w-md">
+                        <p class="font-bold text-primary">💡 Dato Curioso</p>
+                        <p class="text-sm text-dark mt-1">El 85% de los puestos de trabajo se cubren a través de contactos y networking. ¡No subestimes el poder de una buena red profesional!</p>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
+{% endblock %}
 
+{% block extra_js %}
+    {{ block.super }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const mainContainer = document.getElementById('job-search-main');
@@ -326,10 +192,7 @@
                     card.addEventListener('click', () => showJob(jobCards, card));
                 });
 
-                const activeCard = document.querySelector('.job-card.active-card');
-                if (!activeCard && jobCards.length > 0) {
-                    showJob(jobCards, jobCards[0]);
-                }
+                // --- Auto-selection logic temporarily removed for debugging ---
             }
 
             function loadPage(url, push = true) {
@@ -446,54 +309,6 @@
                 }
             }
             
-            // --- Lógica del Menú de Usuario (Escritorio) ---
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
-            if (userMenuButton) {
-                userMenuButton.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    userMenu.classList.toggle('hidden');
-                });
-            }
-            window.addEventListener('click', function(e) {
-                if (userMenu && !userMenu.classList.contains('hidden') && userMenuButton && !userMenuButton.contains(e.target)) {
-                    userMenu.classList.add('hidden');
-                }
-            });
-
-            // --- Lógica del Menú Móvil ---
-            const menuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const hamburgerIcon = document.getElementById('hamburger-icon');
-            const closeIcon = document.getElementById('close-icon');
-
-            const closeMobileMenu = () => {
-                mobileMenu.classList.remove('open');
-                hamburgerIcon.classList.remove('hidden');
-                closeIcon.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-
-            if (menuBtn) {
-                menuBtn.addEventListener('click', () => {
-                    const isOpen = mobileMenu.classList.contains('open');
-                    if (isOpen) {
-                        closeMobileMenu();
-                    } else {
-                        mobileMenu.classList.add('open');
-                        hamburgerIcon.classList.add('hidden');
-                        closeIcon.classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-                });
-            }
-            if (mobileMenu) {
-                mobileMenu.addEventListener('click', (e) => {
-                    if (e.target === mobileMenu) closeMobileMenu();
-                });
-            }
         });
     </script>
-
-</body>
-</html>
+{% endblock %}
