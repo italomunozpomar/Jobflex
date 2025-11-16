@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from .sitemaps import StaticViewSitemap, OfertaLaboralSitemap, CompanyProfileSitemap
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns # Import this
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -42,3 +43,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Serve static files in development even when DEBUG is False
+urlpatterns += staticfiles_urlpatterns()
