@@ -25,3 +25,4 @@ requests
 playwright
 boto3
 django-storages
+django-browser-reload
