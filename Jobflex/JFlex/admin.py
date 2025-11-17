@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     RegistroUsuarios, Empresa, EmpresaUsuario, RolesEmpresa, Candidato, TipoUsuario,
-    Jornada, Modalidad, Categoria
+    Jornada, Modalidad, Categoria, Postulacion
 )
 @admin.register(RegistroUsuarios)
 class RegistroUsuariosAdmin(admin.ModelAdmin):
@@ -35,3 +35,4 @@ admin.site.register(TipoUsuario)
 admin.site.register(Jornada)
 admin.site.register(Modalidad)
 admin.site.register(Categoria)
+admin.site.register(Postulacion)

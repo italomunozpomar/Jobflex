@@ -47,13 +47,19 @@ urlpatterns = [
 
     path('applications/', views.postulaciones, name='postulaciones'),
     path('perfiles-profesionales/', views.perfiles_profesionales, name='perfiles_profesionales'),
+    
+    # Job Offers
     path('offers/', views.job_offers, name='job_offers'),
-		path('offers/<int:id_oferta>',views.job_details,name='job_details'),
-    path('company/<int:company_id>/', views.company_profile, name='company_profile'),
-    # path('company/users/', views.company_users, name='company_users'),
-    # path('company/invitations/', views.company_invitations, name='company_invitations'),
-    path('company_index/', views.company_index, name='company_index'),
-    path('company/accept-invitation/<str:token>/', views.accept_company_invitation, name='accept_company_invitation'),
+	    path('offers/<int:id_oferta>',views.job_details,name='job_details'),
+	    path('apply/<int:offer_id>/', views.apply_to_offer, name='apply_to_offer'),
+	    path('update-profile-modal/', views.update_profile_from_modal, name='update_profile_from_modal'),
+        path('get-profile-edit-form/', views.get_profile_edit_form_html, name='get_profile_edit_form_html'),
+    path('upload-cv-modal/', views.upload_cv_from_modal, name='upload_cv_from_modal'),
+	
+	    path('company/<int:company_id>/', views.company_profile, name='company_profile'),
+	    # path('company/users/', views.company_users, name='company_users'),
+	    # path('company/invitations/', views.company_invitations, name='company_invitations'),
+	    path('company_index/', views.company_index, name='company_index'),    path('company/accept-invitation/<str:token>/', views.accept_company_invitation, name='accept_company_invitation'),
 
     # --- Rutas para Páginas Estáticas ---
     path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),

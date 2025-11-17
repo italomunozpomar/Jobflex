@@ -12,9 +12,15 @@
         </div>
         <div class="mt-6 flex items-center gap-4">
             {% if user.is_authenticated %}
-                <a href="#" class="apply-btn-auth bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 text-base w-auto">
-                    Postular ahora
-                </a>
+                {% if has_applied %}
+                    <button type="button" class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed text-base w-auto" disabled>
+                        Ya Postulaste
+                    </button>
+                {% else %}
+                    <button type="button" id="open-apply-modal-btn" data-offer-id="{{ oferta.id_oferta }}" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 text-base w-auto">
+                        Postular ahora
+                    </button>
+                {% endif %}
             {% else %}
                 <button type="button" class="apply-btn-anon bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 text-base w-auto">
                     Postular ahora

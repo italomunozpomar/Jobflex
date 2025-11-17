@@ -1111,7 +1111,11 @@ def perfiles_profesionales(request):
 
 @login_required
 def create_cv(request):
-    return render(request, 'user/create_cv.html')
+    next_url = request.GET.get('next', None)
+    context = {
+        'next_url': next_url
+    }
+    return render(request, 'user/create_cv.html', context)
 
 @login_required
 def edit_cv(request, cv_id):
@@ -1861,7 +1865,9 @@ def save_cv(request):
                     url_linkedin=ref_data.get('linkedin_url')
                 )
 
-            return JsonResponse({'status': 'success', 'message': 'CV guardado exitosamente.', 'redirect_url': '/perfiles-profesionales/'})
+            next_url = data.get('next_url')
+            redirect_to = next_url or reverse('perfiles_profesionales')
+            return JsonResponse({'status': 'success', 'message': 'CV guardado exitosamente.', 'redirect_url': redirect_to})
 
         except CVCandidato.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Candidato no encontrado.'}, status=404)
@@ -2219,10 +2225,24 @@ def job_details(request:HttpRequest,id_oferta:int):
     skills = [s["value"] for s in skills]
     boons= json.loads(oferta.beneficios)
     boons = [s["value"] for s in boons]
+
+    has_applied = False
+    if request.user.is_authenticated:
+        # Check if the user is a candidate before querying for profile
+        if hasattr(request.user, 'candidato_profile'):
+            try:
+                candidato = request.user.candidato_profile
+                if Postulacion.objects.filter(oferta=oferta, candidato=candidato).exists():
+                    has_applied = True
+            except Candidato.DoesNotExist:
+                # This case should ideally not be reached if hasattr check is robust
+                pass
+    
     ctx={
       'oferta':oferta,
       'habilidad':skills,
-      'beneficios':boons
+      'beneficios':boons,
+      'has_applied': has_applied
     }
     return render(request,'offers/partials/_job_details.html',ctx)
 
@@ -2258,5 +2278,158 @@ def about_us(request):
 def contact_us(request):
     """Renderiza la página de Contacto."""
     return render(request, 'static_pages/contact.html')
+
+@login_required
+def apply_to_offer(request, offer_id):
+    offer = get_object_or_404(OfertaLaboral, pk=offer_id)
+    candidato = get_object_or_404(Candidato, pk=request.user.pk)
+
+    # Check for profile completeness
+    profile_is_complete = all([
+        candidato.rut_candidato, 
+        candidato.fecha_nacimiento, 
+        candidato.telefono, 
+        candidato.ciudad_id
+    ])
+
+    if not profile_is_complete:
+        return JsonResponse({
+            'error': 'incomplete_profile',
+            'message': 'Por favor, completa tu perfil antes de postular.',
+            'redirect_url': reverse('profile')
+        }, status=400)
+
+    # Check if already applied
+    if Postulacion.objects.filter(oferta=offer, candidato=candidato).exists():
+        return JsonResponse({
+            'error': 'already_applied',
+            'message': 'Ya has postulado a esta oferta.'
+        }, status=400)
+
+    if request.method == 'POST':
+        selected_cv_id = request.POST.get('selected_cv')
+        if not selected_cv_id:
+            return JsonResponse({'error': 'cv_not_selected', 'message': 'Debes seleccionar un CV.'}, status=400)
+
+        try:
+            selected_cv = CVCandidato.objects.get(pk=selected_cv_id, candidato=candidato)
+            
+            Postulacion.objects.create(
+                oferta=offer,
+                candidato=candidato,
+                cv_postulado=selected_cv,
+                estado_postulacion='Recibida'
+            )
+            
+            return JsonResponse({'success': True, 'message': '¡Postulación enviada con éxito!'})
+
+        except CVCandidato.DoesNotExist:
+            return JsonResponse({'error': 'cv_not_found', 'message': 'El CV seleccionado no es válido.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': 'unknown_error', 'message': str(e)}, status=500)
+
+    # GET request
+    user_cvs = CVCandidato.objects.filter(candidato=candidato).order_by('-id_cv_user')
+    
+    # If user has no CVs, redirect them to create one, passing the offer URL
+    if not user_cvs.exists():
+        create_cv_url = reverse('create_cv')
+        # Construct the full URL to the current job offer page to be used as 'next'
+        offer_url = request.build_absolute_uri(reverse('job_offers')) + f'?oferta={offer.id_oferta}'
+        return JsonResponse({
+            'error': 'no_cv',
+            'message': 'No tienes CVs. Debes crear uno para poder postular.',
+            'redirect_url': f'{create_cv_url}?next={offer_url}'
+        }, status=400)
+
+    context = {
+        'offer': offer,
+        'cvs': user_cvs,
+        'candidato': candidato,
+    }
+    
+    modal_html = render_to_string('offers/partials/_apply_modal.html', context, request=request)
+    
+    return JsonResponse({'html': modal_html})
+
+@login_required
+def update_profile_from_modal(request):
+    if request.method != 'POST' or not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'error': 'bad_request', 'message': 'Método no permitido.'}, status=405)
+
+    candidato = get_object_or_404(Candidato, pk=request.user.pk)
+    form = CompletarPerfilForm(request.POST, instance=candidato)
+
+    if form.is_valid():
+        form.save()
+        # Return the updated data to refresh the modal view
+        updated_data = {
+            'full_name': request.user.get_full_name(),
+            'rut': candidato.rut_candidato,
+            'telefono': candidato.telefono,
+            'ubicacion': str(candidato.ciudad) if candidato.ciudad else "No ingresada"
+        }
+        return JsonResponse({'success': True, 'message': 'Perfil actualizado.', 'updated_data': updated_data})
+    else:
+        return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
+
+@login_required
+def get_profile_edit_form_html(request):
+    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse("Bad Request", status=400)
+        
+    candidato = get_object_or_404(Candidato, pk=request.user.pk)
+    form = CompletarPerfilForm(instance=candidato)
+    
+    form_html = render_to_string('offers/partials/_edit_profile_form_modal.html', {'form': form}, request=request)
+    
+    return JsonResponse({'html': form_html})
+
+@login_required
+def upload_cv_from_modal(request):
+    if request.method != 'POST' or not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'error': 'bad_request', 'message': 'Método no permitido.'}, status=405)
+
+    candidato = get_object_or_404(Candidato, pk=request.user.pk)
+    form = CVSubidoForm(request.POST, request.FILES)
+
+    if form.is_valid():
+        file = form.cleaned_data['cv_file']
+        nombre_cv = form.cleaned_data['nombre_cv']
+        cargo_asociado = form.cleaned_data['cargo_asociado']
+
+        username = request.user.username
+        filename = f"{uuid.uuid4().hex[:8]}_{file.name}"
+        s3_key = f"CVs/{username}/{filename}"
+
+        try:
+            file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
+
+            cv_candidato = CVCandidato.objects.create(
+                candidato=candidato,
+                nombre_cv=nombre_cv,
+                cargo_asociado=cargo_asociado,
+                tipo_cv='subido'
+            )
+            
+            CVSubido.objects.create(
+                id_cv_subido=cv_candidato,
+                ruta_archivo=file_url
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'CV subido exitosamente.',
+                'cv': {
+                    'id_cv_user': cv_candidato.id_cv_user,
+                    'nombre_cv': cv_candidato.nombre_cv,
+                    'cargo_asociado': cv_candidato.cargo_asociado,
+                    'tipo_cv': cv_candidato.tipo_cv
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error al subir el CV a S3: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
 
 

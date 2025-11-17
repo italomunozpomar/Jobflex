@@ -52,7 +52,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://www.jobflex.cl', 
     'http://jobflex.cl',
     'http://179.43.127.166',
-    'https://nonrioting-physicochemically-tennille.ngrok-free.dev/'
+    'https://nonrioting-physicochemically-tennille.ngrok-free.dev/',
+
 ]
 
 

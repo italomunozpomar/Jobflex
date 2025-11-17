@@ -819,6 +819,7 @@
                     <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
                 </div>
                 <form id="save-cv-form">
+                    <input type="hidden" id="next-url-input" value="{{ next_url|default:'' }}">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-dark">Nombre del CV <span class="text-red-500">*</span></label>
@@ -2156,6 +2157,7 @@
         }
 
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const nextUrl = document.getElementById('next-url-input').value;
 
         try {
             const response = await fetch('/save-cv/', {
@@ -2167,7 +2169,8 @@
                 body: JSON.stringify({
                     cv_name: cvName,
                     cargo_asociado: cargoAsociado,
-                    cvData: cvData
+                    cvData: cvData,
+                    next_url: nextUrl
                 })
             });
 

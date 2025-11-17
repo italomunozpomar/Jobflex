@@ -19,6 +19,9 @@
     <!-- Tagify -->
     <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
 
+    <!-- Main JS -->
+    <script src="{% static 'JS/main.js' %}" defer></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -205,6 +208,7 @@
         {% endblock %}
     </main>
 
+    <div id="apply-modal-placeholder"></div>
     {% include 'partials/_auth_modal.html' %}
 
     {% block extra_js %}
@@ -445,8 +449,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
     
-    <!-- Main JS -->
-    <script src="{% static 'JS/main.js' %}"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
 </body>

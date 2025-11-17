@@ -1,3 +1,195 @@
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Function to open and populate the apply modal
+function openApplyModal(offerId) {
+    const modalPlaceholder = document.getElementById('apply-modal-placeholder');
+    if (!modalPlaceholder) {
+        console.error("Placeholder 'apply-modal-placeholder' not found!");
+        return;
+    }
+
+    // Show a temporary loading state
+    modalPlaceholder.innerHTML = `
+        <div id="apply-modal-loading" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    `;
+    
+    fetch(`/apply/${offerId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { 
+                throw new Error(`Server error: ${response.status}. Body: ${text.substring(0, 500)}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.html) {
+            modalPlaceholder.innerHTML = data.html;
+            
+            const modal = document.getElementById('apply-modal');
+            const modalPanel = document.getElementById('apply-modal-panel');
+            if (modal && modalPanel) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+                setTimeout(() => modalPanel.classList.remove('scale-95', 'opacity-0'), 50);
+            } else {
+                console.error("Injected HTML but could not find #apply-modal or #apply-modal-panel.");
+            }
+
+        } else if (data.error) {
+            // Clear the loading spinner and close modal
+            const modalPlaceholder = document.getElementById('apply-modal-placeholder');
+            if (modalPlaceholder) modalPlaceholder.innerHTML = '';
+            document.body.classList.remove('overflow-hidden');
+
+            alert(data.message); // Show the error message from the server
+            
+            // If the error is 'already_applied', disable the button on the main page
+            if (data.error === 'already_applied') {
+                // 'offerId' is available from the outer scope of openApplyModal
+                const applyButtonOnPage = document.querySelector(`#open-apply-modal-btn[data-offer-id="${offerId}"]`);
+                if (applyButtonOnPage) {
+                    applyButtonOnPage.disabled = true;
+                    applyButtonOnPage.textContent = 'Postulado';
+                }
+            } 
+            // If the error requires a redirect (e.g., no CV), perform the redirect
+            else if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error opening modal:', error);
+        alert('Ocurrió un error al intentar abrir el modal de postulación. Por favor, intente de nuevo.');
+        closeApplyModal();
+    });
+}
+
+// Function to close the apply modal
+function closeApplyModal() {
+    const modalPlaceholder = document.getElementById('apply-modal-placeholder');
+    const modal = document.getElementById('apply-modal');
+    
+    if (modal) {
+        const modalPanel = document.getElementById('apply-modal-panel');
+        document.body.classList.remove('overflow-hidden');
+        
+        if (modalPanel) {
+            modalPanel.classList.add('scale-95', 'opacity-0');
+        }
+        
+        setTimeout(() => {
+            if (modalPlaceholder) {
+                modalPlaceholder.innerHTML = '';
+            } else {
+                modal.remove();
+            }
+        }, 300);
+    }
+}
+
+async function handleApplicationSubmit(form, offerId) {
+    const submitBtn = form.querySelector('#submit-application-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    
+    const formData = new FormData(form);
+    try {
+        const response = await fetch(`/apply/${offerId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await response.json();
+        if (!response.ok) throw data;
+
+        alert(data.message || '¡Postulación enviada!');
+        closeApplyModal();
+        const applyButtonOnPage = document.querySelector(`#open-apply-modal-btn[data-offer-id="${offerId}"]`);
+        if (applyButtonOnPage) {
+            applyButtonOnPage.disabled = true;
+            applyButtonOnPage.textContent = 'Postulado';
+        }
+    } catch (error) {
+        alert(error.message || 'Ocurrió un error al postular.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar Postulación';
+    }
+}
+
+async function handleInlineProfileSave(formFieldsContainer) {
+    const saveBtn = formFieldsContainer.querySelector('#save-inline-edit');
+    if (!saveBtn) return;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando...';
+
+    const formData = new FormData();
+    // Manually find and append all input, select, and textarea fields within the container
+    formFieldsContainer.querySelectorAll('input, select, textarea').forEach(field => {
+        if (field.name) {
+            formData.append(field.name, field.value);
+        }
+    });
+    
+    // The CSRF token is not in the form fields, so we need to get it from the main apply-form
+    const mainApplyForm = document.getElementById('apply-form');
+    if (mainApplyForm) {
+        const csrfToken = mainApplyForm.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrfToken) {
+            formData.append('csrfmiddlewaretoken', csrfToken.value);
+        }
+    }
+
+    try {
+        const response = await fetch('/update-profile-modal/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' } // CSRF is in the body, no need for X-CSRFToken header
+        });
+        const data = await response.json();
+        if (!response.ok) throw data;
+
+        // Update the UI with the new data
+        const rutSpan = document.getElementById('modal-profile-rut');
+        const telSpan = document.getElementById('modal-profile-telefono');
+        const citySpan = document.getElementById('modal-profile-ciudad');
+        if(rutSpan) rutSpan.textContent = data.updated_data.rut;
+        if(telSpan) telSpan.textContent = data.updated_data.telefono;
+        if(citySpan) citySpan.textContent = data.updated_data.ubicacion;
+
+        // Hide the edit form and show the display view
+        const editFormDiv = document.getElementById('user-data-edit-form');
+        const displayDiv = document.getElementById('user-data-display');
+        if(editFormDiv) {
+            editFormDiv.classList.add('hidden');
+            editFormDiv.innerHTML = '';
+        }
+        if(displayDiv) displayDiv.classList.remove('hidden');
+
+    } catch (error) {
+        alert(error.message || 'Error al guardar el perfil.');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+    }
+}
+
 function showLoader() {
 	const loader = document.querySelector('#page-loader');
 	loader.classList.remove('hidden','animate-fade-out');
@@ -190,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (saveBtnContent) saveBtnContent.classList.remove('hidden');
             if (saveSpinner) saveSpinner.classList.add('hidden');
             if (saveBtnContent && saveBtnContent.querySelector('span:last-child')) {
-                saveBtnContent.querySelector('span:last-child').classList.remove('hidden');
+                saveBtnContent.querySelector('span:last-child').classList.add('hidden');
             }
 
             if (progressBar) progressBar.style.width = '0%';
@@ -294,5 +486,195 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // --- Application Modal Logic ---
+    const mainContainer = document.getElementById('job-search-main');
+    if (mainContainer) {
+        mainContainer.addEventListener('click', function(event) {
+            const applyBtn = event.target.closest('#open-apply-modal-btn');
+            const anonApplyBtn = event.target.closest('.apply-btn-anon');
 
+            if (applyBtn) {
+                event.preventDefault();
+                const offerId = applyBtn.dataset.offerId;
+                openApplyModal(offerId);
+            } else if (anonApplyBtn) {
+                event.preventDefault();
+                const authModal = document.getElementById('auth-modal');
+                if (authModal) {
+                    authModal.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    const modalPlaceholder = document.getElementById('apply-modal-placeholder');
+    if (modalPlaceholder) {
+        // Main delegation for modal actions
+        modalPlaceholder.addEventListener('click', function(event) {
+            // Close modal on background click or cancel button
+            if (event.target.id === 'apply-modal' || event.target.closest('#cancel-apply-btn')) {
+                closeApplyModal();
+            }
+
+            // Inline Profile Edit Actions
+            const userDataContainer = event.target.closest('#user-data-container');
+            if (userDataContainer) {
+                const editBtn = event.target.closest('#edit-profile-in-modal-btn');
+                const cancelEditBtn = event.target.closest('#cancel-inline-edit');
+                const displayDiv = document.getElementById('user-data-display');
+                const formDiv = document.getElementById('user-data-edit-form');
+
+                if (editBtn) {
+                    fetch('/get-profile-edit-form/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.html) {
+                            alert('DEBUG: Injecting the following HTML into edit form container:\n\n' + data.html);
+                            formDiv.innerHTML = data.html;
+                            displayDiv.classList.add('hidden');
+                            formDiv.classList.remove('hidden');
+                        }
+                    });
+                }
+
+                if (cancelEditBtn) {
+                    formDiv.classList.add('hidden');
+                    displayDiv.classList.remove('hidden');
+                    formDiv.innerHTML = '';
+                }
+            }
+
+            // Handle Inline Profile Save Button Click
+            const saveProfileBtn = event.target.closest('#save-inline-edit');
+            if (saveProfileBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const formFieldsContainer = saveProfileBtn.closest('#inline-profile-form-fields');
+                if (formFieldsContainer) {
+                    handleInlineProfileSave(formFieldsContainer);
+                }
+            }
+
+            // CV Upload Actions
+            const uploadCvBtn = event.target.closest('#upload-cv-btn-modal');
+            const cancelUploadCvBtn = event.target.closest('#cancel-upload-cv-modal');
+            const cvSelectionSection = document.getElementById('cv-selection-section');
+            const uploadCvSection = document.getElementById('upload-cv-section');
+            const modalFooter = document.getElementById('apply-modal-footer');
+
+            if (uploadCvBtn) {
+                if (cvSelectionSection) cvSelectionSection.classList.add('hidden');
+                if (uploadCvSection) uploadCvSection.classList.remove('hidden');
+                if (modalFooter) modalFooter.classList.add('hidden');
+            }
+
+            if (cancelUploadCvBtn) {
+                if (uploadCvSection) uploadCvSection.classList.add('hidden');
+                if (cvSelectionSection) cvSelectionSection.classList.remove('hidden');
+                if (modalFooter) modalFooter.classList.remove('hidden');
+
+                // Clear form fields
+                const uploadForm = document.getElementById('upload-cv-form-modal');
+                if (uploadForm) uploadForm.reset();
+                const cvFileNameDisplay = document.getElementById('cv-file-name-display');
+                if (cvFileNameDisplay) cvFileNameDisplay.textContent = '';
+            }
+        });
+
+        // Delegation for form submissions
+        modalPlaceholder.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formId = event.target.id;
+
+            if (formId === 'apply-form') {
+                const form = event.target;
+                const offerId = form.querySelector('[name=offer_id]').value;
+                handleApplicationSubmit(form, offerId);
+
+            } else if (formId === 'upload-cv-form-modal') {
+                const form = event.target;
+                const submitBtn = form.querySelector('#submit-upload-cv-modal');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subiendo...';
+
+                const formData = new FormData(form);
+                try {
+                    const response = await fetch('/upload-cv-modal/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCookie('csrftoken') }
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        // Handle validation errors or other server-side errors
+                        let errorMessage = data.message || 'Error al subir el CV.';
+                        if (data.errors) {
+                            errorMessage += '\n' + Object.values(data.errors).map(e => e[0].message).join('\n');
+                        }
+                        alert(errorMessage);
+                        throw new Error(errorMessage);
+                    }
+
+                    alert(data.message || '¡CV subido con éxito!');
+                    
+                    // Dynamically add the new CV to the selection list
+                    const cvSelectionSection = document.getElementById('cv-selection-section');
+                    const cvListDiv = cvSelectionSection.querySelector('div.space-y-3');
+                    if (cvListDiv) {
+                        const newCvHtml = `
+                            <label for="cv_${data.cv.id_cv_user}" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                <input type="radio" id="cv_${data.cv.id_cv_user}" name="selected_cv" value="${data.cv.id_cv_user}" class="h-4 w-4 text-primary border-gray-300 focus:ring-primary" checked>
+                                <div class="ml-3">
+                                    <p class="font-bold text-dark">${data.cv.nombre_cv}</p>
+                                    <p class="text-sm text-secondary">${data.cv.cargo_asociado} - ${data.cv.tipo_cv === 'creado' ? 'Creado en JobFlex' : 'Subido'}</p>
+                                </div>
+                            </label>
+                        `;
+                        // If there was a "No tienes ningún CV" message, remove it
+                        const noCvMessage = cvListDiv.querySelector('p.text-center');
+                        if (noCvMessage) noCvMessage.remove();
+                        cvListDiv.insertAdjacentHTML('afterbegin', newCvHtml); // Add new CV at the top
+                    }
+
+                    // Re-enable the "Enviar Postulación" button if it was disabled
+                    const submitApplicationBtn = document.getElementById('submit-application-btn');
+                    if (submitApplicationBtn) submitApplicationBtn.disabled = false;
+
+                    // Hide upload section and show selection section
+                    const uploadSection = document.getElementById('upload-cv-section');
+                    const selectionSection = document.getElementById('cv-selection-section');
+                    const modalFooter = document.getElementById('apply-modal-footer');
+
+                    if (uploadSection) uploadSection.classList.add('hidden');
+                    if (selectionSection) selectionSection.classList.remove('hidden');
+                    if (modalFooter) modalFooter.classList.remove('hidden');
+                    
+                    form.reset(); // Clear the upload form
+                    const fileNameDisplay = document.getElementById('cv-file-name-display');
+                    if (fileNameDisplay) fileNameDisplay.textContent = ''; // Clear file name display
+
+                } catch (error) {
+                    console.error('Error uploading CV:', error);
+                    alert(error.message || 'Ocurrió un error al subir el CV.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            }
+        });
+
+        // Event listener for file input change to display file name
+        modalPlaceholder.addEventListener('change', function(event) {
+            if (event.target.id === 'cv-file-input-modal') {
+                const fileNameDisplay = document.getElementById('cv-file-name-display');
+                if (event.target.files.length > 0) {
+                    fileNameDisplay.textContent = `Archivo seleccionado: ${event.target.files[0].name}`;
+                } else {
+                    fileNameDisplay.textContent = '';
+                }
+            }
+        });
+    }
 });
