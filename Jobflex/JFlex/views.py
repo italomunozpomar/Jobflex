@@ -247,7 +247,8 @@ def Profile(request):
 
     # Initialize forms outside the if/else block to ensure they are always defined
     form = CandidatoForm(instance=candidato)
-    cv_subido_form = CVSubidoForm()
+    # Add a prefix to the upload form to prevent ID collisions in the template
+    cv_subido_form = CVSubidoForm(prefix="upload")
 
     if request.method == 'POST':
         # Diferenciar entre los formularios
@@ -259,7 +260,8 @@ def Profile(request):
                 return redirect('profile')
         
         elif 'submit_cv' in request.POST:
-            cv_subido_form = CVSubidoForm(request.POST, request.FILES)
+            # Use the same prefix when processing the POST data
+            cv_subido_form = CVSubidoForm(request.POST, request.FILES, prefix="upload")
             if cv_subido_form.is_valid():
                 file = cv_subido_form.cleaned_data['cv_file']
                 username = request.user.username
@@ -282,14 +284,17 @@ def Profile(request):
                 
                 messages.success(request, "Tu CV ha sido subido exitosamente.")
                 return redirect('profile')
-        # If neither 'submit_profile' nor 'submit_cv' is in request.POST,
-        # the forms will retain their initial (instance-based) values.
-    # else: # GET request - no longer needed as forms are initialized above
-    #     form = CandidatoForm(instance=candidato)
-    #     cv_subido_form = CVSubidoForm()
 
     # --- Lógica de serialización de CVs para la vista previa ---
-    cvs_qs = CVCandidato.objects.filter(candidato=candidato).select_related('cvcreado', 'cvsubido')
+    from django.db.models.functions import Coalesce
+
+    # Order CVs by the most recent date from either CVCreado or CVSubido
+    cvs_qs = CVCandidato.objects.filter(candidato=candidato)\
+        .select_related('cvcreado', 'cvsubido')\
+        .annotate(
+            latest_date=Coalesce('cvcreado__ultima_actualizacion', 'cvsubido__fecha_subido')
+        )\
+        .order_by('-latest_date')[:3] # Slice to get the latest 3
     cv_list = []
     for cv in cvs_qs:
         cv_item = {

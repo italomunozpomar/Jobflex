@@ -39,6 +39,8 @@ urlpatterns = [
 
     # Incluir las URLs de allauth
     path('accounts/', include('allauth.urls')),
+
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 if settings.DEBUG:

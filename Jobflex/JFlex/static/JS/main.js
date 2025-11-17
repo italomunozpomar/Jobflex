@@ -516,6 +516,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 closeApplyModal();
             }
 
+            // Handle User Data Toggle
+            const toggleBtn = event.target.closest('#user-data-toggle-btn');
+            if (toggleBtn) {
+                const collapsibleSection = document.getElementById('user-data-collapsible-section');
+                const chevron = toggleBtn.querySelector('svg');
+                const cvListContainer = document.getElementById('cv-list-container');
+
+                if (collapsibleSection && chevron && cvListContainer) {
+                    const isCurrentlyVisible = !collapsibleSection.classList.contains('hidden');
+                    
+                    collapsibleSection.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+
+                    if (isCurrentlyVisible) {
+                        // It was visible, now it's collapsing. Expand the CV list.
+                        cvListContainer.classList.remove('max-h-48');
+                        cvListContainer.classList.add('max-h-80'); // 20rem
+                    } else {
+                        // It was hidden, now it's expanding. Shrink the CV list.
+                        cvListContainer.classList.remove('max-h-80');
+                        cvListContainer.classList.add('max-h-48'); // 12rem
+                    }
+                }
+            }
+
             // Inline Profile Edit Actions
             const userDataContainer = event.target.closest('#user-data-container');
             if (userDataContainer) {

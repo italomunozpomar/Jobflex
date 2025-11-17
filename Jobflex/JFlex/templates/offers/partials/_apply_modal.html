@@ -16,26 +16,35 @@
             <div class="p-6 space-y-6">
                 
                 <!-- User Data Display -->
-                <div id="user-data-container" class="p-4 border rounded-lg bg-gray-50">
-                    <div class="flex justify-between items-center mb-3">
+                <div id="user-data-container" class="border rounded-lg bg-gray-50">
+                    <div class="flex justify-between items-center p-4">
                         <h3 class="font-semibold text-dark">Tus Datos</h3>
-                        <button type="button" id="edit-profile-in-modal-btn" class="text-sm text-primary font-semibold hover:underline">Editar</button>
+                        <div class="flex items-center gap-4">
+                            <button type="button" id="edit-profile-in-modal-btn" class="text-sm text-primary font-semibold hover:underline">Editar</button>
+                            <button type="button" id="user-data-toggle-btn" class="p-1 rounded-full hover:bg-gray-200 transition-colors">
+                                <svg class="w-5 h-5 text-gray-600 transition-transform transform rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <div id="user-data-display" class="space-y-2 text-sm">
-                        <p><strong class="font-medium text-gray-600 w-20 inline-block">Nombre:</strong> <span id="modal-profile-name" class="text-dark">{{ user.get_full_name }}</span></p>
-                        <p><strong class="font-medium text-gray-600 w-20 inline-block">RUT:</strong> <span id="modal-profile-rut" class="text-dark">{{ candidato.rut_candidato|default:"No ingresado" }}</span></p>
-                        <p><strong class="font-medium text-gray-600 w-20 inline-block">Teléfono:</strong> <span id="modal-profile-telefono" class="text-dark">{{ candidato.telefono|default:"No ingresado" }}</span></p>
-                        <p><strong class="font-medium text-gray-600 w-20 inline-block">Ubicación:</strong> <span id="modal-profile-ciudad" class="text-dark">{{ candidato.ciudad|default:"No ingresada" }}</span></p>
-                    </div>
-                    <div id="user-data-edit-form" class="hidden">
-                        <!-- The edit form will be injected here by JavaScript -->
+                    <div id="user-data-collapsible-section" class="px-4 pb-4 border-t border-gray-200">
+                        <div id="user-data-display" class="space-y-2 text-sm pt-4">
+                            <p><strong class="font-medium text-gray-600 w-20 inline-block">Nombre:</strong> <span id="modal-profile-name" class="text-dark">{{ user.get_full_name }}</span></p>
+                            <p><strong class="font-medium text-gray-600 w-20 inline-block">RUT:</strong> <span id="modal-profile-rut" class="text-dark">{{ candidato.rut_candidato|default:"No ingresado" }}</span></p>
+                            <p><strong class="font-medium text-gray-600 w-20 inline-block">Teléfono:</strong> <span id="modal-profile-telefono" class="text-dark">{{ candidato.telefono|default:"No ingresado" }}</span></p>
+                            <p><strong class="font-medium text-gray-600 w-20 inline-block">Ubicación:</strong> <span id="modal-profile-ciudad" class="text-dark">{{ candidato.ciudad|default:"No ingresada" }}</span></p>
+                        </div>
+                        <div id="user-data-edit-form" class="hidden pt-4">
+                            <!-- The edit form will be injected here by JavaScript -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- CV Selection -->
                 <div id="cv-selection-section">
                     <h3 class="font-semibold text-dark mb-3">Selecciona tu CV</h3>
-                    <div class="space-y-3 max-h-48 overflow-y-auto pr-2">
+                    <div id="cv-list-container" class="space-y-3 max-h-48 overflow-y-auto pr-2 transition-all duration-300">
                         {% if cvs %}
                             {% for cv in cvs %}
                                 <label for="cv_{{ cv.id_cv_user }}" class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
