@@ -7,7 +7,9 @@
             <img src="{% if oferta.empresa.imagen_perfil %}{{ oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ oferta.empresa.nombre_comercial }}" class="w-12 h-12 rounded-lg object-cover mr-4">
             <div>
                 <h1 class="text-2xl font-bold text-dark">{{ oferta.titulo_puesto }}</h1>
-                <p class="text-lg text-secondary">{{ oferta.empresa.nombre_comercial }}</p>
+                <a href="{% url 'company_profile' company_id=oferta.empresa.id_empresa %}" class="text-lg text-secondary hover:underline">
+                    {{ oferta.empresa.nombre_comercial }}
+                </a>
             </div>
         </div>
         <div class="mt-6 flex items-center gap-4">

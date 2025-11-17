@@ -1,0 +1,75 @@
+### Resumen de la Arquitectura del Proyecto
+
+Tu sistema es una aplicación web construida con el framework **Django**, diseñada como un portal de empleos. La arquitectura se caracteriza por desacoplar la lógica de la aplicación principal de un servicio de validación de datos externo a través de una configuración de múltiples bases de datos.
+
+#### 1. Aplicación Principal (`JFlex`)
+- **Propósito:** Es el corazón del portal de empleos. Gestiona toda la lógica relacionada con usuarios (candidatos), empresas, ofertas de trabajo y postulaciones.
+- **Modelos Clave:** `Candidato`, `Empresa`, `OfertaLaboral`, `Postulacion`, `CVCandidato`.
+- **Base de Datos:** Utiliza una base de datos **MSSQL** (`jflex_db`) para todos sus datos.
+
+#### 2. Servicio de Validación (`sii`)
+- **Propósito:** Funciona como un servicio de datos externo para validar la información de las empresas.
+- **Modelo Clave:** `EmpresaSII`.
+- **Base de Datos:** Utiliza una base de datos **MySQL** separada (`sii`).
+
+#### 3. Arquitectura de Base de Datos (Multi-DB)
+- El sistema está configurado para usar dos bases de datos simultáneamente, como se define en `Jobflex/core/settings.py`.
+- Un **Database Router** (`JFlexRouter` en `Jobflex/JFlex/routers.py`) se encarga de dirigir todas las consultas de la aplicación `JFlex` a la base de datos `jflex_db`.
+- Las interacciones con la base de datos `sii` se realizan explícitamente utilizando el método `.using('sii')` en el código.
+
+#### 4. Manejo de Peticiones (URLs)
+- El archivo principal de enrutamiento es `Jobflex/core/urls.py`.
+- La mayoría de las rutas (`/`) se delegan a la aplicación `JFlex`, que maneja la lógica de las vistas para los usuarios finales.
+
+#### 5. Configuración de Producción
+Tu aplicación está configurada para un entorno de producción:
+- **Archivos Estáticos:** Son gestionados por **WhiteNoise**, una práctica estándar para servir archivos CSS, JS e imágenes de manera eficiente.
+- **Archivos Multimedia (Uploads):** Los archivos subidos por los usuarios (como los CVs) se almacenan en **Amazon S3**, según la configuración de `DEFAULT_FILE_STORAGE`. Esto desacopla el almacenamiento de archivos del servidor de la aplicación.
+- **Servidor de Aplicación:** Los archivos `wsgi.py` y `asgi.py` son los puntos de entrada estándar para servidores de aplicaciones como Gunicorn o Uvicorn, que son comunes en producción.
+
+---
+
+### Diagrama de Arquitectura y Flujo de Datos Final
+
+**Componentes:**
+
+1.  **Aplicación Web (Django):** El proyecto `Jobflex` que contiene la lógica de negocio en la app `JFlex`.
+2.  **Base de Datos Principal (MSSQL - `jflex_db`):** Almacena los datos transaccionales de la aplicación (usuarios, ofertas, CVs, etc.).
+3.  **Base de Datos de Validación (MySQL - `sii`):** Actúa como una caché o réplica local de datos externos de empresas para validaciones rápidas.
+4.  **Proceso ETL (Management Command):** El script `populate_sii` que se ejecuta manualmente para poblar la base de datos de validación desde un archivo de texto.
+5.  **Almacenamiento de Archivos (AWS S3):** Servicio externo para guardar archivos subidos por los usuarios (media).
+6.  **Servidor de Estáticos (WhiteNoise):** Middleware que sirve los archivos estáticos (CSS/JS) directamente desde la aplicación.
+
+**Flujo de Datos:**
+
+Aquí te describo los dos flujos de datos principales que puedes representar en tu diagrama:
+
+**1. Flujo de Datos de la Aplicación (Tiempo Real):**
+
+```
++---------+      +------------------------+      +--------------------------+
+| Usuario | <--> | Vistas de la App JFlex | <--> | DB Principal (jflex_db)  |
++---------+      +------------------------+      +--------------------------+
+                      |         ^
+                      |         | (Para validación de RUT)
+                      v         |
+                  +--------------------------+
+                  | DB Validación (sii)      |
+                  +--------------------------+
+```
+
+-   Un usuario interactúa con la aplicación.
+-   Las vistas de `JFlex` leen y escriben en la base de datos principal `jflex_db` (MSSQL).
+-   Para acciones específicas (ej. registro de empresa), la vista también **lee** de la base de datos `sii` (MySQL) para validar datos.
+
+**2. Flujo de Carga de Datos (Offline/Bajo Demanda):**
+
+```
++-----------------+      +---------------------+      +--------------------------+
+| Archivo de Texto| ---> | Comando `populate_sii`| ---> | DB Validación (sii)      |
+| (PUB_NOMBRES_PJ)|      +---------------------+      +--------------------------+
++-----------------+
+```
+
+-   Un administrador ejecuta el comando `manage.py populate_sii`.
+-   El comando lee el archivo de texto y **escribe** masivamente en la base de datos `sii`.

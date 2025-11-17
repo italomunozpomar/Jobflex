@@ -193,7 +193,17 @@
                     card.addEventListener('click', () => showJob(jobCards, card));
                 });
 
-                // --- Auto-selection logic temporarily removed for debugging ---
+                // Re-implement auto-selection logic
+                const urlParams = new URLSearchParams(window.location.search);
+                const ofertaId = urlParams.get('oferta');
+                if (ofertaId) {
+                    const cardToSelect = document.querySelector(`.job-card[data-job-id="${ofertaId}"]`);
+                    if (cardToSelect) {
+                        showJob(jobCards, cardToSelect);
+                        // Scroll the selected card into view
+                        cardToSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
             }
 
             function loadPage(url, push = true) {

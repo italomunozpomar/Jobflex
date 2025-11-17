@@ -72,84 +72,43 @@
                 </div>
 
                 <!-- Pestaña "Ofertas de Trabajo" -->
-                <div id="jobs-content" class="tab-panel hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200 bg-gray-50">
-                                    <th class="py-3 px-4 font-semibold text-gray-700">Título del Puesto</th>
-                                    <th class="py-3 px-4 font-semibold text-gray-700">Estado</th>
-                                    <th class="py-3 px-4 font-semibold text-gray-700">Candidatos</th>
-                                    <th class="py-3 px-4 font-semibold text-gray-700 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for oferta in ofertas_activas %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <td class="py-4 px-4">
-                                        <span class="font-medium text-gray-900">{{ oferta.titulo_puesto }}</span>
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        {% if oferta.estado == 'activa' %}
-                                            <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Activo</span>
-                                        {% elif oferta.estado == 'pausada' %}
-                                            <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs font-semibold">En Pausa</span>
-                                        {% elif oferta.estado == 'cerrada' %}
-                                            <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs font-semibold">Cerrado</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        <span class="font-semibold text-gray-700">{{ offer.candidate_count|default:0 }}</span>
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        <div class="flex justify-center gap-3">
-                                            <!-- Ver -->
-                                            <a href="#" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors" title="Ver oferta">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                            </a>
-                                            
-                                            <!-- Editar -->
-                                            <a href="{% url 'company_index' %}?edit_offer={{ oferta.id_oferta }}" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors" title="Editar oferta"
-                                               data-fecha-publicacion="{{ oferta.fecha_publicacion|date:'Y-m-d' }}"
-                                               data-fecha-cierre="{{ oferta.fecha_cierre|date:'Y-m-d' }}">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                            </a>
-                                            
-                                            <!-- Eliminar -->
-                                            <form method="POST" action="{% url 'company_index' %}" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta oferta permanentemente?');">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="delete_offer">
-                                                <input type="hidden" name="offer_id" value="{{ oferta.id_oferta }}">
-                                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors" title="Eliminar oferta">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="py-8 text-center">
-                                        <div class="flex flex-col items-center justify-center">
-                                            <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                            </svg>
-                                            <p class="text-gray-500 font-medium">No hay ofertas de trabajo activas en este momento.</p>
-                                            <p class="text-gray-400 text-sm mt-1">Esta empresa aún no ha publicado sus oportunidades de empleo.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div id="jobs-content" class="tab-panel hidden space-y-4">
+                    {% for oferta in page_obj %}
+                        {% include 'company/partials/_company_job_card.html' with oferta=oferta %}
+                    {% empty %}
+                        <div class="flex flex-col items-center justify-center py-8 text-center">
+                            <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 font-medium">No hay ofertas de trabajo activas en este momento.</p>
+                            <p class="text-gray-400 text-sm mt-1">Esta empresa aún no ha publicado sus oportunidades de empleo.</p>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Paginator -->
+                    {% if page_obj.has_previous or page_obj.has_next %}
+                    <div class="flex justify-center items-center pt-4 border-t">
+                        <div class="pagination flex items-center space-x-2">
+                            {% if page_obj.has_previous %}
+                                <a class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700" href="?page=1">&laquo;</a>
+                                <a class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                            {% else %}
+                                <button disabled class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-300 rounded-lg cursor-not-allowed">&laquo;</button>
+                                <button disabled class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-300 rounded-lg cursor-not-allowed">Anterior</button>
+                            {% endif %}
+                        
+                            <span class="px-3 py-2 text-sm font-medium text-primary bg-blue-50 border border-blue-300 rounded-lg">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                        
+                            {% if page_obj.has_next %}
+                                <a class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                                <a class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                            {% else %}
+                                <button disabled class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-300 rounded-lg cursor-not-allowed">Siguiente</button>
+                                <button disabled class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-300 rounded-lg cursor-not-allowed">&raquo;</button>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

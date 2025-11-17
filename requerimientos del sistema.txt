@@ -1,0 +1,43 @@
+Módulo Página Principal Empresa
+ID
+Requerimientos
+RF-43
+El sistema debe mostrar un dashboard interactivo en el panel principal de la empresa, el cual debe incluir métricas y visualizaciones relevantes para su actividad, tales como:
+Empleos activos
+Nuevos candidatos
+Entrevistas programadas
+Vistas del perfil público
+Rendimiento de empleos (postulaciones, aceptados, rechazados y comparativas entre ofertas)
+El dashboard debe actualizarse automáticamente según la actividad reciente y permitir una interpretación clara del desempeño general de la empresa en la plataforma.
+RF-44
+El sistema debe proporcionar a la empresa una navegación clara y eficiente mediante: un menú lateral que permita acceder a los módulos principales del área empresa (como Dashboard, Empleos, Usuarios, Candidatos y Entrevistas) y accesos rápidos en el panel principal para ejecutar acciones frecuentes (como crear una oferta de empleo, gestionar usuarios internos y acceder a la información o perfil público de la empresa).
+RF-45
+El sistema debe mostrar una sección de actividad reciente que resuma los eventos más relevantes relacionados con la actividad de la empresa, en donde cada evento debe incluir un  indicador de tiempo relativo (por ejemplo: “Hace 2 horas”, “Ayer a las 3:00 PM”, “Hace 3 días”).
+
+
+Módulo Gestión de Ofertas Laborales Empresa
+ID
+Requerimientos
+RF-46
+El sistema debe permitir a la empresa crear una nueva oferta laboral mediante un formulario estructurado que incluya los siguientes campos: 
+Información principal (título del puesto, jornada, modalidad)
+Detalles del puesto (descripción del puesto, requisitos)
+Condiciones (salario min-max, nivel de experiencia)
+Habilidades y Beneficios (habilidades clave para el puesto, beneficios del puesto)
+El formulario debe validar campos obligatorios y mostrar mensajes claros en caso de error.
+RF-47
+El sistema debe mostrar un listado de todas las ofertas creadas por la empresa, indicando:
+Título del empleo
+Categoría
+Fecha de publicación o actualización
+Estado (activa, inactiva o expirada según lógica del sistema)
+Número de postulaciones recibidas
+Acciones rápidas (Ver – Editar – Eliminar)
+RF-48
+El sistema debe proporcionar métricas que permitan a la empresa analizar el desempeño de sus ofertas laborales, incluyendo: un panel o contador que muestre cuántas ofertas están publicadas en cada categoría registrada, permitiendo identificar rápidamente las áreas con mayor actividad.
+RF-49
+El sistema debe permitir ver para cada oferta laboral:
+Cantidad total de postulaciones
+Cantidad filtrada por estados (enviadas, en proceso, aceptadas, rechazadas)
+Acceso directo al listado de candidatos postulados a dicha oferta
+

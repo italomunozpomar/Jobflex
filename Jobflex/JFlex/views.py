@@ -2253,18 +2253,23 @@ def job_details(request:HttpRequest,id_oferta:int):
 
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404
+    from django.core.paginator import Paginator
     company = get_object_or_404(Empresa, pk=company_id)
     
     # Get active job offers for this company
-    ofertas_activas = OfertaLaboral.objects.filter(
+    ofertas_list = OfertaLaboral.objects.filter(
         empresa=company,
         estado='activa'
-    ).order_by('-fecha_publicacion')
+    ).select_related('jornada', 'modalidad', 'ciudad').order_by('-fecha_publicacion')
+    
+    paginator = Paginator(ofertas_list, 5) # Show 5 offers per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     context = {
         'empresa': company,
-        'ofertas_activas': ofertas_activas,
-        'total_ofertas': ofertas_activas.count()
+        'page_obj': page_obj, # Pass the page object instead of the full list
+        'total_ofertas': ofertas_list.count()
     }
     return render(request, 'company/company_profile.html', context)
 
