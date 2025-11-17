@@ -25,9 +25,9 @@
                 extend: {
                     colors: {
                         'primary': '#8CA01A',
-                        'secondary': '#89746F',
+                        'secondary': '#1A8CA0',
                         'light-gray': '#D8D9DD',
-                        'dark': '#312F32',
+                        'dark': '#101208',
                     },
 										animation: {
 											//				@keyframe-args..................
@@ -391,6 +391,7 @@
                     const navNotificationIcon = document.getElementById('nav-notification-icon');
                     const navDropdownIcon = document.getElementById('nav-dropdown-icon');
                     const navInicio = document.getElementById('nav-inicio');
+                    const mobileMenuBtn = document.getElementById('mobile-menu-btn'); // Added this line
 
                     window.addEventListener('scroll', () => {
                         const isScrolled = window.scrollY > 50;
@@ -427,6 +428,10 @@
                         if (navInicio) {
                             navInicio.classList.toggle('text-white', isScrolled);
                             navInicio.classList.toggle('text-dark', !isScrolled);
+                        }
+                        if (mobileMenuBtn) { // Added this block
+                            mobileMenuBtn.classList.toggle('text-white', isScrolled);
+                            mobileMenuBtn.classList.toggle('text-dark', !isScrolled);
                         }
                     });
                 }

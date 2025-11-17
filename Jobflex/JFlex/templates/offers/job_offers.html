@@ -117,6 +117,7 @@
             </div>
         </section>
     </main>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -244,18 +245,29 @@
             const filterToggleBtn = document.getElementById('filter-toggle-btn');
             const filterMenu = document.getElementById('filter-menu');
             if (filterToggleBtn && filterMenu) {
-                // Open filters by default if any filter is active
+                const setActiveState = (isActive) => {
+                    if (isActive) {
+                        filterToggleBtn.classList.add('bg-primary', 'text-white');
+                        filterToggleBtn.classList.remove('bg-white', 'text-primary');
+                    } else {
+                        filterToggleBtn.classList.remove('bg-primary', 'text-white');
+                        filterToggleBtn.classList.add('bg-white', 'text-primary');
+                    }
+                };
+
+                // Set initial state on page load
                 const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('region') || urlParams.get('ciudad') || urlParams.get('mode') || urlParams.get('time')) {
+                const hasActiveFilters = urlParams.get('region') || urlParams.get('ciudad') || urlParams.get('mode') || urlParams.get('time');
+                
+                if (hasActiveFilters) {
                     filterMenu.classList.add('open');
-                    filterToggleBtn.classList.add('bg-primary', 'text-white');
+                    setActiveState(true);
                 }
 
+                // Handle click event
                 filterToggleBtn.addEventListener('click', () => {
-                    filterMenu.classList.toggle('open');
-                    const isOpen = filterMenu.classList.contains('open');
-                    filterToggleBtn.classList.toggle('bg-primary', isOpen);
-                    filterToggleBtn.classList.toggle('text-white', isOpen);
+                    const isOpen = filterMenu.classList.toggle('open');
+                    setActiveState(isOpen);
                 });
             }
 

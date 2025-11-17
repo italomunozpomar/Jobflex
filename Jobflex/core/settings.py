@@ -40,13 +40,19 @@ sys.path.insert(0, str(BASE_DIR.parent))
 SECRET_KEY = 'django-insecure-crw6j)=%6qm9z#)!s%jsigvyt4rkj#@a*#1*^v4_!hw2racfo3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ['*']
+DEBUG = True
+ALLOWED_HOSTS = [
+    '192.168.0.2',
+    '127.0.0.1',
+    'localhost',
+    'nonrioting-physicochemically-tennille.ngrok-free.dev',  # <-- AÑADE ESTA LÍNEA
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://www.jobflex.cl', 
     'http://jobflex.cl',
-    'http://179.43.127.166' 
+    'http://179.43.127.166',
+    'https://nonrioting-physicochemically-tennille.ngrok-free.dev/'
 ]
 
 
@@ -56,6 +62,7 @@ INSTALLED_APPS = [
 		'JFlex.apps.JflexConfig',
 		'sii.apps.SiiConfig',
     'django.contrib.admin',
+    "django_browser_reload",
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -105,6 +112,7 @@ ACCOUNT_FORMS = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 		'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
