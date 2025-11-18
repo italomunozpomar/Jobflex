@@ -20,6 +20,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model # Use get_user_model
+from django.core.paginator import Paginator
 User = get_user_model() # Define User globally
 from django.db import transaction # Add this line
 from django.template.loader import render_to_string
@@ -2856,16 +2857,18 @@ def company_profile(request, company_id):
     rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
     all_rubros_json = json.dumps(rubros_list)
 
-    # Determine if the logged-in user is an admin of this company
-    is_admin = False
+    # Determine if the logged-in user can edit this profile
+    can_edit = False
     if request.user.is_authenticated:
         try:
+            # Check if the logged-in user is associated with THIS company and has an admin role
             empresa_usuario = EmpresaUsuario.objects.select_related('rol').get(id_empresa_user=request.user)
             if empresa_usuario.empresa == company:
                 user_role = empresa_usuario.rol.nombre_rol
-                is_admin = (user_role == 'Representante' or user_role == 'Administrador')
+                if user_role in ['Representante', 'Administrador']:
+                    can_edit = True
         except EmpresaUsuario.DoesNotExist:
-            pass # User is not associated with any company
+            pass # User is not a company user, so can_edit remains False
 
     context = {
         'empresa': company,
@@ -2874,7 +2877,7 @@ def company_profile(request, company_id):
         'profile_incomplete': profile_incomplete,
         'company_data_form': company_data_form, # Add form to context
         'all_rubros_json': all_rubros_json,
-        'is_admin': is_admin,
+        'can_edit': can_edit,
     }
     return render(request, 'company/company_profile.html', context)
 

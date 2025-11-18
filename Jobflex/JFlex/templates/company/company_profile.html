@@ -38,6 +38,7 @@
                 </div>
 
                 <!-- Botón de Editar y Alerta -->
+                {% if can_edit %}
                 <div class="flex items-center space-x-2 mt-4 sm:mt-0">
                     {% if profile_incomplete %}
                     <div class="relative group">
@@ -52,6 +53,7 @@
                         Editar Perfil
                     </button>
                 </div>
+                {% endif %}
             </div>
         </div>
     </header>

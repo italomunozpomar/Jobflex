@@ -165,8 +165,60 @@
 
         <!-- Postulaciones Content -->
         <div id="postulaciones" class="tab-content hidden">
-            <h1 class="text-3xl font-bold text-dark mb-6">Postulaciones</h1>
-            <p class="text-gray-600">Contenido de postulaciones aquí...</p>
+            <h1 class="text-3xl font-bold text-dark mb-6">Seleccionar Oferta para Ver Postulantes</h1>
+            
+            <!-- Filter Form -->
+            <form method="GET" action="{% url 'company_index' %}" class="mb-6 bg-white p-4 rounded-lg shadow-md">
+                <input type="hidden" name="tab" value="postulaciones">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="postulaciones-categoria-filter" class="block text-sm font-medium text-gray-700">Filtrar por Categoría</label>
+                        <select id="postulaciones-categoria-filter" name="categoria" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in all_categorias %}
+                                <option value="{{ categoria.id_categoria }}" {% if filter_values.categoria == categoria.id_categoria|stringformat:"s" %}selected{% endif %}>
+                                    {{ categoria.tipo_categoria }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="self-end flex items-center space-x-2">
+                        <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Filtrar
+                        </button>
+                        <a href="{% url 'company_index' %}?tab=postulaciones" class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Offers Grid -->
+            <div id="postulaciones-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for offer in all_offers %}
+                <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-lg font-bold text-dark truncate">{{ offer.titulo_puesto }}</h4>
+                        {% if offer.estado == 'activa' %}
+                            <span class="text-xs font-semibold py-1 px-2 rounded-full bg-green-100 text-green-800">Activa</span>
+                        {% elif offer.estado == 'cerrada' %}
+                            <span class="text-xs font-semibold py-1 px-2 rounded-full bg-red-100 text-red-800">Cerrada</span>
+                        {% else %}
+                            <span class="text-xs font-semibold py-1 px-2 rounded-full bg-gray-100 text-gray-800">{{ offer.estado|capfirst }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ offer.categoria.tipo_categoria }}</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                        <p class="text-sm font-medium text-gray-700">Postulantes</p>
+                        <p class="text-lg font-bold text-primary">{{ offer.candidate_count }}</p>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <p class="text-gray-500">No se encontraron ofertas que coincidan con los filtros seleccionados.</p>
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <!-- Users Content -->
