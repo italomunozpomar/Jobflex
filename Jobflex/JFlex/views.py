@@ -965,6 +965,361 @@ def company_index(request):
     return render(request, 'company/company_index.html', context)
 
 @login_required
+def view_offer_applicants(request, offer_id):
+    try:
+        empresa_usuario = EmpresaUsuario.objects.using('jflex_db').select_related('empresa').get(id_empresa_user=request.user)
+        company = empresa_usuario.empresa
+    except EmpresaUsuario.DoesNotExist:
+        messages.error(request, "No estás asociado a ninguna empresa.")
+        return redirect('index')
+
+    offer = get_object_or_404(OfertaLaboral.objects.using('jflex_db'), id_oferta=offer_id, empresa=company)
+
+    # Define Kanban columns and their display names
+    STATUS_CHOICES = [
+        ('enviada', 'Nuevos Postulantes'),
+        ('en proceso', 'En Revisión'),
+        ('entrevista', 'Entrevistas'),
+        ('aceptada', 'Aceptados'),
+        ('rechazada', 'Rechazados'),
+    ]
+    
+    applicants_by_status = {status[0]: [] for status in STATUS_CHOICES}
+
+    postulaciones = Postulacion.objects.using('jflex_db').filter(oferta=offer).select_related(
+        'candidato', 'candidato__ciudad', 'cv_postulado'
+    ).order_by('-fecha_postulacion')
+
+    applicant_user_ids = [p.candidato.id_candidato_id for p in postulaciones]
+    users_from_default = User.objects.using('default').filter(pk__in=applicant_user_ids)
+    user_map = {user.pk: user for user in users_from_default}
+
+    today = date.today()
+    for p in postulaciones:
+        candidato = p.candidato
+        user = user_map.get(candidato.id_candidato_id)
+
+        if not user:
+            continue
+
+        age = None
+        if candidato.fecha_nacimiento:
+            age = today.year - candidato.fecha_nacimiento.year - ((today.month, today.day) < (candidato.fecha_nacimiento.month, candidato.fecha_nacimiento.day))
+
+        applicant_data = {
+            'postulacion_id': p.id_postulacion,
+            'full_name': user.get_full_name(),
+            'age': age,
+            'location': candidato.ciudad.nombre if candidato.ciudad else 'No especificada',
+            'availability': 'Disponible' if candidato.disponible else 'No Disponible',
+            'application_date': p.fecha_postulacion,
+            'cv_id': p.cv_postulado.id_cv_user,
+            'cv_type': p.cv_postulado.tipo_cv,
+            'cv_url': None  # Default value
+        }
+
+        if applicant_data['cv_type'] == 'subido':
+            try:
+                cv_subido = CVSubido.objects.using('jflex_db').get(pk=applicant_data['cv_id'])
+                applicant_data['cv_url'] = cv_subido.ruta_archivo
+            except CVSubido.DoesNotExist:
+                pass  # Keep cv_url as None if not found
+        
+        # Add applicant to the correct status list
+        status_key = p.estado_postulacion
+        if status_key not in applicants_by_status:
+            status_key = 'enviada' # Default to the first column if status is invalid or empty
+        
+        applicants_by_status[status_key].append(applicant_data)
+
+    # Restructure data for easier template iteration
+    kanban_data = []
+    for status_key, status_name in STATUS_CHOICES:
+        kanban_data.append({
+            'status_key': status_key,
+            'status_name': status_name,
+            'applicants': applicants_by_status.get(status_key, [])
+        })
+
+    context = {
+        'offer': offer,
+        'kanban_data': kanban_data,
+        'company': company,
+    }
+    return render(request, 'company/offer_applicants.html', context)
+
+@login_required
+def update_postulacion_status(request, postulacion_id):
+    if request.method == 'POST':
+        try:
+            # Security Check: Ensure user is associated with a company
+            empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
+            
+            # Get the application and verify it belongs to the user's company
+            postulacion = get_object_or_404(
+                Postulacion.objects.using('jflex_db').select_related('oferta__empresa'),
+                pk=postulacion_id
+            )
+
+            if postulacion.oferta.empresa != empresa_usuario.empresa:
+                return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+            data = json.loads(request.body)
+            new_status = data.get('new_status')
+
+            # Simplified and correct validation
+            valid_kanban_statuses = ['enviada', 'en proceso', 'entrevista', 'aceptada', 'rechazada']
+            if new_status not in valid_kanban_statuses:
+                return JsonResponse({'status': 'error', 'message': f'Invalid status: {new_status}'}, status=400)
+
+            postulacion.estado_postulacion = new_status
+            postulacion.save(using='jflex_db')
+            
+            return JsonResponse({'status': 'success', 'message': 'Status updated successfully.'})
+
+        except EmpresaUsuario.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'User not associated with any company.'}, status=403)
+        except Postulacion.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Application not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+@login_required
+def get_applicant_details(request, postulacion_id):
+    try:
+        # Security Check: Ensure user is associated with a company
+        empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
+        
+        # Get the application and verify it belongs to the user's company
+        postulacion = get_object_or_404(
+            Postulacion.objects.using('jflex_db').select_related(
+                'oferta__empresa', 
+                'candidato__ciudad__region', 
+                'cv_postulado'
+            ),
+            pk=postulacion_id
+        )
+
+        if postulacion.oferta.empresa != empresa_usuario.empresa:
+            return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+        candidato = postulacion.candidato
+        cv = postulacion.cv_postulado
+        
+        # Get User model data from the default database
+        user_details = User.objects.using('default').get(pk=candidato.id_candidato_id)
+
+        # 1. Serialize Personal Data
+        today = date.today()
+        age = None
+        if candidato.fecha_nacimiento:
+            age = today.year - candidato.fecha_nacimiento.year - ((today.month, today.day) < (candidato.fecha_nacimiento.month, candidato.fecha_nacimiento.day))
+
+        location_str = 'No especificada'
+        if candidato.ciudad:
+            location_str = candidato.ciudad.nombre
+            if candidato.ciudad.region:
+                location_str = f"{candidato.ciudad.nombre}, {candidato.ciudad.region.nombre}"
+
+        personal_data = {
+            'full_name': user_details.get_full_name(),
+            'email': user_details.email,
+            'rut': candidato.rut_candidato,
+            'phone': candidato.telefono,
+            'age': age,
+            'location': location_str,
+            'linkedin_url': candidato.linkedin_url,
+            'availability': 'Disponible' if candidato.disponible else 'No Disponible',
+        }
+
+        # 2. Serialize CV Data
+        cv_data = {
+            'cv_type': cv.tipo_cv,
+            'cv_name': cv.nombre_cv,
+            'cv_title': cv.cargo_asociado,
+            'content': None
+        }
+
+        if cv.tipo_cv == 'subido':
+            try:
+                cv_subido = CVSubido.objects.using('jflex_db').get(pk=cv.id_cv_user)
+                cv_data['content'] = cv_subido.ruta_archivo
+            except CVSubido.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Uploaded CV file not found.'}, status=404)
+        
+        elif cv.tipo_cv == 'creado':
+            try:
+                cv_creado = CVCreado.objects.using('jflex_db').get(pk=cv.id_cv_user)
+                
+                # Helper to safely get attributes from related objects
+                def safe_get(obj, attr, default=''):
+                    return getattr(obj, attr, default) if obj else default
+
+                personal_data_obj = getattr(cv_creado, 'datospersonalescv', None)
+                objective_obj = getattr(cv_creado, 'objetivoprofesionalcv', None)
+
+                # Full serialization of the created CV
+                cv_data['content'] = {
+                    'personalData': {
+                        'firstName': safe_get(personal_data_obj, 'primer_nombre'),
+                        'secondName': safe_get(personal_data_obj, 'segundo_nombre'),
+                        'lastName': safe_get(personal_data_obj, 'apellido_paterno'),
+                        'motherLastName': safe_get(personal_data_obj, 'apellido_materno'),
+                        'title': safe_get(personal_data_obj, 'titulo_profesional'),
+                        'email': safe_get(personal_data_obj, 'email'),
+                        'phone': safe_get(personal_data_obj, 'telefono'),
+                        'linkedin_link': safe_get(personal_data_obj, 'linkedin')
+                    },
+                    'objective': safe_get(objective_obj, 'texto_objetivo'),
+                    'experience': [
+                        {
+                            'position': exp.cargo_puesto,
+                            'company': exp.empresa,
+                            'location': exp.ubicacion,
+                            'start_date': exp.fecha_inicio.strftime('%B %Y') if exp.fecha_inicio else '',
+                            'end_date': exp.fecha_termino.strftime('%B %Y') if exp.fecha_termino and not exp.trabajo_actual else 'Presente',
+                            'current_job': exp.trabajo_actual,
+                            'description': exp.descripcion_cargo
+                        } for exp in cv_creado.experiencia.all().order_by('-fecha_inicio')
+                    ],
+                    'education': [
+                        {
+                            'institution': edu.institucion,
+                            'degree': edu.carrera_titulo_nivel,
+                            'start_year': edu.fecha_inicio.year if edu.fecha_inicio else '',
+                            'end_year': edu.fecha_termino.year if edu.fecha_termino and not edu.cursando else 'Presente',
+                            'notes': edu.comentarios
+                        } for edu in cv_creado.educacion.all().order_by('-fecha_inicio')
+                    ],
+                    'skills': {
+                        'hard': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='hard')],
+                        'soft': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='soft')]
+                    },
+                    'languages': [
+                        {
+                            'language': lang.nombre_idioma,
+                            'level': lang.nivel_idioma
+                        } for lang in cv_creado.idiomas.all()
+                    ],
+                    'certifications': [
+                        {
+                            'cert_name': cert.nombre_certificacion,
+                            'issuer': cert.entidad_emisora,
+                            'year': cert.fecha_obtencion.year if cert.fecha_obtencion else ''
+                        } for cert in cv_creado.certificaciones.all()
+                    ],
+                    'projects': [
+                        {
+                            'project_name': proj.nombre_proyecto,
+                            'period': proj.fecha_proyecto,
+                            'role': proj.rol_participacion,
+                            'description': proj.descripcion_proyecto,
+                            'link': proj.url_proyecto
+                        } for proj in cv_creado.proyectos.all()
+                    ],
+                    'volunteering': [
+                        {
+                            'organization': vol.nombre_organizacion,
+                            'role': vol.puesto_rol,
+                            'description': vol.descripcion_actividades,
+                            'city': vol.ciudad,
+                            'country': vol.pais,
+                            'region': vol.region_estado_provincia,
+                            'start_date': vol.fecha_inicio.isoformat() if vol.fecha_inicio else '',
+                            'end_date': vol.fecha_termino.isoformat() if vol.fecha_termino and not vol.actualmente_activo else 'Presente',
+                            'current': vol.actualmente_activo
+                        } for vol in cv_creado.voluntariado.all()
+                    ],
+                    'references': [
+                        {
+                            'name': ref.nombre_referente,
+                            'position': ref.cargo_referente,
+                            'phone': ref.telefono,
+                            'email': ref.email,
+                            'linkedin_url': ref.url_linkedin
+                        } for ref in cv_creado.referencias.all()
+                    ]
+                }
+
+            except CVCreado.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Created CV data not found.'}, status=404)
+
+        response_data = {
+            'personal_data': personal_data,
+            'cv_data': cv_data
+        }
+
+        return JsonResponse({'status': 'success', 'data': response_data})
+
+    except EmpresaUsuario.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not associated with any company.'}, status=403)
+    except Postulacion.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Application not found.'}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Candidate user account not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@transaction.atomic
+def schedule_interview(request, postulacion_id):
+    if request.method == 'POST':
+        try:
+            # Security Check
+            empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
+            postulacion = get_object_or_404(
+                Postulacion.objects.using('jflex_db').select_related('oferta__empresa'),
+                pk=postulacion_id
+            )
+            if postulacion.oferta.empresa != empresa_usuario.empresa:
+                return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+            data = json.loads(request.body)
+            
+            # Data validation could be added here
+
+            # Create Entrevista object
+            entrevista = Entrevista.objects.using('jflex_db').create(
+                postulacion=postulacion,
+                fecha_entrevista=data['fecha'],
+                hora_entrevista=data['hora'],
+                nombre_reclutador=data['entrevistador'],
+                modalidad=data['modalidad']
+            )
+
+            # Create modality-specific object
+            if data['modalidad'] == 'Online':
+                ModoOnline.objects.using('jflex_db').create(
+                    id_modo_online=entrevista,
+                    plataforma=data['plataforma'],
+                    url_reunion=data['url']
+                )
+            elif data['modalidad'] == 'Presencial':
+                ModoPresencial.objects.using('jflex_db').create(
+                    id_modo_presencial=entrevista,
+                    direccion=data['direccion']
+                )
+            
+            # Update application status
+            postulacion.estado_postulacion = 'entrevista'
+            postulacion.save(using='jflex_db')
+
+            # Here you could add logic to send an email notification to the candidate
+
+            return JsonResponse({'status': 'success', 'message': 'Entrevista agendada exitosamente.'})
+
+        except (EmpresaUsuario.DoesNotExist, Postulacion.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+        except KeyError as e:
+            return JsonResponse({'status': 'error', 'message': f'Falta el siguiente dato: {e}'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+@login_required
 def postulaciones(request):
     return render(request, 'user/postulaciones.html')
 

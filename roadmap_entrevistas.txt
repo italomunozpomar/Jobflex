@@ -1,0 +1,47 @@
+# Hoja de Ruta de Funcionalidades - Módulo de Entrevistas
+
+## Fase 1: Mejoras de UI/UX (Inmediato)
+
+1.  **[POR HACER] Rediseño del Modal de Entrevistas:**
+    *   Mejorar la paleta de colores y el layout general para una apariencia más profesional y limpia, eliminando los fondos oscuros que no combinan.
+    *   Asegurar que los campos del formulario sean claros y fáciles de usar.
+
+2.  **[POR HACER] Botones Condicionales en Tarjetas Kanban:**
+    *   **Nuevos Postulantes:** Mostrar solo el botón "Ver CV".
+    *   **En Revisión:** Mostrar "Ver CV" y "Agendar Entrevista".
+    *   **Entrevistas:** Mostrar "Ver CV" y un nuevo botón "Ver/Editar Entrevista".
+    *   **Aceptados / Rechazados:** Mostrar solo "Ver CV".
+
+## Fase 2: Integración con Google Calendar (Mediano Plazo)
+
+1.  **[POR HACER] Autenticación OAuth 2.0 con Google:**
+    *   Investigar e implementar el flujo de autenticación para que la empresa pueda conectar su cuenta de Google de forma segura.
+    *   Esto requerirá crear credenciales en Google Cloud Console y gestionar tokens de acceso/refresco.
+
+2.  **[POR HACER] Modificación del Modal de Entrevistas:**
+    *   Cuando la modalidad es "Online", la plataforma "Google Meet" debe tener un tratamiento especial.
+    *   En lugar de un campo de URL, el sistema debe indicar que se creará un evento automáticamente.
+
+3.  **[POR HACER] Creación de Evento en Google Calendar:**
+    *   Utilizar la API de Google Calendar para crear un evento en el calendario del reclutador.
+    *   El evento debe incluir:
+        *   Título (Ej: "Entrevista para [Puesto] con [Candidato]").
+        *   Fecha y Hora.
+        *   Invitados (reclutador y email del candidato).
+        *   Generación automática de un enlace de Google Meet.
+        *   Descripción con detalles de la postulación.
+
+4.  **[POR HACER] Notificación al Candidato:**
+    *   Asegurarse de que la invitación de Google Calendar se envíe correctamente al email del candidato.
+
+## Fase 3: Integración con Google Maps (Mediano Plazo)
+
+1.  **[POR HACER] Obtener Clave de API de Google Maps:**
+    *   Se necesitará una clave de API de Google Maps Platform para usar el servicio de mapas embebidos.
+
+2.  **[POR HACER] Modificación del Modal de Entrevistas (Presencial):**
+    *   Debajo del campo de dirección, añadir un contenedor para el mapa.
+
+3.  **[POR HACER] Implementación de Mapa Embebido:**
+    *   Usar la API de Google Maps Embed para mostrar un mapa interactivo con un marcador en la dirección introducida.
+    *   Esto se hará en el frontend con JavaScript.

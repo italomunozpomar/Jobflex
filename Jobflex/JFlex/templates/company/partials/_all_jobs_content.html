@@ -1,11 +1,14 @@
 <div id="all-jobs" class="tab-content hidden">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-2">
         <h1 class="text-3xl font-bold text-dark">Todos los Empleos</h1>
         <button data-modal-toggle="create-job-modal" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-secondary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary">
             <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Crear Empleo
         </button>
     </div>
+    <p class="text-sm text-gray-600 mb-6">
+        Gestiona tus ofertas de trabajo. Haz clic en el número de la columna "Postulantes" para ver los candidatos o usa el menú de "Acciones" (⋮) para editar, duplicar o eliminar una oferta.
+    </p>
 
     <!-- Filters Section -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -80,7 +83,7 @@
                         {% endif %}
                     </td>
                     <td class="py-4 px-4">
-                        <a href="#" class="font-semibold text-primary hover:underline">{{ offer.candidate_count }}</a>
+                        <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="font-semibold text-primary hover:underline">{{ offer.candidate_count }}</a>
                     </td>
                     <td class="py-4 px-4 text-center">
                         <div class="relative inline-block text-left">
