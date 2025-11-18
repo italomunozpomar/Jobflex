@@ -871,8 +871,26 @@ def company_index(request):
     invitation_form = InvitationForm()
     company_data_form = EmpresaDataForm(instance=company, prefix="modal")
     job_offer_form = OfertaLaboralForm()
-    all_categorias = Categoria.objects.all()
-    all_offers = OfertaLaboral.objects.filter(empresa=company).select_related('categoria', 'jornada', 'modalidad').annotate(
+    
+    # Get only the categories that are actually used by the company's offers for the filter dropdown
+    used_category_ids = OfertaLaboral.objects.filter(empresa=company).values_list('categoria_id', flat=True).distinct()
+    categorias_for_filter = Categoria.objects.filter(id_categoria__in=used_category_ids)
+
+    # Build the offers queryset with filters
+    all_offers = OfertaLaboral.objects.filter(empresa=company)
+
+    q_filter = request.GET.get('q', None)
+    categoria_filter = request.GET.get('categoria', None)
+    estado_filter = request.GET.get('estado', None)
+
+    if q_filter:
+        all_offers = all_offers.filter(titulo_puesto__icontains=q_filter)
+    if categoria_filter:
+        all_offers = all_offers.filter(categoria_id=categoria_filter)
+    if estado_filter:
+        all_offers = all_offers.filter(estado=estado_filter)
+
+    all_offers = all_offers.select_related('categoria', 'jornada', 'modalidad').annotate(
         candidate_count=Count('postulacion')
     ).order_by('-fecha_publicacion')
 
@@ -894,7 +912,6 @@ def company_index(request):
         else:
             offer.calculated_duration = '' # Default to empty if dates are missing
 
-        print(f"Offer ID: {offer.id_oferta}, Title: {offer.titulo_puesto}, Fecha Publicacion: {offer.fecha_publicacion}, Fecha Cierre: {offer.fecha_cierre}, Calculated Duration: {offer.calculated_duration}, Raw Duration Days: {duration_days}") # Debug print
         try:
             habilidades_list = json.loads(offer.habilidades_clave)
             offer.habilidades_str = ",".join([item['value'] for item in habilidades_list])
@@ -906,32 +923,21 @@ def company_index(request):
         except (json.JSONDecodeError, TypeError):
             offer.beneficios_str = ""
 
-    # This block was incorrectly placed and caused the SyntaxError.
-    # It should not be here, as it was already handled above in the POST section.
-    # The forms are initialized for GET requests or after a POST that didn't redirect.
-    # The logic for handling form submission is already in the 'if request.method == 'POST':' block.
-    # This block is redundant and was causing issues.
-    # if request.method == 'POST':
-    #     action = request.POST.get('action')
-    #     if action == 'invite_user' and 'form' in locals() and not form.is_valid():
-    #         invitation_form = form
-    #     elif action == 'update_company_data' and 'company_data_form' in locals() and not company_data_form.is_valid():
-    #         pass
-    #     elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
-    #         pass
-
-    # Manually serialize rubros to ensure it's a JSON array string
-    all_rubros_qs = RubroIndustria.objects.all()
-    rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
-    all_rubros_json = json.dumps(rubros_list)
-
     # Dashboard Metrics
+    # Note: These metrics will now reflect the filtered offer list.
+    # If they should always show totals, the base query should be used.
+    # For now, reflecting the filter is acceptable.
     active_jobs_count = all_offers.filter(estado='activa').count()
     new_applicants_count = Postulacion.objects.filter(
         oferta__empresa=company, 
         fecha_postulacion__gte=timezone.now() - timedelta(days=7)
     ).count()
     total_users_count = len(members_for_template)
+
+    # Manually serialize rubros to ensure it's a JSON array string
+    all_rubros_qs = RubroIndustria.objects.all()
+    rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
+    all_rubros_json = json.dumps(rubros_list)
 
     context = {
         'company': company,
@@ -942,7 +948,7 @@ def company_index(request):
         'invitation_form': invitation_form,
         'company_data_form': company_data_form,
         'job_offer_form': job_offer_form,
-        'all_categorias': all_categorias,
+        'all_categorias': categorias_for_filter,
         'all_offers': all_offers,
         'user_role': user_role,
         'all_regions': Region.objects.all(),
@@ -950,6 +956,11 @@ def company_index(request):
         'active_jobs_count': active_jobs_count,
         'new_applicants_count': new_applicants_count,
         'total_users_count': total_users_count,
+        'filter_values': {
+            'q': q_filter or '',
+            'categoria': categoria_filter or '',
+            'estado': estado_filter or '',
+        }
     }
     return render(request, 'company/company_index.html', context)
 

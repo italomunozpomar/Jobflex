@@ -417,21 +417,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
-    // --- LOGIC TO OPEN EDIT MODAL FROM URL ---
+    // --- LOGIC TO OPEN MODALS AND SET ACTIVE TAB FROM URL ---
     const urlParams = new URLSearchParams(window.location.search);
     const offerIdToEdit = urlParams.get('edit_offer');
+    const activeTab = urlParams.get('tab');
     
     if (offerIdToEdit) {
-        // Switch to the 'all-jobs' tab to make sure the offer is visible
+        // If editing, always switch to the all-jobs tab first
         switchTab('all-jobs');
         
-        // Find the corresponding edit button and click it
+        // Find the corresponding edit button and click it to open the modal
         const editButton = document.querySelector(`.edit-offer-btn[data-offer-id="${offerIdToEdit}"]`);
         if (editButton) {
             editButton.click();
         }
+    } else if (activeTab) {
+        // If a tab is specified in the URL, switch to it
+        switchTab(activeTab);
     } else {
-        // Default tab
+        // Otherwise, default to the dashboard
         switchTab('dashboard');
     }
 });
