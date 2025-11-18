@@ -255,20 +255,41 @@ from .models import Empresa, CVSubido
 
 
 class EmpresaDataForm(forms.ModelForm):
+    region = forms.ModelChoiceField(
+        queryset=Region.objects.all(),
+        required=False,
+        label="Región",
+        empty_label="Selecciona una región"
+    )
+    imagen_perfil = forms.FileField(required=False, label="Logo de la Empresa (JPG, PNG)")
+    imagen_portada = forms.FileField(required=False, label="Banner de la Empresa (JPG, PNG)")
+
     class Meta:
         model = Empresa
-        fields = ['nombre_comercial', 'resumen_empresa', 'sitio_web', 'mision', 'vision']
+        fields = [
+            'rut_empresa', 'nombre_comercial', 'razon_social', 'telefono', 'sitio_web', 
+            'rubro', 'region', 'ciudad', 
+            'resumen_empresa', 'mision', 'vision',
+            'imagen_perfil', 'imagen_portada'
+        ]
         labels = {
+            'rut_empresa': 'RUT de la Empresa',
             'nombre_comercial': 'Nombre Comercial',
-            'resumen_empresa': 'Resumen de la Empresa',
+            'razon_social': 'Razón Social',
+            'telefono': 'Teléfono de Contacto',
             'sitio_web': 'Sitio Web',
+            'rubro': 'Rubro o Industria',
+            'ciudad': 'Ciudad Principal',
+            'resumen_empresa': 'Resumen de la Empresa',
             'mision': 'Misión',
             'vision': 'Visión',
         }
         widgets = {
-            'resumen_empresa': forms.Textarea(attrs={'rows': 4}),
-            'mision': forms.Textarea(attrs={'rows': 3}),
-            'vision': forms.Textarea(attrs={'rows': 3}),
+            'resumen_empresa': forms.Textarea(attrs={'rows': 5}),
+            'mision': forms.Textarea(attrs={'rows': 5}),
+            'vision': forms.Textarea(attrs={'rows': 5}),
+            'sitio_web': forms.URLInput(attrs={'placeholder': 'https://www.ejemplo.com'}),
+            'telefono': forms.TextInput(attrs={'placeholder': '+56 2 XXXX XXXX'}),
         }
 
     def clean_sitio_web(self):
@@ -279,11 +300,39 @@ class EmpresaDataForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Hacer campos de solo lectura
+        self.fields['rut_empresa'].disabled = True
+        self.fields['razon_social'].disabled = True
+
+        # Lógica para el dropdown dependiente de Ciudad
+        self.fields['ciudad'].queryset = Ciudad.objects.none()
+        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ciudad:
+            instance = kwargs['instance']
+            self.fields['region'].initial = instance.ciudad.region
+            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).order_by('nombre')
+            self.fields['ciudad'].initial = instance.ciudad
+            self.fields['region'].widget.attrs['data-city-id'] = instance.ciudad.id_ciudad
+        elif 'region' in self.data:
+            try:
+                region_id = int(self.data.get('region'))
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
+
+        # Aplicar clases CSS a todos los campos
         for field_name, field in self.fields.items():
             if field and not isinstance(field.widget, forms.CheckboxInput):
                 existing_classes = field.widget.attrs.get('class', '')
                 base_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
-                field.widget.attrs['class'] = f"{existing_classes} {base_class}".strip()
+                
+                # No aplicar la clase base a los campos de archivo para no romper su estilo
+                if not isinstance(field.widget, forms.FileInput):
+                    field.widget.attrs['class'] = f"{existing_classes} {base_class}".strip()
+                
+                if field.disabled:
+                    field.widget.attrs['class'] += ' bg-gray-100 cursor-not-allowed'
+
 
 
 

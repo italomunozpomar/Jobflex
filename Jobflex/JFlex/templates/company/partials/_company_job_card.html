@@ -1,35 +1,59 @@
 {% load static %}
 {% load jobflex_filters %}
 
-<div class="border-b border-gray-200 py-4">
-    <div class="flex items-start justify-between">
-        <div>
-            <h4 class="font-bold text-lg text-dark hover:text-primary transition-colors">
-                <a href="{% url 'job_offers' %}?oferta={{ oferta.id_oferta }}">{{ oferta.titulo_puesto }}</a>
-            </h4>
-            <div class="flex items-center text-sm text-secondary mt-1 gap-4">
-                <span class="flex items-center">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    {% if oferta.ciudad and oferta.ciudad.nombre|lower != 'cualquier comuna' %}
-                        {{ oferta.ciudad.nombre }}
-                    {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
-                        {{ oferta.ciudad.region.nombre }}
-                    {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower == 'cualquier región' %}
-                        Chile
-                    {% else %}
-                        Remoto (Toda Latam)
-                    {% endif %}
-                </span>
-                <span class="flex items-center">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {{ oferta.jornada.tipo_jornada }}
-                </span>
-            </div>
+<div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row items-start justify-between gap-4">
+    <!-- Job Title and Location -->
+    <div class="flex-grow">
+        <h4 class="font-bold text-lg text-dark hover:text-primary transition-colors">
+            <a href="{% url 'job_offers' %}?oferta={{ oferta.id_oferta }}">{{ oferta.titulo_puesto }}</a>
+        </h4>
+        <div class="flex items-center text-sm text-secondary mt-1">
+            <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            {% if oferta.ciudad and oferta.ciudad.nombre|lower != 'cualquier comuna' %}
+                {{ oferta.ciudad.nombre }}
+            {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower != 'cualquier región' %}
+                {{ oferta.ciudad.region.nombre }}
+            {% elif oferta.ciudad and oferta.ciudad.nombre|lower == 'cualquier comuna' and oferta.ciudad.region and oferta.ciudad.region.nombre|lower == 'cualquier región' %}
+                Chile
+            {% else %}
+                Remoto (Toda Latam)
+            {% endif %}
         </div>
-        <div class="flex-shrink-0 ml-4">
-            <a href="{% url 'job_offers' %}?oferta={{ oferta.id_oferta }}" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">
-                Ver Detalles
-            </a>
+
+        <!-- Tags: Modality, Schedule, Salary -->
+        <div class="flex flex-wrap gap-2 mt-3">
+            {% if oferta.modalidad %}
+            <span class="flex items-center text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                {{ oferta.modalidad.tipo_modalidad }}
+            </span>
+            {% endif %}
+            {% if oferta.jornada %}
+            <span class="flex items-center text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                {{ oferta.jornada.tipo_jornada }}
+            </span>
+            {% endif %}
+            {% if oferta.categoria %}
+            <span class="flex items-center text-xs font-semibold py-1 px-2.5 rounded-full bg-purple-100 text-purple-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5.5c.58 0 1.13.2 1.55.58L20 12l-6.45 6.42c-.42.38-.97.58-1.55.58H7c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2z"></path></svg>
+                {{ oferta.categoria.tipo_categoria }}
+            </span>
+            {% endif %}
+            {% if oferta.salario_min and oferta.salario_max %}
+            <span class="flex items-center text-xs font-semibold py-1 px-2.5 rounded-full bg-yellow-100 text-yellow-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                ${{ oferta.salario_min|format_clp }} - ${{ oferta.salario_max|format_clp }}
+            </span>
+            {% endif %}
         </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="flex-shrink-0 mt-4 sm:mt-0 sm:ml-4 flex flex-col items-start sm:items-end justify-center">
+        <a href="{% url 'job_offers' %}?oferta={{ oferta.id_oferta }}" class="bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm w-full sm:w-auto text-center">
+            Ver Detalles
+        </a>
+        <span class="text-xs text-secondary mt-2">{{ oferta.fecha_publicacion|custom_timesince }}</span>
     </div>
 </div>

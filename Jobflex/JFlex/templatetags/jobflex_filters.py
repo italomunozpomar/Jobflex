@@ -1,8 +1,22 @@
 from django import template
 from django.utils import timezone
 from datetime import datetime, date, timedelta
+import locale
 
 register = template.Library()
+
+@register.filter(name='format_clp')
+def format_clp(value):
+    """
+    Formats a number as a string with dots for thousands separators (CLP format).
+    Example: 1000000 -> "1.000.000"
+    """
+    try:
+        # The 'de_DE' locale uses dots as thousands separators.
+        locale.setlocale(locale.LC_ALL, 'de_DE')
+        return locale.format_string("%d", value, grouping=True)
+    except (ValueError, TypeError):
+        return value
 
 @register.filter
 def custom_timesince(value):

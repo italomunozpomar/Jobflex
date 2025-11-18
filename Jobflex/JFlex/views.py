@@ -29,7 +29,7 @@ from playwright.sync_api import sync_playwright
 
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
-from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Region, Ciudad # Explicitly import models
+from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Region, Ciudad, RubroIndustria
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
@@ -869,7 +869,7 @@ def company_index(request):
     members_for_template.sort(key=lambda x: x['user_email'])
 
     invitation_form = InvitationForm()
-    company_data_form = EmpresaDataForm(instance=company)
+    company_data_form = EmpresaDataForm(instance=company, prefix="modal")
     job_offer_form = OfertaLaboralForm()
     all_categorias = Categoria.objects.all()
     all_offers = OfertaLaboral.objects.filter(empresa=company).select_related('categoria', 'jornada', 'modalidad').annotate(
@@ -920,6 +920,11 @@ def company_index(request):
     #     elif action == 'create_job_offer' and 'job_offer_form' in locals() and not job_offer_form.is_valid():
     #         pass
 
+    # Manually serialize rubros to ensure it's a JSON array string
+    all_rubros_qs = RubroIndustria.objects.all()
+    rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
+    all_rubros_json = json.dumps(rubros_list)
+
     context = {
         'company': company,
         'company_logo_url': logo_url,
@@ -933,6 +938,7 @@ def company_index(request):
         'all_offers': all_offers,
         'user_role': user_role,
         'all_regions': Region.objects.all(), # Add this line
+        'all_rubros_json': all_rubros_json,
     }
     return render(request, 'company/company_index.html', context)
 
@@ -2266,10 +2272,42 @@ def company_profile(request, company_id):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Check for incomplete profile
+    profile_incomplete = False
+    required_fields = [
+        'resumen_empresa', 'mision', 'vision', 'telefono', 
+        'sitio_web', 'imagen_portada', 'imagen_perfil', 'rubro', 'ciudad'
+    ]
+    if any(not getattr(company, field) for field in required_fields):
+        profile_incomplete = True
+
+    # Pass the form for the modal
+    company_data_form = EmpresaDataForm(instance=company, prefix="modal")
+    
+    # Manually serialize rubros to ensure it's a JSON array string
+    all_rubros_qs = RubroIndustria.objects.all()
+    rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
+    all_rubros_json = json.dumps(rubros_list)
+
+    # Determine if the logged-in user is an admin of this company
+    is_admin = False
+    if request.user.is_authenticated:
+        try:
+            empresa_usuario = EmpresaUsuario.objects.select_related('rol').get(id_empresa_user=request.user)
+            if empresa_usuario.empresa == company:
+                user_role = empresa_usuario.rol.nombre_rol
+                is_admin = (user_role == 'Representante' or user_role == 'Administrador')
+        except EmpresaUsuario.DoesNotExist:
+            pass # User is not associated with any company
+
     context = {
         'empresa': company,
         'page_obj': page_obj, # Pass the page object instead of the full list
-        'total_ofertas': ofertas_list.count()
+        'total_ofertas': ofertas_list.count(),
+        'profile_incomplete': profile_incomplete,
+        'company_data_form': company_data_form, # Add form to context
+        'all_rubros_json': all_rubros_json,
+        'is_admin': is_admin,
     }
     return render(request, 'company/company_profile.html', context)
 

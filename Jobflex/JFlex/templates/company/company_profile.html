@@ -16,23 +16,41 @@
         </div>
         
         <div class="p-6">
-            <div class="flex flex-col sm:flex-row items-center sm:items-end sm:space-x-5 -mt-20 relative z-20">
-                <!-- Logo de la Empresa -->
-                <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0">
-                    <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
+            <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between sm:space-x-5 -mt-20 relative z-20">
+                <div class="flex items-center space-x-5">
+                    <!-- Logo de la Empresa -->
+                    <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0">
+                        <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    
+                    <!-- Nombre, Tagline e Industria -->
+                    <div class="mt-4 sm:mt-0 text-center sm:text-left">
+                        <h1 class="text-3xl font-bold text-dark">{{ empresa.nombre_comercial }}</h1>
+                        {% if empresa.razon_social %}
+                            <p class="text-lg text-secondary mt-1">{{ empresa.razon_social }}</p>
+                        {% endif %}
+                        {% if empresa.rubro %}
+                            <p class="text-md text-secondary mt-1">
+                                {{ empresa.rubro.nombre_rubro }}
+                            </p>
+                        {% endif %}
+                    </div>
                 </div>
-                
-                <!-- Nombre, Tagline e Industria -->
-                <div class="mt-4 sm:mt-0 text-center sm:text-left flex-grow">
-                    <h1 class="text-3xl font-bold text-dark">{{ empresa.nombre_comercial }}</h1>
-                    {% if empresa.razon_social %}
-                        <p class="text-lg text-secondary mt-1">{{ empresa.razon_social }}</p>
+
+                <!-- Botón de Editar y Alerta -->
+                <div class="flex items-center space-x-2 mt-4 sm:mt-0">
+                    {% if profile_incomplete %}
+                    <div class="relative group">
+                        <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-5v-4h2v4h-2zm0-6h2v2h-2V7z"/></svg>
+                        <div class="absolute bottom-full mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -translate-x-1/2 left-1/2">
+                            El perfil de empresa se encuentra con datos faltantes o incompletos, completa los datos para obtener mayor visibilidad para los postulantes.
+                            <svg class="absolute text-gray-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+                        </div>
+                    </div>
                     {% endif %}
-                    {% if empresa.rubro %}
-                        <p class="text-md text-secondary mt-1">
-                            {{ empresa.rubro.nombre_rubro }}
-                        </p>
-                    {% endif %}
+                    <button data-modal-toggle="company-data-modal" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">
+                        Editar Perfil
+                    </button>
                 </div>
             </div>
         </div>
@@ -67,6 +85,12 @@
                         <div>
                             <h3 class="text-xl font-bold text-dark">Nuestra Visión</h3>
                             <p class="text-secondary mt-2">{{ empresa.vision|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                    {% if empresa.rubro and empresa.rubro.descripcion_rubro %}
+                        <div>
+                            <h3 class="text-xl font-bold text-dark">Sobre el Rubro</h3>
+                            <p class="text-secondary mt-2">{{ empresa.rubro.descripcion_rubro|linebreaks }}</p>
                         </div>
                     {% endif %}
                 </div>
@@ -124,10 +148,10 @@
                         <span>{{ empresa.rubro.nombre_rubro }}</span>
                     </li>
                     {% endif %}
-                    {% if empresa.ubicacion %}
+                    {% if empresa.ciudad %}
                     <li class="flex items-start">
                         <svg class="w-5 h-5 mr-3 text-primary mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>{{ empresa.ubicacion }}</span>
+                        <span>{{ empresa.ciudad }}</span>
                     </li>
                     {% endif %}
                     {% if empresa.sitio_web %}
@@ -143,6 +167,14 @@
 
 </main>
 
+<footer class="bg-dark text-light-gray py-4 mt-auto">
+    <div class="container mx-auto text-center text-sm">
+        <p>&copy; {% now "Y" %} JobFlex. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+{% include 'company/partials/_company_data_modal.html' with company=empresa company_data_form=company_data_form %}
+
 {% endblock %}
 
 
@@ -150,6 +182,21 @@
 {{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // --- Modal Toggle Logic ---
+    document.addEventListener('click', function(event) {
+        const toggleAttr = event.target.closest('[data-modal-toggle]')?.getAttribute('data-modal-toggle');
+        if (toggleAttr) {
+            const modal = document.getElementById(toggleAttr);
+            if (modal) modal.classList.remove('hidden');
+        }
+        const hideAttr = event.target.closest('[data-modal-hide]')?.getAttribute('data-modal-hide');
+        if (hideAttr) {
+            const modal = document.getElementById(hideAttr);
+            if (modal) modal.classList.add('hidden');
+        }
+    });
+
+    // --- Profile Page Tabs ---
     const tabs = document.querySelectorAll('#company-tabs .tab-btn');
     const panels = document.querySelectorAll('#tab-content .tab-panel');
 
@@ -157,7 +204,6 @@ document.addEventListener('DOMContentLoaded', function () {
         tab.addEventListener('click', () => {
             const tabId = tab.dataset.tab;
 
-            // Update button styles
             tabs.forEach(t => {
                 t.classList.remove('bg-primary', 'text-white');
                 t.classList.add('text-secondary', 'hover:bg-gray-100');
@@ -165,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function () {
             tab.classList.add('bg-primary', 'text-white');
             tab.classList.remove('text-secondary', 'hover:bg-gray-100');
 
-            // Show/hide panels
             panels.forEach(panel => {
                 if (panel.id === `${tabId}-content`) {
                     panel.classList.remove('hidden');
