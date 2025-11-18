@@ -1,0 +1,128 @@
+Módulo Página Principal Empresa
+ID
+Requerimientos
+RF-43
+El sistema debe mostrar un dashboard interactivo en el panel principal de la empresa, el cual debe incluir métricas y visualizaciones relevantes para su actividad, tales como:
+Empleos activos
+Nuevos candidatos
+Entrevistas programadas
+Vistas del perfil público
+Rendimiento de empleos (postulaciones, aceptados, rechazados y comparativas entre ofertas)
+El dashboard debe actualizarse automáticamente según la actividad reciente y permitir una interpretación clara del desempeño general de la empresa en la plataforma.
+RF-44
+El sistema debe proporcionar a la empresa una navegación clara y eficiente mediante: un menú lateral que permita acceder a los módulos principales del área empresa (como Dashboard, Empleos, Usuarios, Candidatos y Entrevistas) y accesos rápidos en el panel principal para ejecutar acciones frecuentes (como crear una oferta de empleo, gestionar usuarios internos y acceder a la información o perfil público de la empresa).
+RF-45
+El sistema debe mostrar una sección de actividad reciente que resuma los eventos más relevantes relacionados con la actividad de la empresa, en donde cada evento debe incluir un  indicador de tiempo relativo (por ejemplo: “Hace 2 horas”, “Ayer a las 3:00 PM”, “Hace 3 días”).
+
+
+Módulo Gestión de Ofertas Laborales Empresa
+ID
+Requerimientos
+RF-46
+El sistema debe permitir a la empresa crear una nueva oferta laboral mediante un formulario estructurado que incluya los siguientes campos: 
+Información principal (título del puesto, jornada, modalidad)
+Detalles del puesto (descripción del puesto, requisitos)
+Condiciones (salario min-max, nivel de experiencia)
+Habilidades y Beneficios (habilidades clave para el puesto, beneficios del puesto)
+El formulario debe validar campos obligatorios y mostrar mensajes claros en caso de error.
+RF-47
+El sistema debe mostrar un listado de todas las ofertas creadas por la empresa, indicando:
+Título del empleo
+Categoría
+Fecha de publicación o actualización
+Estado (activa, inactiva o expirada según lógica del sistema)
+Número de postulaciones recibidas
+Acciones rápidas (Ver – Editar – Eliminar)
+RF-48
+El sistema debe proporcionar métricas que permitan a la empresa analizar el desempeño de sus ofertas laborales, incluyendo: un panel o contador que muestre cuántas ofertas están publicadas en cada categoría registrada, permitiendo identificar rápidamente las áreas con mayor actividad.
+RF-49
+El sistema debe permitir ver para cada oferta laboral:
+Cantidad total de postulaciones
+Cantidad filtrada por estados (enviadas, en proceso, aceptadas, rechazadas)
+Acceso directo al listado de candidatos postulados a dicha oferta
+
+
+Módulo Gestión de Postulaciones Empresa
+ID
+Requerimientos
+RF-50
+El sistema debe mostrar un listado de postulaciones asociadas a cada oferta laboral publicada por la empresa, indicando para cada candidato: nombre completo, edad, ubicación, estado de disponibilidad y fecha de postulación. Además, el sistema debe permitir visualizar el CV del candidato mediante un modal emergente al seleccionar la acción rápida “Ver CV”, ofreciendo también la opción de descargar el documento.
+RF-51
+El sistema debe permitir actualizar el estado de cada postulación mediante acciones rápidas: Aceptar candidatura y Rechazar candidatura. Los cambios deben reflejarse de inmediato en el listado y en el módulo del candidato.
+RF-52
+El sistema debe permitir al reclutador agendar una entrevista desde la postulación del candidato mediante un modal que incluya: Fecha de la entrevista, Hora, Modalidad (Presencial, Online), Entrevistador asignado. Tras agendarla, la entrevista debe: guardarse en el sistema, aparecer en el módulo de Entrevistas Empresa y notificar al candidato en su módulo correspondiente.
+
+
+Módulo Gestión de Entrevistas Empresa
+ID
+Requerimientos
+RF-53
+El sistema debe mostrar un calendario mensual interactivo que permita visualizar todas las entrevistas programadas por la empresa, destacando los días que contienen una o más entrevistas. Al seleccionar un día con entrevistas, el sistema debe mostrar el listado de candidatos agendados para esa fecha.
+RF-54
+El sistema debe mostrar un panel lateral con las próximas entrevistas programadas, indicando para cada una:
+Nombre del candidato
+Cargo al que postuló
+Fecha y hora exactas
+Modalidad (presencial u online, cuando aplique)
+Las entrevistas deben ordenarse cronológicamente para facilitar el seguimiento.
+RF-55
+Al seleccionar una entrevista desde el calendario o desde el panel lateral, el sistema debe mostrar un modal detallado con toda la información relevante, incluyendo:
+Datos del candidato
+Cargo y oferta laboral asociada
+Fecha y hora
+Modalidad (presencial u online)
+Entrevistador asignado
+RF-56
+El sistema debe permitir gestionar completamente una entrevista desde su modal detallado, ofreciendo acciones como reprogramar la entrevista o cancelarla. El estado inicial de la entrevista debe establecerse automáticamente como Pendiente, y actualizarse según la acción del candidato (confirmar/rechazar).
+Cualquier modificación realizada por la empresa (reprogramación o cancelación) debe reflejarse de forma inmediata tanto en el Módulo de Entrevistas Empresa como en el Módulo de Entrevistas del candidato, incluyendo la notificación correspondiente.
+
+
+Módulo Gestión de Usuarios Internos Empresa
+ID
+Requerimientos
+RF-57
+El sistema debe mostrar un listado con todos los usuarios internos asociados a la empresa, indicando para cada uno:
+Nombre completo
+Correo electrónico
+Rol asignado (Representante, Administrador, Empleado, etc.)
+Última actividad registrada
+Acciones rápidas disponibles (Editar)
+La tabla debe permitir identificar rápidamente el rol y la actividad de cada miembro del equipo. 
+RF-58
+El sistema debe permitir al administrador o representante de la empresa enviar invitaciones por correo electrónico para agregar nuevos usuarios internos. Desde el modal “Invitar a un Nuevo Miembro”, el sistema debe solicitar:
+Correo electrónico del nuevo miembro
+Rol asignado
+Al enviar la invitación: El sistema debe generar y enviar un correo electrónico con el enlace de registro. El usuario invitado solo podrá crear su cuenta si accede mediante esa invitación válida.
+RF-59
+El sistema debe permitir modificar el rol de cualquier usuario interno mediante la acción “Editar”, abriendo un modal o formulario donde se pueda asignar un nuevo rol. Los cambios deben aplicarse de inmediato y actualizar los permisos del usuario dentro del sistema.
+RF-60
+El sistema debe aplicar restricciones de acceso basadas en el rol del usuario:
+Representante / Administrador: puede invitar usuarios, editar roles y acceder a todos los módulos de la empresa.
+Empleado: acceso limitado según lo definido en los permisos de cada vista.
+El sistema debe validar automáticamente los permisos antes de permitir acciones críticas como creación de ofertas o gestión de postulaciones.
+
+
+Módulo Perfil Empresa
+ID
+Requerimientos
+RF-61
+El sistema debe permitir que cualquier usuario (registrado o visitante) visualice el perfil público de una empresa, mostrando información relevante como: nombre de la empresa, logotipo, banner corporativo, descripción, misión, visión e información general (sitio web, enlaces externos, redes sociales si aplica). La información debe visualizarse de manera clara, ordenada y pública sin requerir autenticación.
+RF-62
+El sistema debe organizar el perfil público de la empresa en pestañas o secciones navegables, incluyendo al menos:
+Sobre Nosotros (resumen, misión, visión)
+Ofertas de Trabajo (listado de empleos publicados por la empresa)
+El sistema debe resaltar la pestaña seleccionada y permitir cambiar entre ellas sin recargar toda la vista principal.
+RF-63
+El sistema debe mostrar un listado de todas las ofertas laborales publicadas por la empresa, organizadas desde la más reciente hasta la más antigua. Cada oferta debe mostrar, al menos:
+Título del puesto
+Ubicación (región y/o país)
+Modalidad (Presencial, Híbrida, Remota)
+Jornada
+Rango salarial (si la empresa lo publica)
+Categoría
+Fecha de publicación
+Estado (sólo se mostrarán ofertas activas)
+Al seleccionar una oferta desde el perfil público, el sistema debe dirigir al usuario a la página de detalle de la oferta laboral, donde podrá visualizar la descripción completa del puesto y podrá postularse (si está registrado).
+RF-64
+El sistema debe asegurar que cualquier cambio realizado por la empresa (edición del perfil, actualización de ofertas, publicación o eliminación de empleos) se refleje automáticamente en la vista pública sin requerir acciones adicionales.
+

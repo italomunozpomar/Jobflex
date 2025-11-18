@@ -12,17 +12,6 @@
             <p class="text-sm text-secondary">Panel de Control</p>
         </div>
         <nav class="mt-2">
-            <div class="px-6 py-4">
-                <button data-modal-toggle="create-job-modal" class="w-full block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 text-center mb-3">
-                    Crear Empleo
-                </button>
-                {% if is_admin %}
-                <button data-modal-toggle="invitation-modal" class="w-full block bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 text-center">
-                    Crear Usuario
-                </button>
-                {% endif %}
-            </div>
-            
             <a class="tab-link active-tab flex items-center px-6 py-3 text-dark hover:bg-gray-200" href="#" data-tab="dashboard">
                 <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span>Panel Principal</span>
@@ -32,20 +21,20 @@
                 <a class="tab-link flex items-center justify-between px-6 py-3 text-dark hover:bg-gray-200 cursor-pointer" onclick="toggleSubmenu()">
                     <div class="flex items-center">
                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        <span>Empleos</span>
+                        <span>Ofertas</span>
                     </div>
                     <svg id="submenu-arrow" class="w-4 h-4 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </a>
                 <div id="jobs-submenu" class="hidden pl-12 bg-gray-50">
                     <a class="tab-link block py-2 text-secondary hover:text-dark" href="#" data-tab="all-jobs">Todos los empleos</a>
-                    <a class="tab-link block py-2 text-secondary hover:text-dark" href="#" data-tab="tags">Tags</a>
+                    <a class="tab-link block py-2 text-secondary hover:text-dark" href="#" data-tab="tags">Postulaciones</a>
                 </div>
             </div>
 
             {% if is_admin %}
             <a class="tab-link flex items-center px-6 py-3 text-dark hover:bg-gray-200" href="#" data-tab="users">
                 <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"></path></svg>
-                <span>Usuarios</span>
+                <span>Gestion Roles</span>
             </a>
             {% endif %}
 
@@ -76,19 +65,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-primary">Empleos Activos</h3>
-                    <p class="text-3xl font-bold text-dark mt-2"></p>
+                    <p class="text-3xl font-bold text-dark mt-2">{{ active_jobs_count }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-primary">Nuevos Candidatos</h3>
-                    <p class="text-3xl font-bold text-dark mt-2">12</p>
+                    <h3 class="text-lg font-semibold text-primary">Nuevos Postulantes (7d)</h3>
+                    <p class="text-3xl font-bold text-dark mt-2">{{ new_applicants_count }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-primary">Entrevistas Hoy</h3>
-                    <p class="text-3xl font-bold text-dark mt-2">3</p>
+                    <h3 class="text-lg font-semibold text-primary">Usuarios del Equipo</h3>
+                    <p class="text-3xl font-bold text-dark mt-2">{{ total_users_count }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-primary">Vistas del Perfil</h3>
-                    <p class="text-3xl font-bold text-dark mt-2">1,204</p>
+                    <p class="text-3xl font-bold text-dark mt-2">N/A</p>
                 </div>
             </div>
 
@@ -96,7 +85,15 @@
             <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-semibold text-dark mb-4">Accesos Rápidos</h3>
                 <div class="flex flex-wrap gap-4">
+                    <button data-modal-toggle="create-job-modal" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 text-dark font-semibold py-3 px-5 rounded-lg transition-colors">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        <span>Crear Empleo</span>
+                    </button>
                     {% if is_admin %}
+                    <button data-modal-toggle="invitation-modal" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 text-dark font-semibold py-3 px-5 rounded-lg transition-colors">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                        <span>Invitar Usuario</span>
+                    </button>
                     <button data-modal-toggle="company-data-modal" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 text-dark font-semibold py-3 px-5 rounded-lg transition-colors">
                         <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         <span>Datos de Empresa</span>
@@ -106,7 +103,6 @@
                         <span>Ver Perfil Público</span>
                     </a>
                     {% endif %}
-                    <!-- Add other quick access buttons here -->
                 </div>
             </div>
 
@@ -177,7 +173,7 @@
         {% endif %}
 
         <!-- Other Tab Content (Placeholders) -->
-        <div id="tags" class="tab-content hidden"><h1 class="text-3xl font-bold">Gestión de Tags (Próximamente)</h1></div>
+        <div id="tags" class="tab-content hidden"><h1 class="text-3xl font-bold">Postulaciones</h1></div>
         <!-- Candidates Content -->
         <div id="candidates" class="tab-content hidden">
             <h1 class="text-3xl font-bold text-dark mb-6">Candidatos</h1>

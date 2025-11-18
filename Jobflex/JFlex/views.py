@@ -925,6 +925,14 @@ def company_index(request):
     rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
     all_rubros_json = json.dumps(rubros_list)
 
+    # Dashboard Metrics
+    active_jobs_count = all_offers.filter(estado='activa').count()
+    new_applicants_count = Postulacion.objects.filter(
+        oferta__empresa=company, 
+        fecha_postulacion__gte=timezone.now() - timedelta(days=7)
+    ).count()
+    total_users_count = len(members_for_template)
+
     context = {
         'company': company,
         'company_logo_url': logo_url,
@@ -937,8 +945,11 @@ def company_index(request):
         'all_categorias': all_categorias,
         'all_offers': all_offers,
         'user_role': user_role,
-        'all_regions': Region.objects.all(), # Add this line
+        'all_regions': Region.objects.all(),
         'all_rubros_json': all_rubros_json,
+        'active_jobs_count': active_jobs_count,
+        'new_applicants_count': new_applicants_count,
+        'total_users_count': total_users_count,
     }
     return render(request, 'company/company_index.html', context)
 
