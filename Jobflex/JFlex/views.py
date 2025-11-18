@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import uuid
 import boto3
 from django.conf import settings as django_settings
+import locale
  # Added here
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
@@ -289,12 +290,9 @@ def Profile(request):
     from django.db.models.functions import Coalesce
 
     # Order CVs by the most recent date from either CVCreado or CVSubido
-    cvs_qs = CVCandidato.objects.filter(candidato=candidato)\
-        .select_related('cvcreado', 'cvsubido')\
-        .annotate(
+    cvs_qs = CVCandidato.objects.filter(candidato=candidato)		.select_related('cvcreado', 'cvsubido')		.annotate(
             latest_date=Coalesce('cvcreado__ultima_actualizacion', 'cvsubido__fecha_subido')
-        )\
-        .order_by('-latest_date')[:3] # Slice to get the latest 3
+        )		.order_by('-latest_date')[:3] # Slice to get the latest 3
     cv_list = []
     for cv in cvs_qs:
         cv_item = {
@@ -964,7 +962,10 @@ def company_index(request):
     }
     return render(request, 'company/company_index.html', context)
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 @login_required
+@ensure_csrf_cookie
 def view_offer_applicants(request, offer_id):
     try:
         empresa_usuario = EmpresaUsuario.objects.using('jflex_db').select_related('empresa').get(id_empresa_user=request.user)
@@ -1006,6 +1007,9 @@ def view_offer_applicants(request, offer_id):
         if candidato.fecha_nacimiento:
             age = today.year - candidato.fecha_nacimiento.year - ((today.month, today.day) < (candidato.fecha_nacimiento.month, candidato.fecha_nacimiento.day))
 
+        # Check if an interview is scheduled for this postulation
+        has_interview = Entrevista.objects.using('jflex_db').filter(postulacion=p).exists()
+
         applicant_data = {
             'postulacion_id': p.id_postulacion,
             'full_name': user.get_full_name(),
@@ -1015,9 +1019,10 @@ def view_offer_applicants(request, offer_id):
             'application_date': p.fecha_postulacion,
             'cv_id': p.cv_postulado.id_cv_user,
             'cv_type': p.cv_postulado.tipo_cv,
-            'cv_url': None  # Default value
+            'cv_url': None,  # Default value
+            'has_interview': has_interview, # Add the flag here
         }
-
+        
         if applicant_data['cv_type'] == 'subido':
             try:
                 cv_subido = CVSubido.objects.using('jflex_db').get(pk=applicant_data['cv_id'])
@@ -1034,11 +1039,19 @@ def view_offer_applicants(request, offer_id):
 
     # Restructure data for easier template iteration
     kanban_data = []
+    tooltips = {
+        "enviada": "Postulantes que han aplicado a la oferta. Aún no se ha realizado ninguna acción.",
+        "en proceso": "Postulantes cuyo CV está siendo revisado. Aquí puedes agendar una entrevista.",
+        "entrevista": "Postulantes que ya tienen una entrevista agendada.",
+        "aceptada": "Postulantes que han sido seleccionados para el puesto.",
+        "rechazada": "Postulantes que no continúan en el proceso de selección."
+    }
     for status_key, status_name in STATUS_CHOICES:
         kanban_data.append({
             'status_key': status_key,
             'status_name': status_name,
-            'applicants': applicants_by_status.get(status_key, [])
+            'applicants': applicants_by_status.get(status_key, []),
+            'tooltip': tooltips.get(status_key, "Sin descripción.")
         })
 
     context = {
@@ -1089,6 +1102,12 @@ def update_postulacion_status(request, postulacion_id):
 @login_required
 def get_applicant_details(request, postulacion_id):
     try:
+        # Set locale to Spanish for month names
+        try:
+            locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+        except locale.Error:
+            locale.setlocale(locale.LC_TIME, 'Spanish_Spain.1252') # Fallback for Windows
+
         # Security Check: Ensure user is associated with a company
         empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
         
@@ -1153,14 +1172,12 @@ def get_applicant_details(request, postulacion_id):
             try:
                 cv_creado = CVCreado.objects.using('jflex_db').get(pk=cv.id_cv_user)
                 
-                # Helper to safely get attributes from related objects
                 def safe_get(obj, attr, default=''):
                     return getattr(obj, attr, default) if obj else default
 
                 personal_data_obj = getattr(cv_creado, 'datospersonalescv', None)
                 objective_obj = getattr(cv_creado, 'objetivoprofesionalcv', None)
 
-                # Full serialization of the created CV
                 cv_data['content'] = {
                     'personalData': {
                         'firstName': safe_get(personal_data_obj, 'primer_nombre'),
@@ -1179,8 +1196,7 @@ def get_applicant_details(request, postulacion_id):
                             'company': exp.empresa,
                             'location': exp.ubicacion,
                             'start_date': exp.fecha_inicio.strftime('%B %Y') if exp.fecha_inicio else '',
-                            'end_date': exp.fecha_termino.strftime('%B %Y') if exp.fecha_termino and not exp.trabajo_actual else 'Presente',
-                            'current_job': exp.trabajo_actual,
+                            'end_date': 'Presente' if exp.trabajo_actual else (exp.fecha_termino.strftime('%B %Y') if exp.fecha_termino else ''),
                             'description': exp.descripcion_cargo
                         } for exp in cv_creado.experiencia.all().order_by('-fecha_inicio')
                     ],
@@ -1270,7 +1286,7 @@ def schedule_interview(request, postulacion_id):
             # Security Check
             empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
             postulacion = get_object_or_404(
-                Postulacion.objects.using('jflex_db').select_related('oferta__empresa'),
+                Postulacion.objects.using('jflex_db').select_related('oferta__empresa', 'candidato'),
                 pk=postulacion_id
             )
             if postulacion.oferta.empresa != empresa_usuario.empresa:
@@ -1278,37 +1294,74 @@ def schedule_interview(request, postulacion_id):
 
             data = json.loads(request.body)
             
-            # Data validation could be added here
+            # --- Logic for Rescheduling ---
+            # If an interview already exists, delete it before creating a new one.
+            # This handles both new schedules and reschedules in one flow.
+            existing_interview = Entrevista.objects.using('jflex_db').filter(postulacion=postulacion).first()
+            if existing_interview:
+                existing_interview.delete() # This will cascade and delete ModoOnline/Presencial as well
+
+            # Explicitly convert string data to date and time objects
+            fecha_obj = datetime.strptime(data['fecha'], '%Y-%m-%d').date()
+            hora_obj = datetime.strptime(data['hora'], '%H:%M').time()
 
             # Create Entrevista object
             entrevista = Entrevista.objects.using('jflex_db').create(
                 postulacion=postulacion,
-                fecha_entrevista=data['fecha'],
-                hora_entrevista=data['hora'],
+                fecha_entrevista=fecha_obj,
+                hora_entrevista=hora_obj,
                 nombre_reclutador=data['entrevistador'],
                 modalidad=data['modalidad']
             )
 
-            # Create modality-specific object
+            # CRITICAL FIX: Fetch user from the 'default' database before accessing its properties
+            candidato_user = User.objects.using('default').get(pk=postulacion.candidato.id_candidato_id)
+
+            # Create modality-specific object and gather email context
+            email_context = {
+                'candidato_name': candidato_user.get_full_name(),
+                'company_name': postulacion.oferta.empresa.nombre_comercial,
+                'job_title': postulacion.oferta.titulo_puesto,
+                'interview_date': fecha_obj,
+                'interview_time': hora_obj,
+                'recruiter_name': entrevista.nombre_reclutador,
+                'is_reschedule': bool(existing_interview) # Add a flag for the email template
+            }
+            
             if data['modalidad'] == 'Online':
-                ModoOnline.objects.using('jflex_db').create(
+                modo_online = ModoOnline.objects.using('jflex_db').create(
                     id_modo_online=entrevista,
                     plataforma=data['plataforma'],
                     url_reunion=data['url']
                 )
+                email_context['platform'] = modo_online.plataforma
+                email_context['url'] = modo_online.url_reunion
+                template_path = 'emails/interview_notification_online.html'
+                subject_verb = "Reagendamiento de Entrevista" if existing_interview else "Invitación a Entrevista"
+                subject = f"{subject_verb} Online para {postulacion.oferta.titulo_puesto}"
+
             elif data['modalidad'] == 'Presencial':
-                ModoPresencial.objects.using('jflex_db').create(
+                modo_presencial = ModoPresencial.objects.using('jflex_db').create(
                     id_modo_presencial=entrevista,
                     direccion=data['direccion']
                 )
-            
+                email_context['address'] = modo_presencial.direccion
+                template_path = 'emails/interview_notification_presencial.html'
+                subject_verb = "Reagendamiento de Entrevista" if existing_interview else "Invitación a Entrevista"
+                subject = f"{subject_verb} Presencial para {postulacion.oferta.titulo_puesto}"
+
+            # Send notification email
+            message = render_to_string(template_path, email_context)
+            to_email = candidato_user.email
+            email_message = EmailMessage(subject, message, to=[to_email])
+            email_message.content_subtype = "html"
+            email_message.send()
+
             # Update application status
             postulacion.estado_postulacion = 'entrevista'
             postulacion.save(using='jflex_db')
 
-            # Here you could add logic to send an email notification to the candidate
-
-            return JsonResponse({'status': 'success', 'message': 'Entrevista agendada exitosamente.'})
+            return JsonResponse({'status': 'success', 'message': 'Entrevista agendada y correo enviado exitosamente.'})
 
         except (EmpresaUsuario.DoesNotExist, Postulacion.DoesNotExist):
             return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
@@ -1318,6 +1371,103 @@ def schedule_interview(request, postulacion_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+@login_required
+def get_interview_details(request, postulacion_id):
+    try:
+        # Set locale for proper date formatting
+        try:
+            locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+        except locale.Error:
+            locale.setlocale(locale.LC_TIME, 'Spanish_Spain.1252')
+
+        # Security check
+        empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
+        postulacion = get_object_or_404(Postulacion, pk=postulacion_id)
+        if postulacion.oferta.empresa != empresa_usuario.empresa:
+            return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+        entrevista = get_object_or_404(Entrevista.objects.select_related('modoonline', 'modopresencial'), postulacion=postulacion)
+
+        details = {
+            'interview_id': entrevista.id_entrevista,
+            'fecha': entrevista.fecha_entrevista.strftime('%Y-%m-%d'),
+            'hora': entrevista.hora_entrevista.strftime('%H:%M'),
+            'fecha_display': entrevista.fecha_entrevista.strftime('%A, %d de %B de %Y'),
+            'hora_display': entrevista.hora_entrevista.strftime('%H:%M hrs'),
+            'entrevistador': entrevista.nombre_reclutador,
+            'modalidad': entrevista.modalidad,
+            'plataforma': None,
+            'url': None,
+            'direccion': None,
+        }
+
+        if entrevista.modalidad == 'Online' and hasattr(entrevista, 'modoonline'):
+            details['plataforma'] = entrevista.modoonline.plataforma
+            details['url'] = entrevista.modoonline.url_reunion
+        elif entrevista.modalidad == 'Presencial' and hasattr(entrevista, 'modopresencial'):
+            details['direccion'] = entrevista.modopresencial.direccion
+        
+        return JsonResponse({'status': 'success', 'details': details})
+
+    except (EmpresaUsuario.DoesNotExist, Postulacion.DoesNotExist, Entrevista.DoesNotExist):
+        return JsonResponse({'status': 'error', 'message': 'Not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@transaction.atomic
+def delete_interview(request, interview_id):
+    if request.method == 'POST':
+        try:
+            # Security check
+            empresa_usuario = EmpresaUsuario.objects.using('jflex_db').get(id_empresa_user=request.user)
+            entrevista = get_object_or_404(
+                Entrevista.objects.using('jflex_db').select_related('postulacion__oferta__empresa', 'postulacion__candidato'), 
+                pk=interview_id
+            )
+            if entrevista.postulacion.oferta.empresa != empresa_usuario.empresa:
+                return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+            postulacion = entrevista.postulacion
+            
+            # CRITICAL FIX: Fetch user from the 'default' database
+            candidato_user = User.objects.using('default').get(pk=postulacion.candidato.id_candidato_id)
+
+            # Prepare email context BEFORE deleting
+            email_context = {
+                'candidato_name': candidato_user.get_full_name(),
+                'company_name': postulacion.oferta.empresa.nombre_comercial,
+                'job_title': postulacion.oferta.titulo_puesto,
+                'interview_date': entrevista.fecha_entrevista,
+                'interview_time': entrevista.hora_entrevista,
+            }
+            
+            # Delete the interview
+            entrevista.delete(using='jflex_db')
+
+            # Change status to 'rechazada' as requested
+            postulacion.estado_postulacion = 'rechazada'
+            postulacion.save(using='jflex_db')
+            
+            # Send cancellation email
+            message = render_to_string('emails/interview_cancellation.html', email_context)
+            to_email = candidato_user.email
+            email_message = EmailMessage(f"Cancelación de Entrevista para {postulacion.oferta.titulo_puesto}", message, to=[to_email])
+            email_message.content_subtype = "html"
+            email_message.send()
+
+            return JsonResponse({'status': 'success', 'message': 'Entrevista eliminada, estado actualizado a "Rechazado" y correo de cancelación enviado.'})
+
+        except (EmpresaUsuario.DoesNotExist, Entrevista.DoesNotExist, User.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Not found or permission denied.'}, status=404)
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error in delete_interview: {e}")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
 
 @login_required
 def postulaciones(request):
@@ -1699,7 +1849,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         errors['personalData.email'] = 'El correo electrónico es obligatorio.'
     elif len(personal_data.get('email', '')) > 150:
         errors['personalData.email'] = 'El correo electrónico no puede exceder los 150 caracteres.'
-    elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', personal_data.get('email', '')):
+    elif not re.match(r'^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$', personal_data.get('email', '')):
         errors['personalData.email'] = 'Formato de correo electrónico inválido.'
 
     if not personal_data.get('phone') or not personal_data.get('phone').strip():
@@ -1717,7 +1867,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         errors['personalData.linkedin_link'] = 'El link de LinkedIn no puede exceder los 255 caracteres.'
     # Basic URL validation for linkedin_link
     if personal_data.get('linkedin_link') and not (personal_data.get('linkedin_link').startswith('http://') or personal_data.get('linkedin_link').startswith('https://')):
-        errors['personalData.linkedin_link'] = 'El link de LinkedIn debe ser una URL válida (empezar con http:// o https://).'
+        errors['personalData.linkedin_link'] = 'El link de LinkedIn debe ser una URL válida (empezar con http:// o https://).' 
 
 
     # Validate ObjetivoProfesionalCV fields
@@ -1886,62 +2036,6 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         elif not is_valid_date(cert_data.get('year')):
             errors[prefix + 'year'] = 'Formato de año de obtención inválido.'
 
-        if edu_data.get('notes') and len(edu_data.get('notes', '')) > 500:
-            errors[prefix + 'notes'] = 'Los comentarios no pueden exceder los 500 caracteres.'
-
-    # Validate HabilidadCV fields
-    hard_skills = cv_data.get('skills', {}).get('hard', [])
-    soft_skills = cv_data.get('skills', {}).get('soft', [])
-
-    if len(hard_skills) > 10:
-        errors['skills.hard'] = 'No se pueden tener más de 10 habilidades técnicas.'
-    for i, skill_text in enumerate(hard_skills):
-        if not skill_text or not skill_text.strip():
-            errors[f'skills.hard[{i}]'] = 'La habilidad técnica no puede estar vacía.'
-        elif len(skill_text) > 150:
-            errors[f'skills.hard[{i}]'] = 'La habilidad técnica no puede exceder los 150 caracteres.'
-    
-    if len(soft_skills) > 10:
-        errors['skills.soft'] = 'No se pueden tener más de 10 habilidades blandas.'
-    for i, skill_text in enumerate(soft_skills):
-        if not skill_text or not skill_text.strip():
-            errors[f'skills.soft[{i}]'] = 'La habilidad blanda no puede estar vacía.'
-        elif len(skill_text) > 150:
-            errors[f'skills.soft[{i}]'] = 'La habilidad blanda no puede exceder los 150 caracteres.'
-
-    # Validate IdiomaCV fields
-    for i, lang_data in enumerate(cv_data.get('languages', [])):
-        prefix = f'languages[{i}].'
-        if not lang_data.get('language') or not lang_data.get('language').strip():
-            errors[prefix + 'language'] = 'El nombre del idioma es obligatorio.'
-        elif len(lang_data.get('language', '')) > 50:
-            errors[prefix + 'language'] = 'El nombre del idioma no puede exceder los 50 caracteres.'
-
-        if not lang_data.get('level') or not lang_data.get('level').strip():
-            errors[prefix + 'level'] = 'El nivel del idioma es obligatorio.'
-        elif lang_data.get('level') not in ['Básico', 'Intermedio', 'Avanzado', 'Nativo']:
-            errors[prefix + 'level'] = 'Nivel de idioma inválido.'
-        elif len(lang_data.get('level', '')) > 30:
-            errors[prefix + 'level'] = 'El nivel del idioma no puede exceder los 30 caracteres.'
-
-    # Validate CertificacionesCV fields
-    for i, cert_data in enumerate(cv_data.get('certifications', [])):
-        prefix = f'certifications[{i}].'
-        if not cert_data.get('cert_name') or not cert_data.get('cert_name').strip():
-            errors[prefix + 'cert_name'] = 'El nombre de la certificación es obligatorio.'
-        elif len(cert_data.get('cert_name', '')) > 150:
-            errors[prefix + 'cert_name'] = 'El nombre de la certificación no puede exceder los 150 caracteres.'
-
-        if not cert_data.get('issuer') or not cert_data.get('issuer').strip():
-            errors[prefix + 'issuer'] = 'La entidad emisora es obligatoria.'
-        elif len(cert_data.get('issuer', '')) > 150:
-            errors[prefix + 'issuer'] = 'La entidad emisora no puede exceder los 150 caracteres.'
-
-        if not cert_data.get('year'):
-            errors[prefix + 'year'] = 'El año de obtención es obligatorio.'
-        elif not is_valid_date(cert_data.get('year')):
-            errors[prefix + 'year'] = 'Formato de año de obtención inválido.'
-
     # Validate ProyectosCV fields
     for i, proj_data in enumerate(cv_data.get('projects', [])):
         prefix = f'projects[{i}].'
@@ -1970,7 +2064,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         if proj_data.get('link') and len(proj_data.get('link', '')) > 255:
             errors[prefix + 'link'] = 'El enlace no puede exceder los 255 caracteres.'
         elif proj_data.get('link') and not (proj_data.get('link').startswith('http://') or proj_data.get('link').startswith('https://')):
-            errors[prefix + 'link'] = 'El enlace debe ser una URL válida (empezar con http:// o https://).'
+            errors[prefix + 'link'] = 'El enlace debe ser una URL válida (empezar con http:// o https://).' 
 
     # Validate VoluntariadoCV fields
     for i, vol_data in enumerate(cv_data.get('volunteering', [])):
@@ -1998,18 +2092,15 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         elif len(vol_data.get('country', '')) > 50:
             errors[prefix + 'country'] = 'El país no puede exceder los 50 caracteres.'
 
-        if vol_data.get('region') and len(vol_data.get('region', '')) > 50:
-            errors[prefix + 'region'] = 'La región/estado/provincia no puede exceder los 50 caracteres.'
-
         if not vol_data.get('start_date'):
             errors[prefix + 'start_date'] = 'La fecha de inicio es obligatoria.'
         else:
             try:
                 datetime.strptime(vol_data['start_date'], '%Y-%m-%d').date()
             except ValueError:
-                errors[prefix + 'start_date'] = 'Formato de fecha de inicio inválido (YYYY-MM-DD).'
+                errors[prefix + 'start_date'] = 'Formato de fecha de inicio inválido (YYYY-MM-DD).' 
 
-        if not (vol_data.get('current') == 'on' or vol_data.get('current') is True):
+        if not (vol_data.get('current') == 'on' or vol_data.get('current') == True):
             if not vol_data.get('end_date'):
                 errors[prefix + 'end_date'] = 'La fecha de término es obligatoria si no está actualmente activo.'
             else:
@@ -2049,13 +2140,13 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
             errors[prefix + 'email'] = 'El correo electrónico del referente es obligatorio.'
         elif len(ref_data.get('email', '')) > 150:
             errors[prefix + 'email'] = 'El correo electrónico del referente no puede exceder los 150 caracteres.'
-        elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', ref_data.get('email', '')):
+        elif not re.match(r'^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$', ref_data.get('email', '')):
             errors[prefix + 'email'] = 'Formato de correo electrónico del referente inválido.'
 
         if ref_data.get('linkedin_url') and len(ref_data.get('linkedin_url', '')) > 255:
             errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente no puede exceder los 255 caracteres.'
         elif ref_data.get('linkedin_url') and not (ref_data.get('linkedin_url').startswith('http://') or ref_data.get('linkedin_url').startswith('https://')):
-            errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente debe ser una URL válida (empezar con http:// o https://).'
+            errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente debe ser una URL válida (empezar con http:// o https://).' 
 
     return errors
 
@@ -2503,8 +2594,7 @@ def accept_company_invitation(request, token):
     }
     return render(request, 'company/accept_invitation.html', context)
 
-from django.core.paginator import Paginator
-def job_offers(request:HttpRequest):
+def job_offers(request: HttpRequest):
     q = request.GET.get('q', '').lower()
     region_id = request.GET.get('region', '')
     ciudad_id = request.GET.get('ciudad', '')
@@ -2516,7 +2606,7 @@ def job_offers(request:HttpRequest):
     # Apply keyword search
     if q:
         # Split the query into individual terms
-        search_terms = q.split()
+        search_terms = q.split() # Corrected split to use a space as delimiter
         
         # Create a Q object for combining all keyword filters
         keyword_query = Q()
@@ -2607,7 +2697,7 @@ def job_offers(request:HttpRequest):
         return JsonResponse({'html': html})
     return render(request, 'offers/job_offers.html', ctx)
 
-def job_details(request:HttpRequest,id_oferta:int):
+def job_details(request: HttpRequest,id_oferta:int):
     oferta=get_object_or_404(OfertaLaboral,pk=int(id_oferta))
     skills = json.loads(oferta.habilidades_clave)
     skills = [s["value"] for s in skills]
@@ -2632,7 +2722,7 @@ def job_details(request:HttpRequest,id_oferta:int):
       'beneficios':boons,
       'has_applied': has_applied
     }
-    return render(request,'offers/partials/_job_details.html',ctx)
+    return render(request ,'offers/partials/_job_details.html',ctx)
 
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404
@@ -2856,5 +2946,3 @@ def upload_cv_from_modal(request):
             return JsonResponse({'success': False, 'message': f'Error al subir el CV a S3: {str(e)}'}, status=500)
     else:
         return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
-
-

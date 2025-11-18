@@ -1,0 +1,19 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<p>Hola {{ candidato_name }},</p>
+<p>Nos complace informarte que has avanzado en el proceso de selección para el puesto de <strong>{{ job_title }}</strong> en <strong>{{ company_name }}</strong>. Nos gustaría invitarte a una entrevista para conversar más a fondo sobre tu perfil.</p>
+<p>Los detalles de la entrevista son los siguientes:</p>
+<ul>
+    <li><strong>Fecha:</strong> {{ interview_date|date:"l, d F, Y" }}</li>
+    <li><strong>Hora:</strong> {{ interview_time|time:"H:i" }} hrs</li>
+    <li><strong>Modalidad:</strong> Online</li>
+    <li><strong>Plataforma:</strong> {{ platform }}</li>
+    <li><strong>Enlace de la reunión:</strong> <a href="{{ url }}">{{ url }}</a></li>
+    <li><strong>Entrevistador(a):</strong> {{ recruiter_name }}</li>
+</ul>
+<p>Por favor, asegúrate de tener una conexión a internet estable y de unirte a la reunión unos minutos antes de la hora programada.</p>
+<p>Si tienes algún inconveniente con la fecha u hora, por favor responde a este correo para coordinar una alternativa.</p>
+<p>¡Mucho éxito!</p>
+<p>Atentamente,<br>El equipo de <strong>{{ company_name }}</strong></p>
+{% endblock %}

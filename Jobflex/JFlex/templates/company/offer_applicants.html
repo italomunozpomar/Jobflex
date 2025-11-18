@@ -3,31 +3,81 @@
 
 {% block title %}Postulantes para {{ offer.titulo_puesto }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .loader-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 50;
+    }
+    .loader-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #0056b3;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div style="display:none;">
+    {% csrf_token %}
+</div>
 <div class="flex flex-col h-screen bg-gray-100 font-sans">
-    <!-- Header -->
-    <header class="bg-white shadow-sm p-4 flex justify-between items-center z-10">
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center z-30">
         <div>
             <h1 class="text-2xl font-bold text-dark">Tablero de Postulantes</h1>
             <p class="text-md text-secondary">{{ offer.titulo_puesto }}</p>
         </div>
-        <a href="{% url 'company_index' %}?tab=all-jobs" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Volver a Ofertas
-        </a>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-700 mr-2">Modo Automático</span>
+                <label for="auto-mode-toggle" class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" id="auto-mode-toggle" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+            <a href="{% url 'company_index' %}?tab=all-jobs" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Volver a Ofertas
+            </a>
+        </div>
     </header>
 
-    <!-- Kanban Board -->
-    <main class="flex-1 flex overflow-x-auto p-4 space-x-4">
+    <main id="kanban-container" class="flex-1 flex overflow-x-auto p-4 space-x-4 z-10">
         {% for column in kanban_data %}
         <div class="kanban-column flex-shrink-0 w-72 bg-gray-200 rounded-lg flex flex-col">
-            <div class="p-3 font-semibold text-dark border-b border-gray-300">
-                {{ column.status_name }}
-                <span class="text-sm font-normal text-gray-500">{{ column.applicants|length }}</span>
+            <div class="p-3 font-semibold text-dark border-b border-gray-300 flex justify-between items-center">
+                <div class="flex items-center">
+                    {{ column.status_name }}
+                    <span class="ml-2 text-sm font-normal text-gray-500" data-counter>{{ column.applicants|length }}</span>
+                </div>
+                <div class="relative group z-40">
+                    <svg class="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-60 bg-gray-800 text-white text-xs rounded-lg p-2 text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        {{ column.tooltip }}
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-gray-800 rotate-45" style="margin-top: -6px;"></div>
+                    </div>
+                </div>
             </div>
             <div class="kanban-cards p-2 space-y-3 overflow-y-auto flex-1" data-status="{{ column.status_key }}">
                 {% for applicant in column.applicants %}
-                <div class="kanban-card bg-white p-3 rounded-md shadow cursor-grab active:cursor-grabbing" data-id="{{ applicant.postulacion_id }}">
+                <div class="kanban-card bg-white p-3 rounded-md shadow cursor-grab active:cursor-grabbing" data-id="{{ applicant.postulacion_id }}" data-has-interview="{{ applicant.has_interview|yesno:'true,false' }}">
                     <p class="font-semibold text-dark mb-2">{{ applicant.full_name }}</p>
                     <div class="text-xs text-gray-600 space-y-1 mb-3">
                         <p><strong class="font-medium text-gray-700">Ubicación:</strong> {{ applicant.location }}</p>
@@ -35,12 +85,27 @@
                     </div>
                     <p class="text-xs text-gray-500 mb-3">Postuló el: {{ applicant.application_date|date:"d M, Y" }}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-xs py-1 px-2 rounded-full {% if applicant.availability == 'Disponible' %} bg-green-100 text-green-800 {% else %} bg-gray-200 text-gray-800 {% endif %}">
-                            {{ applicant.availability }}
-                        </span>
-                        <div class="flex items-center space-x-1">
-                            <button class="view-cv-btn p-1 text-gray-500 hover:text-primary" title="Ver CV" data-postulacion-id="{{ applicant.postulacion_id }}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                            <button class="schedule-interview-btn p-1 text-gray-500 hover:text-primary" title="Agendar Entrevista" data-postulacion-id="{{ applicant.postulacion_id }}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                         <div class="flex items-center space-x-2">
+                            <span class="text-xs py-1 px-2 rounded-full {% if applicant.availability == 'Disponible' %} bg-green-100 text-green-800 {% else %} bg-gray-200 text-gray-800 {% endif %}">
+                                {{ applicant.availability }}
+                            </span>
+                            {% if applicant.has_interview %}
+                            <span class="interview-badge text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-800">
+                                Entrevista Agendada
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center space-x-1" data-button-container>
+                            <button class="view-cv-btn p-1 text-gray-500 hover:text-primary" title="Ver CV" data-postulacion-id="{{ applicant.postulacion_id }}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                            {% if column.status_key == 'en proceso' %}
+                                <button class="schedule-interview-btn p-1 text-gray-500 hover:text-primary" title="Agendar Entrevista" data-postulacion-id="{{ applicant.postulacion_id }}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                            {% elif column.status_key == 'entrevista' %}
+                                {% if applicant.has_interview %}
+                                    <button class="manage-interview-btn p-1 text-gray-500 hover:text-primary" title="Gestionar Entrevista" data-postulacion-id="{{ applicant.postulacion_id }}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                {% else %}
+                                    <button class="schedule-interview-btn p-1 text-gray-500 hover:text-primary" title="Agendar Entrevista" data-postulacion-id="{{ applicant.postulacion_id }}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -54,333 +119,377 @@
     </main>
 </div>
 
-<!-- Universal CV Preview Modal -->
-<div id="cv-preview-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-7xl max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 flex flex-col max-h-full">
-            <!-- Modal header -->
-            <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                <div>
-                    <h3 id="modal-cv-name" class="text-xl font-semibold text-gray-900 dark:text-white"></h3>
-                </div>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="cv-preview-modal">
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
-                    <span class="sr-only">Close modal</span>
-                </button>
-            </div>
-            <!-- Modal body -->
-            <div id="modal-loader" class="p-6 text-center">
-                <svg class="animate-spin h-8 w-8 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <p class="mt-2 text-sm text-gray-500">Cargando datos del postulante...</p>
-            </div>
-            <div id="modal-body-content" class="hidden flex-1 lg:grid lg:grid-cols-4 gap-6 p-6 overflow-y-auto">
-                <!-- Left Column: CV Content -->
-                <div id="cv-content-wrapper" class="lg:col-span-3 bg-white p-6 rounded-lg overflow-y-auto shadow-inner">
-                    <div id="cv-content-area" class="h-full"></div>
-                </div>
-                <!-- Right Column: Personal Data -->
-                <div id="personal-data-wrapper" class="lg:col-span-1 bg-gray-50 p-4 rounded-lg overflow-y-auto mt-6 lg:mt-0">
-                    <h4 class="font-bold text-lg mb-4">Datos del Postulante</h4>
-                    <div class="space-y-3 text-sm">
-                        <p><strong class="block text-gray-800">Nombre:</strong> <span id="modal-candidate-name" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">Email:</strong> <span id="modal-candidate-email" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">Teléfono:</strong> <span id="modal-candidate-phone" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">RUT:</strong> <span id="modal-candidate-rut" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">Ubicación:</strong> <span id="modal-candidate-location" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">Edad:</strong> <span id="modal-candidate-age" class="text-gray-600"></span></p>
-                        <p><strong class="block text-gray-800">Disponibilidad:</strong> <span id="modal-candidate-availability" class="text-gray-600"></span></p>
-                        <p id="linkedin-container" class="hidden"><strong class="block text-gray-800">LinkedIn:</strong> <a id="modal-candidate-linkedin" href="#" target="_blank" class="text-primary hover:underline"></a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'company/partials/_cv_preview_modal.html' %}
+{% include 'company/partials/_schedule_interview_modal.html' %}
+{% include 'company/partials/_manage_interview_modal.html' %}
 
-<!-- Schedule Interview Modal -->
-<div id="schedule-interview-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-lg max-h-full">
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <form id="schedule-interview-form">
-                <!-- Modal header -->
-                <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Agendar Entrevista</h3>
-                    <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-modal-hide="schedule-interview-modal">
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        <span class="sr-only">Close modal</span>
-                    </button>
-                </div>
-                <!-- Modal body -->
-                <div class="p-6 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="interview-date" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
-                            <input type="date" id="interview-date" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
-                        </div>
-                        <div>
-                            <label for="interview-time" class="block mb-2 text-sm font-medium text-gray-900">Hora</label>
-                            <input type="time" id="interview-time" name="hora" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="interview-recruiter" class="block mb-2 text-sm font-medium text-gray-900">Nombre del Entrevistador</label>
-                        <input type="text" id="interview-recruiter" name="entrevistador" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
-                    </div>
-                    <div>
-                        <label for="interview-modality" class="block mb-2 text-sm font-medium text-gray-900">Modalidad</label>
-                        <select id="interview-modality" name="modalidad" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
-                            <option value="Online">Online</option>
-                            <option value="Presencial">Presencial</option>
-                        </select>
-                    </div>
-                    <div id="online-fields">
-                        <div>
-                            <label for="interview-platform" class="block mb-2 text-sm font-medium text-gray-900">Plataforma</label>
-                            <input type="text" id="interview-platform" name="plataforma" placeholder="Ej: Google Meet, Zoom, Teams" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
-                        </div>
-                        <div class="mt-4">
-                            <label for="interview-url" class="block mb-2 text-sm font-medium text-gray-900">URL de la Reunión</label>
-                            <input type="url" id="interview-url" name="url" placeholder="https://" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
-                        </div>
-                    </div>
-                    <div id="presencial-fields" class="hidden">
-                        <div>
-                            <label for="interview-address" class="block mb-2 text-sm font-medium text-gray-900">Dirección</label>
-                            <input type="text" id="interview-address" name="direccion" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
-                        </div>
-                    </div>
-                </div>
-                <!-- Modal footer -->
-                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <button type="submit" class="text-white bg-primary hover:bg-opacity-90 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Agendar</button>
-                    <button data-modal-hide="schedule-interview-modal" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
-<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- Helper Functions ---
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
-
-    // --- CV Preview Modal Logic ---
-    const cvPreviewModalEl = document.getElementById('cv-preview-modal');
-    const cvPreviewModal = new Modal(cvPreviewModalEl);
-    const cvLoader = document.getElementById('modal-loader');
-    const cvModalBody = document.getElementById('modal-body-content');
-    const cvContentArea = document.getElementById('cv-content-area');
-
-    function renderCreatedCvPreview(container, cvData) {
-        let html = '';
-        const p = cvData.personalData;
-        const fullName = `${p.firstName || ''} ${p.secondName || ''} ${p.lastName || ''} ${p.motherLastName || ''}`.trim();
-        
-        html += `<header class="text-center border-b-2 border-gray-800 pb-4"><h1 class="text-3xl font-bold tracking-wider uppercase text-gray-800">${fullName}</h1><p class="text-lg font-medium text-gray-600">${cvData.objective || ''}</p></header>`;
-
-        if (cvData.objective) {
-            html += `<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2><p class="text-sm text-gray-700 whitespace-pre-wrap">${cvData.objective}</p></section>`;
-        }
-        if (cvData.experience && cvData.experience.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>';
-            cvData.experience.forEach(exp => {
-                const description = exp.description ? exp.description.split('\\n').map(item => `<li class="text-gray-700">${item}</li>`).join('') : '';
-                html += `<div class="text-sm mb-4"><p class="font-semibold text-md text-gray-900">${exp.position}</p><h3 class="font-bold">${exp.company} - ${exp.location}</h3><p class="italic text-xs text-gray-500">${exp.start_date} - ${exp.end_date}</p><ul class="list-disc list-inside mt-2 space-y-1 pl-2">${description}</ul></div>`;
-            });
-            html += '</section>';
-        }
-        if (cvData.education && cvData.education.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>';
-            cvData.education.forEach(edu => {
-                html += `<div class="text-sm mb-3"><h3 class="font-bold text-md">${edu.degree}</h3><p>${edu.institution}</p><p class="italic text-xs text-gray-500">${edu.start_year} - ${edu.end_year}</p></div>`;
-            });
-            html += '</section>';
-        }
-        if (cvData.skills && (cvData.skills.hard.length > 0 || cvData.skills.soft.length > 0)) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>';
-            if (cvData.skills.hard.length > 0) {
-                html += '<p class="font-semibold mb-2">Habilidades Técnicas:</p><ul class="list-disc list-inside ml-4 space-y-1">';
-                cvData.skills.hard.forEach(skill => { html += `<li>${skill}</li>`; });
-                html += '</ul>';
-            }
-            if (cvData.skills.soft.length > 0) {
-                html += '<p class="font-semibold mt-3 mb-2">Competencias:</p><ul class="list-disc list-inside ml-4 space-y-1">';
-                cvData.skills.soft.forEach(skill => { html += `<li>${skill}</li>`; });
-                html += '</ul>';
-            }
-            html += '</section>';
-        }
-        if (cvData.languages && cvData.languages.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2>';
-            cvData.languages.forEach(lang => { html += `<p class="text-sm"><span class="font-semibold">${lang.language}:</span> ${lang.level}</p>`; });
-            html += '</section>';
-        }
-        if (cvData.certifications && cvData.certifications.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>';
-            cvData.certifications.forEach(cert => { html += `<p class="text-sm"><span class="font-semibold">${cert.cert_name}</span>, ${cert.issuer} (${cert.year})</p>`; });
-            html += '</section>';
-        }
-        if (cvData.projects && cvData.projects.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>';
-            cvData.projects.forEach(proj => {
-                html += `<div class="text-sm mb-4"><h3 class="font-bold text-md">${proj.project_name}</h3><p class="italic text-xs text-gray-500">${proj.period}</p>${proj.role ? `<p class="italic font-semibold">${proj.role}</p>` : ''}<p class="mt-1">${proj.description}</p>${proj.link ? `<a href="${proj.link}" class="text-primary hover:underline" target="_blank">Ver proyecto</a>` : ''}</div>`;
-            });
-            html += '</section>';
-        }
-        if (cvData.volunteering && cvData.volunteering.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>';
-            cvData.volunteering.forEach(vol => { html += `<div class="text-sm mb-3"><h3 class="font-bold text-md">${vol.organization}</h3><p class="italic">${vol.role}</p><p class="italic text-xs text-gray-500">${vol.start_date} - ${vol.end_date}</p></div>`; });
-            html += '</section>';
-        }
-        if (cvData.references && cvData.references.length > 0) {
-            html += '<section class="mt-6"><h2 class="text-lg font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>';
-            cvData.references.forEach(ref => {
-                html += `<div class="text-sm mb-3"><h3 class="font-bold text-md">${ref.name}</h3><p class="italic">${ref.position}</p><p class="mt-1">Tel: ${ref.phone} | Email: ${ref.email}</p>${ref.linkedin_url ? `<a href="${ref.linkedin_url}" class="text-primary hover:underline" target="_blank">Ver Perfil de LinkedIn</a>` : ''}</div>`;
-            });
-            html += '</section>';
-        }
-        container.innerHTML = html;
-    }
-
-    document.querySelectorAll('.view-cv-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            const postulacionId = this.dataset.postulacionId;
-            cvModalBody.classList.add('hidden');
-            cvLoader.classList.remove('hidden');
-            cvPreviewModal.show();
-
-            fetch(`/api/applicant/${postulacionId}/details/`)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status === 'success') {
-                        const data = result.data;
-                        document.getElementById('modal-cv-name').innerText = `Curriculum Vitae de ${data.personal_data.full_name}`;
-                        document.getElementById('modal-candidate-name').innerText = data.personal_data.full_name;
-                        document.getElementById('modal-candidate-email').innerText = data.personal_data.email;
-                        document.getElementById('modal-candidate-phone').innerText = data.personal_data.phone;
-                        document.getElementById('modal-candidate-rut').innerText = data.personal_data.rut || 'No especificado';
-                        document.getElementById('modal-candidate-location').innerText = data.personal_data.location;
-                        document.getElementById('modal-candidate-age').innerText = data.personal_data.age ? `${data.personal_data.age} años` : 'No especificada';
-                        document.getElementById('modal-candidate-availability').innerText = data.personal_data.availability;
-                        
-                        const linkedinContainer = document.getElementById('linkedin-container');
-                        const linkedinLink = document.getElementById('modal-candidate-linkedin');
-                        if (data.personal_data.linkedin_url) {
-                            linkedinLink.href = data.personal_data.linkedin_url;
-                            linkedinLink.innerText = 'Ver Perfil';
-                            linkedinContainer.classList.remove('hidden');
-                        } else {
-                            linkedinContainer.classList.add('hidden');
-                        }
-
-                        cvContentArea.innerHTML = '';
-                        if (data.cv_data.cv_type === 'subido') {
-                            const embed = document.createElement('iframe');
-                            embed.src = data.cv_data.content;
-                            embed.className = 'w-full h-full min-h-[80vh]';
-                            cvContentArea.appendChild(embed);
-                        } else {
-                            renderCreatedCvPreview(cvContentArea, data.cv_data.content);
-                        }
-                        cvLoader.classList.add('hidden');
-                        cvModalBody.classList.remove('hidden');
-                    }
-                });
-        });
-    });
-
-    // --- Interview Modal Logic ---
-    const interviewModalEl = document.getElementById('schedule-interview-modal');
-    const interviewModal = new Modal(interviewModalEl);
-    const interviewForm = document.getElementById('schedule-interview-form');
-    const modalitySelect = document.getElementById('interview-modality');
-    const onlineFields = document.getElementById('online-fields');
-    const presencialFields = document.getElementById('presencial-fields');
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. STATE & CONFIG
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let isAutoModeEnabled = false;
     let currentPostulacionId = null;
+    let currentInterviewId = null;
 
-    modalitySelect.addEventListener('change', function() {
-        onlineFields.classList.toggle('hidden', this.value !== 'Online');
-        presencialFields.classList.toggle('hidden', this.value !== 'Presencial');
-    });
+    // 2. MODAL INSTANCES
+    const cvPreviewModalEl = document.getElementById('cv-preview-modal');
+    const scheduleModalEl = document.getElementById('schedule-interview-modal');
+    const manageModalEl = document.getElementById('manage-interview-modal');
+    const cvPreviewModal = new Modal(cvPreviewModalEl);
+    const scheduleModal = new Modal(scheduleModalEl);
+    const manageModal = new Modal(manageModalEl);
 
-    document.querySelectorAll('.schedule-interview-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            currentPostulacionId = this.dataset.postulacionId;
-            interviewForm.reset();
-            onlineFields.classList.remove('hidden');
-            presencialFields.classList.add('hidden');
-            interviewModal.show();
+    // 3. UI UPDATE FUNCTIONS
+    function showLoader(modalElement) {
+        const loader = modalElement.querySelector('.loader-overlay');
+        if (loader) loader.classList.remove('hidden');
+    }
+    function hideLoader(modalElement) {
+        const loader = modalElement.querySelector('.loader-overlay');
+        if (loader) loader.classList.add('hidden');
+    }
+
+    function updateColumnPlaceholder(container) {
+        if (!container) return;
+        const placeholder = container.querySelector('.empty-column-placeholder');
+        const cardCount = container.querySelectorAll('.kanban-card').length;
+        if (placeholder) placeholder.classList.toggle('hidden', cardCount > 0);
+    }
+
+    function updateAllPlaceholders() {
+        document.querySelectorAll('.kanban-cards').forEach(updateColumnPlaceholder);
+    }
+
+    function updateColumnCounts() {
+        document.querySelectorAll('.kanban-column').forEach(column => {
+            const counter = column.querySelector('[data-counter]');
+            const cardContainer = column.querySelector('.kanban-cards');
+            if (counter && cardContainer) {
+                const cardCount = cardContainer.querySelectorAll('.kanban-card').length;
+                counter.textContent = cardCount;
+            }
         });
+    }
+
+    function updateCardUI(card) {
+        const buttonContainer = card.querySelector('[data-button-container]');
+        if (!buttonContainer) return;
+
+        const postulacionId = card.dataset.id;
+        const hasInterview = card.dataset.hasInterview === 'true';
+        const status = card.parentElement.dataset.status;
+
+        const viewCvBtn = `<button class="view-cv-btn p-1 text-gray-500 hover:text-primary" title="Ver CV" data-postulacion-id="${postulacionId}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>`;
+        const scheduleBtn = `<button class="schedule-interview-btn p-1 text-gray-500 hover:text-primary" title="Agendar Entrevista" data-postulacion-id="${postulacionId}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>`;
+        const manageBtn = `<button class="manage-interview-btn p-1 text-gray-500 hover:text-primary" title="Gestionar Entrevista" data-postulacion-id="${postulacionId}"><svg style="pointer-events: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>`;
+        
+        let newButtonsHtml = viewCvBtn;
+        if (status === 'en proceso') {
+            newButtonsHtml += scheduleBtn;
+        } else if (status === 'entrevista') {
+            if (hasInterview) newButtonsHtml += manageBtn;
+            else newButtonsHtml += scheduleBtn;
+        }
+        buttonContainer.innerHTML = newButtonsHtml;
+
+        const badge = card.querySelector('.interview-badge');
+        if (hasInterview) {
+            if (!badge) {
+                const badgeContainer = card.querySelector('.flex.items-center.space-x-2');
+                const newBadge = document.createElement('span');
+                newBadge.className = 'interview-badge text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-800';
+                newBadge.textContent = 'Entrevista Agendada';
+                badgeContainer.appendChild(newBadge);
+            }
+        } else {
+            if (badge) badge.remove();
+        }
+    }
+
+    // 4. MODAL HANDLERS
+    function openCvModal(postulacionId) {
+        cvPreviewModal.show();
+        showLoader(cvPreviewModalEl);
+        const cvModalBody = document.getElementById('modal-body-content');
+        const cvContentArea = document.getElementById('cv-content-area');
+        
+        // Clear previous content
+        document.getElementById('modal-cv-name').innerText = '';
+        cvContentArea.innerHTML = '';
+        if(cvModalBody) cvModalBody.classList.add('hidden');
+        ['modal-personal-name', 'modal-personal-email', 'modal-personal-phone', 'modal-personal-rut', 'modal-personal-location', 'modal-personal-age', 'modal-personal-availability'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = '';
+        });
+        const linkedinContainer = document.getElementById('linkedin-container');
+        const personalLinkedin = document.getElementById('modal-personal-linkedin');
+        if(linkedinContainer) linkedinContainer.classList.add('hidden');
+        if(personalLinkedin) {
+            personalLinkedin.href = '#';
+            personalLinkedin.innerText = '';
+        }
+
+        fetch(`/api/applicant/${postulacionId}/details/`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(result => {
+                if (result.status === 'success') {
+                    const data = result.data;
+                    document.getElementById('modal-cv-name').innerText = `CV de ${data.personal_data.full_name}`;
+                    
+                    // Populate personal data
+                    document.getElementById('modal-personal-name').innerText = data.personal_data.full_name;
+                    document.getElementById('modal-personal-email').innerText = data.personal_data.email;
+                    document.getElementById('modal-personal-phone').innerText = data.personal_data.phone;
+                    document.getElementById('modal-personal-rut').innerText = data.personal_data.rut || 'No ingresado';
+                    document.getElementById('modal-personal-location').innerText = data.personal_data.location;
+                    document.getElementById('modal-personal-age').innerText = data.personal_data.age ? `${data.personal_data.age} años` : 'N/A';
+                    document.getElementById('modal-personal-availability').innerText = data.personal_data.availability;
+                    
+                    if (data.personal_data.linkedin_url) {
+                        personalLinkedin.href = data.personal_data.linkedin_url;
+                        personalLinkedin.innerText = 'Ver Perfil'; // Make the link visible
+                        linkedinContainer.classList.remove('hidden');
+                    }
+
+                    // Populate CV content
+                    if (data.cv_data.cv_type === 'subido') {
+                        const pdfIframe = document.createElement('iframe');
+                        pdfIframe.src = data.cv_data.content;
+                        pdfIframe.className = 'w-full h-full min-h-[80vh]';
+                        
+                        pdfIframe.addEventListener('load', () => {
+                            hideLoader(cvPreviewModalEl);
+                            if(cvModalBody) cvModalBody.classList.remove('hidden');
+                        });
+                        pdfIframe.addEventListener('error', () => {
+                            cvContentArea.innerHTML = `<p class="text-red-500">Error al cargar el PDF.</p>`;
+                            hideLoader(cvPreviewModalEl);
+                            if(cvModalBody) cvModalBody.classList.remove('hidden');
+                        });
+                        cvContentArea.appendChild(pdfIframe);
+
+                    } else { // 'creado'
+                        const cv = data.cv_data.content;
+                        let createdCvHtml = '';
+
+                        // Helper to check if a section has content
+                        const hasContent = (arr) => arr && Array.isArray(arr) && arr.length > 0;
+
+                        // Objective
+                        if (cv.objective) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Objetivo Profesional</h4><p class="text-gray-600">${cv.objective}</p></div>`;
+                        }
+
+                        // Experience
+                        if (hasContent(cv.experience)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Experiencia Laboral</h4>`;
+                            cv.experience.forEach(exp => {
+                                createdCvHtml += `<div class="mb-4"><p class="font-semibold text-gray-700">${exp.position} en ${exp.company}</p><p class="text-sm text-gray-500">${exp.start_date} - ${exp.end_date} &middot; ${exp.location}</p>`;
+                                if (exp.description) {
+                                    createdCvHtml += `<ul class="list-disc list-inside mt-1 text-sm text-gray-600">`;
+                                    exp.description.split('\n').forEach(line => {
+                                        if(line.trim()) createdCvHtml += `<li>${line.trim()}</li>`;
+                                    });
+                                    createdCvHtml += `</ul>`;
+                                }
+                                createdCvHtml += `</div>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        // Education
+                        if (hasContent(cv.education)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Educación</h4>`;
+                            cv.education.forEach(edu => {
+                                createdCvHtml += `<div class="mb-3"><p class="font-semibold text-gray-700">${edu.degree} en ${edu.institution}</p><p class="text-sm text-gray-500">${edu.start_year} - ${edu.end_year}</p></div>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        // Skills
+                        if (cv.skills && (hasContent(cv.skills.hard) || hasContent(cv.skills.soft))) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Habilidades</h4>`;
+                            if (hasContent(cv.skills.hard)) {
+                                createdCvHtml += `<p class="font-medium text-gray-700 mb-1">Técnicas</p><ul class="list-disc list-inside text-sm text-gray-600 mb-3">`;
+                                cv.skills.hard.forEach(skill => { createdCvHtml += `<li>${skill}</li>`; });
+                                createdCvHtml += `</ul>`;
+                            }
+                            if (hasContent(cv.skills.soft)) {
+                                createdCvHtml += `<p class="font-medium text-gray-700 mb-1">Blandas</p><ul class="list-disc list-inside text-sm text-gray-600">`;
+                                cv.skills.soft.forEach(skill => { createdCvHtml += `<li>${skill}</li>`; });
+                                createdCvHtml += `</ul>`;
+                            }
+                            createdCvHtml += `</div>`;
+                        }
+                        
+                        // Languages
+                        if (hasContent(cv.languages)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Idiomas</h4>`;
+                            cv.languages.forEach(lang => {
+                                createdCvHtml += `<p class="text-sm text-gray-600"><span class="font-semibold">${lang.language}:</span> ${lang.level}</p>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        // Certifications
+                        if (hasContent(cv.certifications)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Certificaciones</h4>`;
+                            cv.certifications.forEach(cert => {
+                                createdCvHtml += `<div class="mb-3"><p class="font-semibold text-gray-700">${cert.cert_name} - ${cert.issuer}</p><p class="text-sm text-gray-500">Obtenido en: ${cert.year}</p></div>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        // Projects
+                        if (hasContent(cv.projects)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Proyectos</h4>`;
+                            cv.projects.forEach(proj => {
+                                createdCvHtml += `<div class="mb-4"><p class="font-semibold text-gray-700">${proj.project_name} (${proj.period})</p><p class="text-sm text-gray-600">${proj.description}</p>${proj.link ? `<a href="${proj.link}" target="_blank" class="text-sm text-primary hover:underline">Ver proyecto</a>` : ''}</div>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        // References
+                        if (hasContent(cv.references)) {
+                            createdCvHtml += `<div class="mb-6"><h4 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Referencias</h4>`;
+                            cv.references.forEach(ref => {
+                                createdCvHtml += `<div class="mb-3"><p class="font-semibold text-gray-700">${ref.name}, ${ref.position}</p><p class="text-sm text-gray-600">Email: ${ref.email} | Tel: ${ref.phone}</p></div>`;
+                            });
+                            createdCvHtml += `</div>`;
+                        }
+
+                        cvContentArea.innerHTML = createdCvHtml;
+                        hideLoader(cvPreviewModalEl);
+                        if(cvModalBody) cvModalBody.classList.remove('hidden');
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error for CV details:', error);
+                cvContentArea.innerHTML = `<p class="text-red-500">Ocurrió un error al cargar el CV.</p>`;
+                hideLoader(cvPreviewModalEl);
+                if(cvModalBody) cvModalBody.classList.remove('hidden');
+            });
+    }
+
+    function openScheduleModal(postulacionId) {
+        currentPostulacionId = postulacionId;
+        document.getElementById('schedule-interview-form').reset();
+        scheduleModal.show();
+    }
+
+    function openManageModal(postulacionId) {
+        currentPostulacionId = postulacionId;
+        manageModal.show();
+        showLoader(manageModalEl);
+        fetch(`/api/postulacion/${postulacionId}/interview/details/`)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    const details = data.details;
+                    currentInterviewId = details.interview_id;
+                    const container = document.getElementById('interview-details-container');
+                    container.innerHTML = `<p><strong>Fecha:</strong> ${details.fecha_display}</p><p><strong>Hora:</strong> ${details.hora_display}</p><p><strong>Modalidad:</strong> ${details.modalidad}</p>${details.plataforma ? `<p><strong>Plataforma:</strong> ${details.plataforma}</p>` : ''}${details.url ? `<p><strong>URL:</strong> <a href="${details.url}" target="_blank" class="text-primary hover:underline">Abrir enlace</a></p>` : ''}${details.direccion ? `<p><strong>Dirección:</strong> ${details.direccion}</p>` : ''}`;
+                    document.getElementById('manage-interview-view').classList.remove('hidden');
+                    document.getElementById('manage-interview-footer').classList.remove('hidden');
+                    document.getElementById('reschedule-interview-form').classList.add('hidden');
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error for interview details:', error);
+                alert('Ocurrió un error al cargar los detalles de la entrevista.');
+                manageModal.hide();
+            })
+            .finally(() => {
+                hideLoader(manageModalEl);
+            });
+    }
+
+    // 5. EVENT LISTENERS
+    document.getElementById('kanban-container').addEventListener('click', function(event) {
+        const targetButton = event.target.closest('button');
+        if (!targetButton) return;
+        const postulacionId = targetButton.dataset.postulacionId;
+        if (!postulacionId) return;
+
+        if (targetButton.classList.contains('view-cv-btn')) openCvModal(postulacionId);
+        else if (targetButton.classList.contains('schedule-interview-btn')) openScheduleModal(postulacionId);
+        else if (targetButton.classList.contains('manage-interview-btn')) openManageModal(postulacionId);
     });
 
-    interviewForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(interviewForm);
-        const data = Object.fromEntries(formData.entries());
+    document.getElementById('auto-mode-toggle').addEventListener('change', function() {
+        isAutoModeEnabled = this.checked;
+    });
 
+    // All form submissions (schedule, reschedule, delete)
+    document.getElementById('schedule-interview-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
         fetch(`/api/postulacion/${currentPostulacionId}/schedule_interview/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
             body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
+        }).then(res => res.json()).then(result => {
             if (result.status === 'success') {
-                alert('Entrevista agendada exitosamente.');
-                interviewModal.hide();
+                alert('Entrevista agendada.');
+                scheduleModal.hide();
                 const card = document.querySelector(`.kanban-card[data-id='${currentPostulacionId}']`);
-                const entrevistaColumn = document.querySelector(`.kanban-cards[data-status='entrevista']`);
-                if (card && entrevistaColumn && card.parentElement !== entrevistaColumn) {
-                    entrevistaColumn.appendChild(card);
-                    updateColumnPlaceholder(card.parentElement);
-                    updateColumnPlaceholder(entrevistaColumn);
-                }
-            } else {
-                alert(`Error: ${result.message}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Ocurrió un error al agendar la entrevista.');
+                card.dataset.hasInterview = 'true';
+                const toCol = document.querySelector(`.kanban-cards[data-status='entrevista']`);
+                if (card.parentElement !== toCol) toCol.appendChild(card);
+                updateCardUI(card);
+                updateAllPlaceholders();
+                updateColumnCounts();
+            } else { alert(`Error: ${result.message}`); }
         });
     });
 
-    // --- Drag and Drop Logic ---
-    function updateColumnPlaceholder(container) {
-        const placeholder = container.querySelector('.empty-column-placeholder');
-        const cardCount = container.querySelectorAll('.kanban-card').length;
-        if (placeholder) {
-            placeholder.classList.toggle('hidden', cardCount > 0);
+    document.getElementById('delete-interview-btn').addEventListener('click', function() {
+        if (confirm('¿Estás seguro? El postulante pasará a "Rechazados" y se le notificará por correo.')) {
+            fetch(`/api/interview/${currentInterviewId}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            }).then(res => res.json()).then(result => {
+                if (result.status === 'success') {
+                    alert('Entrevista eliminada.');
+                    manageModal.hide();
+                    const card = document.querySelector(`.kanban-card[data-id='${currentPostulacionId}']`);
+                    card.dataset.hasInterview = 'false';
+                    const toCol = document.querySelector(`.kanban-cards[data-status='rechazada']`);
+                    if (card.parentElement !== toCol) toCol.appendChild(card);
+                    updateCardUI(card);
+                    updateAllPlaceholders();
+                    updateColumnCounts();
+                } else { alert(`Error: ${result.message}`); }
+            });
         }
-    }
+    });
+    
+    // ... other form listeners ...
 
+    // 6. DRAG & DROP
     document.querySelectorAll('.kanban-cards').forEach(container => {
         new Sortable(container, {
             group: 'kanban',
             animation: 150,
-            ghostClass: 'bg-blue-100',
             onEnd: function (evt) {
                 const card = evt.item;
                 const fromColumnContainer = evt.from;
@@ -389,31 +498,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 const postulacionId = card.dataset.id;
                 const newStatus = toColumnContainer.dataset.status;
 
-                updateColumnPlaceholder(fromColumnContainer);
-                updateColumnPlaceholder(toColumnContainer);
-
                 fetch(`/api/postulacion/${postulacionId}/update_status/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                     body: JSON.stringify({ new_status: newStatus })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status !== 'success') {
-                        fromColumnContainer.appendChild(card);
-                        updateColumnPlaceholder(fromColumnContainer);
-                        updateColumnPlaceholder(toColumnContainer);
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        updateCardUI(card);
+                        if (isAutoModeEnabled) {
+                            if (newStatus === 'entrevista' && card.dataset.hasInterview === 'false') {
+                                openScheduleModal(postulacionId);
+                            } else if (newStatus === 'entrevista' && card.dataset.hasInterview === 'true') {
+                                openManageModal(postulacionId);
+                            } else if (newStatus !== 'entrevista') {
+                                openCvModal(postulacionId);
+                            }
+                        }
+                    } else {
+                        fromColumnContainer.appendChild(card); // Revert on failure
+                        updateCardUI(card);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    fromColumnContainer.appendChild(card);
-                    updateColumnPlaceholder(fromColumnContainer);
-                    updateColumnPlaceholder(toColumnContainer);
+                }).finally(() => {
+                    updateAllPlaceholders();
+                    updateColumnCounts();
                 });
             }
         });
     });
+
+    // Initial UI setup
+    updateColumnCounts();
+    updateAllPlaceholders();
 });
 </script>
 {% endblock %}

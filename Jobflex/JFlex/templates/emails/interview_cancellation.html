@@ -1,0 +1,9 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<p>Hola {{ candidato_name }},</p>
+<p>Te informamos que tu entrevista para el puesto de <strong>{{ job_title }}</strong> en <strong>{{ company_name }}</strong>, que estaba programada para el {{ interview_date|date:"l, d F, Y" }} a las {{ interview_time|time:"H:i" }} hrs, ha sido <strong>cancelada</strong>.</p>
+<p>El equipo de reclutamiento se pondrá en contacto contigo si es necesario para coordinar una nueva fecha o para informarte sobre los próximos pasos en el proceso.</p>
+<p>Lamentamos cualquier inconveniente que esto pueda causar.</p>
+<p>Atentamente,<br>El equipo de <strong>{{ company_name }}</strong></p>
+{% endblock %}

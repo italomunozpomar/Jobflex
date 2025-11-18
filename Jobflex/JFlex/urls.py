@@ -57,6 +57,8 @@ urlpatterns = [
     path('api/postulacion/<int:postulacion_id>/update_status/', views.update_postulacion_status, name='update_postulacion_status'),
     path('api/applicant/<int:postulacion_id>/details/', views.get_applicant_details, name='get_applicant_details'),
     path('api/postulacion/<int:postulacion_id>/schedule_interview/', views.schedule_interview, name='schedule_interview'),
+    path('api/postulacion/<int:postulacion_id>/interview/details/', views.get_interview_details, name='get_interview_details'),
+    path('api/interview/<int:interview_id>/delete/', views.delete_interview, name='delete_interview'),
     path('upload-cv-modal/', views.upload_cv_from_modal, name='upload_cv_from_modal'),
 	
 	    path('company/<int:company_id>/', views.company_profile, name='company_profile'),
