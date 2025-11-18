@@ -67,7 +67,7 @@
         </div>
     </div>
 
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1">
         <!-- Contenedor del Kanban Board -->
         <main id="kanban-container" class="flex-1 flex overflow-x-auto p-4 space-x-4">
             {% for column in kanban_data %}
@@ -81,9 +81,9 @@
                         <svg class="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <div class="absolute bottom-full right-0 mb-2 w-60 bg-white text-gray-700 text-xs rounded-lg p-3 border border-gray-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <div class="absolute top-full right-0 mt-2 w-60 bg-white text-gray-700 text-xs rounded-lg p-3 border border-gray-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                             {{ column.tooltip }}
-                            <div class="absolute top-full right-4 transform -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-200 rotate-45" style="margin-top: -7px;"></div>
+                            <div class="absolute bottom-full right-3 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45" style="margin-bottom: -7px;"></div>
                         </div>
                     </div>
                 </div>
@@ -599,6 +599,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         }
     });
+
+    // --- Logic for Manage/Reschedule Modal ---
+    const manageModalTitle = document.getElementById('manage-modal-title');
+    const manageDetailsView = document.getElementById('manage-interview-view');
+    const manageFormView = document.getElementById('reschedule-interview-form');
+
+    document.getElementById('reschedule-btn').addEventListener('click', () => {
+        manageDetailsView.classList.add('hidden');
+        manageFormView.classList.remove('hidden');
+        manageModalTitle.textContent = 'Reagendar Entrevista';
+    });
+
+    document.getElementById('cancel-reschedule-btn').addEventListener('click', () => {
+        manageFormView.classList.add('hidden');
+        manageDetailsView.classList.remove('hidden');
+        manageModalTitle.textContent = 'Gestionar Entrevista';
+    });
+
+    document.getElementById('reschedule-interview-modality').addEventListener('change', function() {
+        const onlineFields = document.getElementById('reschedule-online-fields');
+        const presencialFields = document.getElementById('reschedule-presencial-fields');
+        if (this.value === 'Online') {
+            onlineFields.classList.remove('hidden');
+            presencialFields.classList.add('hidden');
+        } else {
+            onlineFields.classList.add('hidden');
+            presencialFields.classList.remove('hidden');
+        }
+    });
+
 
     // All form submissions (schedule, reschedule, delete)
     document.getElementById('schedule-interview-form').addEventListener('submit', function(e) {

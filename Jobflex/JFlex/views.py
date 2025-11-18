@@ -7,6 +7,8 @@ import uuid
 import boto3
 from django.conf import settings as django_settings
 import locale
+from datetime import datetime, date, timedelta
+import calendar
  # Added here
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
@@ -932,6 +934,102 @@ def company_index(request):
     ).count()
     total_users_count = len(members_for_template)
 
+    # Get upcoming interviews for the list on the right
+    upcoming_interviews_qs = Entrevista.objects.filter(
+        postulacion__oferta__empresa=company,
+        fecha_entrevista__gte=timezone.now().date()
+    ).select_related(
+        'postulacion__candidato',
+        'postulacion__oferta',
+        'modoonline',
+        'modopresencial'
+    ).order_by('fecha_entrevista', 'hora_entrevista')[:5] # Limit to next 5
+
+    interview_candidate_user_ids = [interview.postulacion.candidato.id_candidato_id for interview in upcoming_interviews_qs]
+    interview_users_from_default = User.objects.using('default').filter(pk__in=interview_candidate_user_ids)
+    interview_user_map = {user.pk: user for user in interview_users_from_default}
+
+    upcoming_interviews_list = []
+    for interview in upcoming_interviews_qs:
+        candidate_user = interview_user_map.get(interview.postulacion.candidato.id_candidato_id)
+        if candidate_user:
+            details = {
+                'candidate_name': candidate_user.get_full_name(),
+                'job_title': interview.postulacion.oferta.titulo_puesto,
+                'date': interview.fecha_entrevista,
+                'time': interview.hora_entrevista,
+                'modality': interview.modalidad,
+                'url': None,
+                'address': None,
+            }
+            if interview.modalidad == 'Online' and hasattr(interview, 'modoonline'):
+                details['url'] = interview.modoonline.url_reunion
+            elif interview.modalidad == 'Presencial' and hasattr(interview, 'modopresencial'):
+                details['address'] = interview.modopresencial.direccion
+            
+            upcoming_interviews_list.append(details)
+
+    # --- Calendar Logic ---
+    try:
+        current_year = int(request.GET.get('year', timezone.now().year))
+        current_month = int(request.GET.get('month', timezone.now().month))
+    except ValueError:
+        current_year = timezone.now().year
+        current_month = timezone.now().month
+
+    cal = calendar.Calendar()
+    month_days = cal.monthdatescalendar(current_year, current_month)
+    
+    # Fetch all interviews for the given month
+    interviews_for_month = Entrevista.objects.filter(
+        postulacion__oferta__empresa=company,
+        fecha_entrevista__year=current_year,
+        fecha_entrevista__month=current_month
+    ).select_related('postulacion__candidato')
+
+    # Get user details for the candidates
+    calendar_candidate_ids = [i.postulacion.candidato.id_candidato_id for i in interviews_for_month]
+    calendar_users = User.objects.using('default').filter(pk__in=calendar_candidate_ids)
+    calendar_user_map = {user.pk: user for user in calendar_users}
+
+    interviews_by_day = {}
+    for interview in interviews_for_month:
+        day = interview.fecha_entrevista.day
+        candidate_user = calendar_user_map.get(interview.postulacion.candidato.id_candidato_id)
+        if candidate_user:
+            if day not in interviews_by_day:
+                interviews_by_day[day] = []
+            interviews_by_day[day].append({
+                'candidate_name': candidate_user.get_full_name(),
+                'time': interview.hora_entrevista.strftime('%H:%M')
+            })
+
+    # Prepare calendar data for the template
+    calendar_grid = []
+    today = timezone.now().date()
+    for week in month_days:
+        week_row = []
+        for day_date in week:
+            week_row.append({
+                'day': day_date.day,
+                'is_today': day_date == today,
+                'is_current_month': day_date.month == current_month,
+                'interviews': interviews_by_day.get(day_date.day, [])
+            })
+        calendar_grid.append(week_row)
+
+    # Navigation context
+    first_day_of_month = date(current_year, current_month, 1)
+    prev_month_date = first_day_of_month - timedelta(days=1)
+    next_month_date = first_day_of_month + timedelta(days=32) # Go to next month
+    
+    calendar_context = {
+        'grid': calendar_grid,
+        'current_month_name': first_day_of_month.strftime('%B %Y').capitalize(),
+        'prev_month': {'year': prev_month_date.year, 'month': prev_month_date.month},
+        'next_month': {'year': next_month_date.year, 'month': next_month_date.month},
+    }
+
     # Manually serialize rubros to ensure it's a JSON array string
     all_rubros_qs = RubroIndustria.objects.all()
     rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
@@ -954,6 +1052,8 @@ def company_index(request):
         'active_jobs_count': active_jobs_count,
         'new_applicants_count': new_applicants_count,
         'total_users_count': total_users_count,
+        'calendar_context': calendar_context,
+        'upcoming_interviews': upcoming_interviews_list,
         'filter_values': {
             'q': q_filter or '',
             'categoria': categoria_filter or '',

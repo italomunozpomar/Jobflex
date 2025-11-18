@@ -2,11 +2,11 @@
 
 ## Fase 1: Mejoras de UI/UX (Inmediato)
 
-1.  **[POR HACER] Rediseño del Modal de Entrevistas:**
+1.  [COMPLETADO] Rediseño del Modal de Entrevistas:
     *   Mejorar la paleta de colores y el layout general para una apariencia más profesional y limpia, eliminando los fondos oscuros que no combinan.
     *   Asegurar que los campos del formulario sean claros y fáciles de usar.
 
-2.  **[POR HACER] Botones Condicionales en Tarjetas Kanban:**
+2.  [COMPLETADO] Botones Condicionales en Tarjetas Kanban:
     *   **Nuevos Postulantes:** Mostrar solo el botón "Ver CV".
     *   **En Revisión:** Mostrar "Ver CV" y "Agendar Entrevista".
     *   **Entrevistas:** Mostrar "Ver CV" y un nuevo botón "Ver/Editar Entrevista".
