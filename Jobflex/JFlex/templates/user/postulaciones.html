@@ -16,23 +16,23 @@
                     <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Actividad Semanal</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2 bg-gray-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-primary">16</p>
+                            <p class="text-2xl font-bold text-primary">{{totales.total}}</p>
                             <p class="text-sm text-secondary">Total de Postulaciones</p>
                         </div>
                         <div class="bg-blue-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-blue-600">8</p>
+                            <p class="text-2xl font-bold text-blue-600">{{totales.sent}}</p>
                             <p class="text-sm text-secondary">Enviados</p>
                         </div>
                         <div class="bg-yellow-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-yellow-600">5</p>
+                            <p class="text-2xl font-bold text-yellow-600">{{totales.in_progress}}</p>
                             <p class="text-sm text-secondary">En Proceso</p>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-green-600">2</p>
+                            <p class="text-2xl font-bold text-green-600">{{totales.aproved}}</p>
                             <p class="text-sm text-secondary">Aceptado</p>
                         </div>
                         <div class="bg-red-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-red-600">1</p>
+                            <p class="text-2xl font-bold text-red-600">{{totales.rejected}}</p>
                             <p class="text-sm text-secondary">Rechazado</p>
                         </div>
                     </div>
@@ -92,71 +92,63 @@
                     </div>
                 </div>
                 <div id="application-list" class="space-y-4">
-                    <!-- Postulacion 1 -->
-                    <div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
+										<!-- for -->
+										{% for p in applied %}
+										<div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                         <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0"><svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+													{% if p.estado_postulacion == "Recibida" %}
+													<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+														<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+														</svg>
+													</div>
+													{% elif p.estado_postulacion == "en proceso" %}
+													<div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+														<svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+														</svg>
+													</div>
+													{% elif p.estado_postulacion == "aprobada" %}
+													<div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+														<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+													</div>
+													{% elif p.estado_postulacion == "rechazada" %}
+													<div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+														<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+														</svg>
+													</div>
+													{% else %}
+													<div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+														<p class="text-sm font-semibold py-1 px-3 rounded-full bg-gray-200 text-gray-800">?</p>
+													</div>
+													{% endif %}
                             <div>
-                                <p class="font-bold text-dark">Desarrollador Frontend</p>
-                                <p class="text-sm text-secondary">Tech Solutions Inc. - Postulado: 15 de Sep, 2025</p>
+                                <p class="font-bold text-dark">{{p.oferta.titulo_puesto}}<!-- offer.titulo_puesto --></p>
+                                <p class="text-sm text-secondary">{{p.oferta.empresa}}<!-- offer.empresa --> - Postulado: {{p.fecha_postulacion|date:"d \\d\\e M, Y" }}<!-- postulacion.fecha_postulacion --></p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0">
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-green-200 text-green-800">Aceptado</span>
-                        </div>
-                    </div>
-                    <!-- Postulacion 2 -->
-                    <div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0"><svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
-                            <div>
-                                <p class="font-bold text-dark">Diseñador UX/UI</p>
-                                <p class="text-sm text-secondary">Creative Minds - Postulado: 12 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-yellow-200 text-yellow-800">En Proceso</span>
-                        </div>
-                    </div>
-                    <!-- Postulacion 3 -->
-                    <div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0"><svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div>
-                            <div>
-                                <p class="font-bold text-dark">Analista de Datos</p>
-                                <p class="text-sm text-secondary">Data Insights Co. - Postulado: 10 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
+													{% if p.estado_postulacion == "Recibida" %}
+														<span class="text-sm font-semibold py-1 px-3 rounded-full bg-blue-200 text-blue-800">Enviado</span>
+													{% elif p.estado_postulacion == "en proceso" %}
+													<span class="text-sm font-semibold py-1 px-3 rounded-full bg-yellow-200 text-yellow-800">En Proceso</span>
+													{% elif p.estado_postulacion == "aprobada" %}
+													<span class="text-sm font-semibold py-1 px-3 rounded-full bg-green-200 text-green-800">Aceptado</span>
+													{% elif p.estado_postulacion == "rechazada" %}
                             <span class="text-sm font-semibold py-1 px-3 rounded-full bg-red-200 text-red-800">Rechazado</span>
+													{% else %}
+                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-gray-200 text-gray-800">?</span>
+													{% endif %}
                         </div>
                     </div>
-                    <!-- Postulacion 4 -->
-                    <div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0"><svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                            <div>
-                                <p class="font-bold text-dark">Gerente de Proyecto</p>
-                                <p class="text-sm text-secondary">Innovate Group - Postulado: 08 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-blue-200 text-blue-800">Enviado</span>
-                        </div>
-                    </div>
-                    <!-- Postulacion 5 -->
-                    <div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0"><svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
-                            <div>
-                                <p class="font-bold text-dark">Líder de Equipo de Ventas</p>
-                                <p class="text-sm text-secondary">Global Sales - Postulado: 05 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-green-200 text-green-800">Aceptado</span>
-                        </div>
-                    </div>
+										{% empty %}
+										<p>No has realizado Postulaciones.</p>
+										{% endfor %}
+										<!-- endfor -->
                 </div>
                 <div id="paginator-container">
                     {% include 'partials/paginator.html' %}
@@ -167,6 +159,24 @@
             <div class="bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold text-dark mb-6">Mis Entrevistas</h2>
                 <div id="interview-list" class="space-y-4">
+									<!-- for -->
+										<div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="font-bold text-dark"><!-- entrevista>postulacion>oferta>empresa --></p>
+                                <p class="text-sm text-secondary"><!-- empresa --> - Agendada: <!-- entrevista.fecha_entrevista --></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4 flex-shrink-0">
+                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
+                                Abrir
+                            </button>
+                        </div>
+                    </div>
+										<!-- endfor -->
                     <!-- Entrevista 1 -->
                     <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                         <div class="flex items-center mb-3 sm:mb-0 flex-grow">
@@ -340,7 +350,15 @@
             if (pieCtx) {
                 new Chart(pieCtx, {
                     type: 'doughnut',
-                    data: { labels: ['Aceptado', 'Rechazado', 'En proceso', 'Enviados'], datasets: [{ label: 'Postulaciones del Mes', data: [2, 1, 5, 8], backgroundColor: ['#4ade80', '#f87171', '#facc15', '#3b82f6'], borderColor: '#FFFFFF', borderWidth: 2 }] },
+                    data: {
+											labels: ['Aceptado', 'Rechazado', 'En proceso', 'Enviados'], 
+											datasets: [{
+												label: 'Postulaciones del Mes',
+												data: [{{totales.aproved}}, {{totales.rejected}}, {{totales.in_progress}}, {{totales.sent}}], 
+												backgroundColor: ['#4ade80', '#f87171', '#facc15', '#3b82f6'], 
+												borderColor: '#FFFFFF', borderWidth: 2
+											}]
+										},
                     options: { responsive: true, plugins: { legend: { position: 'top' } } }
                 });
             }

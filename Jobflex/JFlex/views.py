@@ -1571,8 +1571,20 @@ def delete_interview(request, interview_id):
 
 
 @login_required
-def postulaciones(request):
-    return render(request, 'user/postulaciones.html')
+def postulaciones(request:HttpRequest):
+    postu = Postulacion.objects.all().filter(candidato_id=request.user.pk)
+    totales=(postu.aggregate(
+          total=Count('id_postulacion'),
+          sent=Count("id_postulacion", filter=Q(estado_postulacion="Recibida")),
+          in_progress=Count("id_postulacion", filter=Q(estado_postulacion="en proceso")),
+          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aprobada")),
+          rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada"))
+      ))
+    ctx={
+      'applied':postu,
+      'totales':totales
+    }
+    return render(request, 'user/postulaciones.html',ctx)
 
 from django.core.serializers import serialize
 
