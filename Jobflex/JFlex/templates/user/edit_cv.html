@@ -1538,6 +1538,10 @@
     });
 
     saveSkillsBtn.addEventListener('click', () => {
+        // Defensively filter out any empty or whitespace-only skills
+        cvData.skills.hard = cvData.skills.hard.filter(skill => skill && skill.trim() !== '');
+        cvData.skills.soft = cvData.skills.soft.filter(skill => skill && skill.trim() !== '');
+
         updateSkillsPreview();
         setSectionAsFilled('skills');
         updateProgressBar();
@@ -2221,7 +2225,26 @@
                 closeModal('save-cv-modal');
                 window.location.href = result.redirect_url; // Redirigir a la página de perfiles
             } else {
-                alert('Error al guardar el CV: ' + result.message);
+                let errorMessage = 'Error al guardar el CV: ' + result.message;
+                if (result.errors) {
+                    const errorDetails = Object.entries(result.errors).map(([field, errorValue]) => {
+                        let messages;
+                        if (Array.isArray(errorValue)) {
+                            // It's an array of error objects, as expected
+                            messages = errorValue.map(e => e.message).join(', ');
+                        } else if (typeof errorValue === 'string') {
+                            // It's just a string
+                            messages = errorValue;
+                        } else {
+                            // It's something else, just stringify it
+                            messages = JSON.stringify(errorValue);
+                        }
+                        return `${field}: ${messages}`;
+                    }).join('\n');
+                    errorMessage += '\n\nDetalles:\n' + errorDetails;
+                }
+                alert(errorMessage);
+                console.error('Validation Errors:', result.errors); // Also log for good measure
             }
         } catch (error) {
             console.error('Error al enviar el CV:', error);

@@ -370,6 +370,7 @@ def user_index(request):
 
 from django.core.serializers.json import DjangoJSONEncoder
 
+
 @login_required
 def Profile(request):
     try:
@@ -472,7 +473,7 @@ def Profile(request):
                         'is_internship': exp.practica,
                         'total_hours': exp.horas_practica,
                         'description': exp.descripcion_cargo
-                    } for exp in cv_creado.experiencia.all()
+                    } for exp in ExperienciaLaboralCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'education': [
                     {
@@ -482,24 +483,24 @@ def Profile(request):
                         'end_year': edu.fecha_termino.year if edu.fecha_termino else '',
                         'currently_studying': edu.cursando,
                         'notes': edu.comentarios
-                    } for edu in cv_creado.educacion.all()
+                    } for edu in EducacionCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'skills': {
-                    'hard': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='hard')],
-                    'soft': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='soft')]
+                    'hard': [h.texto_habilidad for h in HabilidadCV.objects.filter(cv_creado=cv_creado, tipo_habilidad='hard')],
+                    'soft': [h.texto_habilidad for h in HabilidadCV.objects.filter(cv_creado=cv_creado, tipo_habilidad='soft')]
                 },
                 'languages': [
                     {
                         'language': lang.nombre_idioma,
                         'level': lang.nivel_idioma
-                    } for lang in cv_creado.idiomas.all()
+                    } for lang in IdiomaCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'certifications': [
                     {
                         'cert_name': cert.nombre_certificacion,
                         'issuer': cert.entidad_emisora,
                         'year': cert.fecha_obtencion.year if cert.fecha_obtencion else ''
-                    } for cert in cv_creado.certificaciones.all()
+                    } for cert in CertificacionesCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'projects': [
                     {
@@ -508,7 +509,7 @@ def Profile(request):
                         'role': proj.rol_participacion,
                         'description': proj.descripcion_proyecto,
                         'link': proj.url_proyecto
-                    } for proj in cv_creado.proyectos.all()
+                    } for proj in ProyectosCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'volunteering': [
                     {
@@ -521,7 +522,7 @@ def Profile(request):
                         'start_date': vol.fecha_inicio.isoformat() if vol.fecha_inicio else '',
                         'end_date': vol.fecha_termino.isoformat() if vol.fecha_termino else '',
                         'current': vol.actualmente_activo
-                    } for vol in cv_creado.voluntariado.all()
+                    } for vol in VoluntariadoCV.objects.filter(cv_creado=cv_creado)
                 ],
                 'references': [
                     {
@@ -530,7 +531,7 @@ def Profile(request):
                         'phone': ref.telefono,
                         'email': ref.email,
                         'linkedin_url': ref.url_linkedin
-                    } for ref in cv_creado.referencias.all()
+                    } for ref in ReferenciasCV.objects.filter(cv_creado=cv_creado)
                 ]
             }
             cv_item['cv_data_json'] = json.dumps(cv_data, cls=DjangoJSONEncoder)
@@ -546,6 +547,44 @@ def Profile(request):
     today = date.today()
     age = today.year - candidato.fecha_nacimiento.year - ((today.month, today.day) < (candidato.fecha_nacimiento.month, candidato.fecha_nacimiento.day))
 
+    # --- Metrics for Charts ---
+    today_local = timezone.localdate() # Get today's date in the current timezone
+    
+    # Weekly Submissions (last 7 days, including today)
+    weekly_submission_labels = []
+    weekly_submission_data = []
+    
+    spanish_day_map = {
+        'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 'Thu': 'Jue',
+        'Fri': 'Vie', 'Sat': 'Sáb', 'Sun': 'Dom'
+    }
+
+    for i in range(7):
+        current_day = today_local - timedelta(days=i)
+        day_name = current_day.strftime('%a') # e.g., "Mon"
+        display_day_name = spanish_day_map.get(day_name, day_name)
+        
+        applications_count = Postulacion.objects.using('jflex_db').filter(
+            candidato=candidato,
+            fecha_postulacion__date=current_day
+        ).count()
+        
+        weekly_submission_labels.insert(0, display_day_name) # Insert at the beginning to reverse order
+        weekly_submission_data.insert(0, applications_count) # Insert at the beginning to reverse order
+
+    # CV Usage
+    cv_usage_counts = Postulacion.objects.using('jflex_db').filter(candidato=candidato)\
+                                     .values('cv_postulado__nombre_cv')\
+                                     .annotate(count=Count('cv_postulado'))\
+                                     .order_by('-count')
+
+    cv_usage_labels = [item['cv_postulado__nombre_cv'] for item in cv_usage_counts]
+    cv_usage_data = [item['count'] for item in cv_usage_counts]
+    
+    if not cv_usage_labels:
+        cv_usage_labels = ['No hay CVs utilizados']
+        cv_usage_data = [1] # A small placeholder value for the chart to render
+
     # Lógica para determinar si se muestra el modal
     show_profile_modal = not candidato.rut_candidato or not candidato.telefono
 
@@ -555,9 +594,42 @@ def Profile(request):
         'age': age,
         'show_profile_modal': show_profile_modal,
         'cv_list': cv_list,
-        'cv_subido_form': cv_subido_form
+        'cv_subido_form': cv_subido_form,
+        'weekly_submission_labels': json.dumps(weekly_submission_labels),
+        'weekly_submission_data': json.dumps(weekly_submission_data),
+        'cv_usage_labels': json.dumps(cv_usage_labels),
+        'cv_usage_data': json.dumps(cv_usage_data),
     }
     return render(request, 'user/profile.html', context)
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
+@login_required
+@require_POST
+def update_availability(request):
+    try:
+        candidato = Candidato.objects.get(id_candidato=request.user)
+        data = json.loads(request.body)
+        status = data.get('status')
+
+        if status == 'available':
+            candidato.disponible = True
+        elif status == 'unavailable':
+            candidato.disponible = False
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid status provided.'}, status=400)
+        
+        candidato.save()
+        return JsonResponse({'status': 'success', 'message': 'Availability updated successfully.'})
+
+    except Candidato.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Candidate profile not found.'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON in request body.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     def form_valid(self, form):
@@ -2104,6 +2176,14 @@ def delete_cv(request, cv_id):
     # Redirigir a la página anterior o a una por defecto
     return redirect(request.META.get('HTTP_REFERER', 'perfiles_profesionales'))
 
+def is_valid_email(email):
+    """Valida el formato del correo electrónico."""
+    if not email:
+        return False
+    # Expresión regular robusta para validar email
+    pattern = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
+    return re.match(pattern, email) is not None
+
 def _validate_cv_data(cv_name, cargo_asociado, cv_data):
     errors = {}
 
@@ -2134,7 +2214,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         errors['personalData.email'] = 'El correo electrónico es obligatorio.'
     elif len(personal_data.get('email', '')) > 150:
         errors['personalData.email'] = 'El correo electrónico no puede exceder los 150 caracteres.'
-    elif not re.match(r'^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$', personal_data.get('email', '')):
+    elif not is_valid_email(personal_data.get('email', '')):
         errors['personalData.email'] = 'Formato de correo electrónico inválido.'
 
     if not personal_data.get('phone') or not personal_data.get('phone').strip():
@@ -2163,7 +2243,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         errors['objective'] = 'El objetivo profesional no puede exceder los 1000 caracteres.'
 
     # Helper for date validation
-    def is_valid_date(year, month_name=None):
+    def is_valid_year_month(year, month_name=None):
         try:
             if month_name:
                 month_num = month_to_number.get(month_name)
@@ -2173,7 +2253,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
             else:
                 date(int(year), 1, 1)
             return True
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
     month_to_number = {
@@ -2202,13 +2282,13 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
 
         if not exp_data.get('start_year') or not exp_data.get('start_month'):
             errors[prefix + 'start_date'] = 'La fecha de inicio es obligatoria.'
-        elif not is_valid_date(exp_data.get('start_year'), exp_data.get('start_month')):
+        elif not is_valid_year_month(exp_data.get('start_year'), exp_data.get('start_month')):
             errors[prefix + 'start_date'] = 'Formato de fecha de inicio inválido.'
 
         if not (exp_data.get('current_job') == 'on' or exp_data.get('current_job') is True): # If not current job, end date is required
             if not exp_data.get('end_year') or not exp_data.get('end_month'):
                 errors[prefix + 'end_date'] = 'La fecha de término es obligatoria si no es el trabajo actual.'
-            elif not is_valid_date(exp_data.get('end_year'), exp_data.get('end_month')):
+            elif not is_valid_year_month(exp_data.get('end_year'), exp_data.get('end_month')):
                 errors[prefix + 'end_date'] = 'Formato de fecha de término inválido.'
             else:
                 try:
@@ -2217,7 +2297,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
                     if start_date_obj > end_date_obj:
                         errors[prefix + 'date_order'] = 'La fecha de inicio no puede ser posterior a la fecha de término.'
                 except (ValueError, KeyError):
-                    # Should be caught by is_valid_date, but as a fallback
+                    # Should be caught by is_valid_year_month, but as a fallback
                     errors[prefix + 'date_order'] = 'Error al comparar fechas.'
 
         if exp_data.get('description') and len(exp_data.get('description', '')) > 1000:
@@ -2248,13 +2328,13 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
 
         if not edu_data.get('start_year'):
             errors[prefix + 'start_year'] = 'El año de inicio es obligatorio.'
-        elif not is_valid_date(edu_data.get('start_year')):
+        elif not is_valid_year_month(edu_data.get('start_year')):
             errors[prefix + 'start_year'] = 'Formato de año de inicio inválido.'
 
         if not (edu_data.get('currently_studying') == 'on' or edu_data.get('currently_studying') is True): # If not currently studying, end year is required
             if not edu_data.get('end_year'):
                 errors[prefix + 'end_year'] = 'El año de término es obligatorio si no está cursando actualmente.'
-            elif not is_valid_date(edu_data.get('end_year')):
+            elif not is_valid_year_month(edu_data.get('end_year')):
                 errors[prefix + 'end_year'] = 'Formato de año de término inválido.'
             else:
                 try:
@@ -2318,7 +2398,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
 
         if not cert_data.get('year'):
             errors[prefix + 'year'] = 'El año de obtención es obligatorio.'
-        elif not is_valid_date(cert_data.get('year')):
+        elif not is_valid_year_month(cert_data.get('year')):
             errors[prefix + 'year'] = 'Formato de año de obtención inválido.'
 
     # Validate ProyectosCV fields
@@ -2331,10 +2411,6 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
 
         if not proj_data.get('period'):
             errors[prefix + 'period'] = 'El año o periodo de ejecución es obligatorio.'
-        # Assuming 'period' can be a year string or a more complex period string.
-        # If it's strictly a year, validate as such. If it's a string, just check length.
-        elif not is_valid_date(proj_data.get('period')) and not isinstance(proj_data.get('period'), str):
-             errors[prefix + 'period'] = 'Formato de año o periodo de ejecución inválido.'
         elif len(str(proj_data.get('period', ''))) > 100: # Max length for CharField in model is 100
             errors[prefix + 'period'] = 'El año o periodo de ejecución no puede exceder los 100 caracteres.'
 
@@ -2425,7 +2501,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
             errors[prefix + 'email'] = 'El correo electrónico del referente es obligatorio.'
         elif len(ref_data.get('email', '')) > 150:
             errors[prefix + 'email'] = 'El correo electrónico del referente no puede exceder los 150 caracteres.'
-        elif not re.match(r'^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$', ref_data.get('email', '')):
+        elif not is_valid_email(ref_data.get('email', '')):
             errors[prefix + 'email'] = 'Formato de correo electrónico del referente inválido.'
 
         if ref_data.get('linkedin_url') and len(ref_data.get('linkedin_url', '')) > 255:

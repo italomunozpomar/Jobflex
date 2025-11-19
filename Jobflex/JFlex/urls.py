@@ -37,6 +37,7 @@ urlpatterns = [
     path("register_emp/", views.register_emp, name="register_emp"),
     path("validate/", views.Validate, name="validate"),
     path('profile/', views.Profile, name='profile'),
+    path('update_availability/', views.update_availability, name='update_availability'),
     path('create-cv/', views.create_cv, name='create_cv'),
     path('download-cv-pdf/', views.download_cv_pdf, name='download_cv_pdf'),
     path('download-s3-cv/<int:cv_id>/', views.download_s3_cv, name='download_s3_cv'),

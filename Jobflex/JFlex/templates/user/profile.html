@@ -496,11 +496,60 @@
         
             const availabilityButton = document.getElementById('availability-button');
             const availabilityMenu = document.getElementById('availability-menu');
+            const availabilityText = document.getElementById('availability-text');
+            const availabilityDot = document.getElementById('availability-dot');
     
-            if(availabilityButton && availabilityMenu) {
+            if(availabilityButton && availabilityMenu && availabilityText && availabilityDot) {
                 availabilityButton.addEventListener('click', (event) => {
                     event.stopPropagation();
                     availabilityMenu.classList.toggle('hidden');
+                });
+
+                availabilityMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', async (event) => {
+                        event.preventDefault();
+                        const newStatus = event.target.dataset.status;
+                        
+                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        
+                        try {
+                            const response = await fetch('{% url "update_availability" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrftoken
+                                },
+                                body: JSON.stringify({ status: newStatus })
+                            });
+
+                            const data = await response.json();
+
+                            if (data.status === 'success') {
+                                if (newStatus === 'available') {
+                                    availabilityText.textContent = 'Disponible';
+                                    availabilityButton.classList.remove('bg-red-100', 'text-red-800');
+                                    availabilityButton.classList.add('bg-green-100', 'text-green-800');
+                                    availabilityDot.classList.remove('bg-red-500');
+                                    availabilityDot.classList.add('bg-green-500');
+                                } else {
+                                    availabilityText.textContent = 'No disponible';
+                                    availabilityButton.classList.remove('bg-green-100', 'text-green-800');
+                                    availabilityButton.classList.add('bg-red-100', 'text-red-800');
+                                    availabilityDot.classList.remove('bg-green-500');
+                                    availabilityDot.classList.add('bg-red-500');
+                                }
+                                // Hide the menu after selection
+                                availabilityMenu.classList.add('hidden');
+                                // Optionally show a success message
+                                // alert(data.message);
+                            } else {
+                                alert('Error al actualizar disponibilidad: ' + data.message);
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error de red al actualizar disponibilidad.');
+                        }
+                    });
                 });
             }
             window.addEventListener('click', function(e){   
@@ -512,11 +561,59 @@
             // --- Charts ---
             const cvPieCtx = document.getElementById('cvPieChart');
             if (cvPieCtx) {
-                new Chart(cvPieCtx, { type: 'doughnut', data: { labels: ['CV Principal', 'CV Secundario', 'CV Opcional'], datasets: [{ label: 'Uso de CVs', data: [12, 8, 3], backgroundColor: ['#8CA01A', '#89746F', '#D8D9DD'], borderColor: '#FFFFFF', borderWidth: 2 }] }, options: { responsive: true, plugins: { legend: { position: 'top' } } } });
+                new Chart(cvPieCtx, { 
+                type: 'doughnut', 
+                data: { 
+                    labels: JSON.parse('{{ cv_usage_labels|escapejs }}'), 
+                    datasets: [{ 
+                        label: 'Uso de CVs', 
+                        data: JSON.parse('{{ cv_usage_data }}'), 
+                        backgroundColor: ['#8CA01A', '#89746F', '#D8D9DD', '#FFCC00', '#FF6600', '#6699FF', '#99CC33'], // More colors for more CVs
+                        borderColor: '#FFFFFF', 
+                        borderWidth: 2 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    aspectRatio: 1, // Ensure circular shape
+                    plugins: { 
+                        legend: { 
+                            position: 'top' 
+                        } 
+                    } 
+                } 
+            });
             }
             const cvBarCtx = document.getElementById('cvBarChart');
             if (cvBarCtx) {
-                new Chart(cvBarCtx, { type: 'bar', data: { labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], datasets: [{ label: 'Envíos de CV', data: [5, 3, 7, 4, 6, 1, 2], backgroundColor: '#8CA01A', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+                new Chart(cvBarCtx, { 
+                    type: 'bar', 
+                    data: { 
+                        labels: JSON.parse('{{ weekly_submission_labels|escapejs }}'), 
+                        datasets: [{ 
+                            label: 'Envíos de CV', 
+                            data: JSON.parse('{{ weekly_submission_data }}'), 
+                            backgroundColor: '#8CA01A', 
+                            borderRadius: 4 
+                        }] 
+                    }, 
+                    options: { 
+                        responsive: true, 
+                        plugins: { 
+                            legend: { 
+                                display: false 
+                            } 
+                        }, 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 // Display whole numbers for counts
+                                }
+                            } 
+                        } 
+                    } 
+                });
             }
 
             // --- CV Preview Modal Logic ---

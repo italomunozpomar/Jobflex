@@ -135,6 +135,18 @@
                             </button>
                         </div>
                     </div>
+                    <div class="mt-4">
+                    <p class="text-sm text-secondary mb-2">Búsquedas populares:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="#" class="text-primary hover:underline text-sm">Desarrollador Frontend</a>
+                        <span class="text-gray-300">•</span>
+                        <a href="#" class="text-primary hover:underline text-sm">Marketing Digital</a>
+                        <span class="text-gray-300">•</span>
+                        <a href="#" class="text-primary hover:underline text-sm">Diseñador UX/UI</a>
+                        <span class="text-gray-300">•</span>
+                        <a href="#" class="text-primary hover:underline text-sm">Data Scientist</a>
+                    </div>
+                </div>
                 </div>
             </form>
         </section>
@@ -155,11 +167,21 @@
                     <a href="{% url 'profile' %}" class="text-sm text-yellow-800 font-semibold hover:underline mt-2 inline-block">Ir a mi perfil para completar</a>
                 </div>
                 {% else %}
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
-                    <p class="font-bold">¡Tu perfil está completo!</p>
-                    <p>¡Excelente! Tu perfil está listo para atraer las mejores oportunidades.</p>
+                <div class="text-center p-4">
+                    <div class="inline-flex items-center justify-center bg-green-100 rounded-full w-16 h-16 mb-4">
+                        <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-xl font-bold text-dark">¡Tu perfil está completo!</h4>
+                    <p class="text-secondary mt-1 mb-4">¡Excelente! Estás listo para atraer las mejores oportunidades.</p>
+                    <div class="flex justify-center gap-2">
+                        <a href="{% url 'job_offers' %}" class="bg-primary text-white font-semibold py-2 px-5 rounded-lg hover:bg-opacity-90 transition-all">Explorar Ofertas</a>
+                        <a href="{% url 'profile' %}" class="bg-gray-200 text-dark font-semibold py-2 px-5 rounded-lg hover:bg-gray-300 transition-all">Ir a mi Perfil</a>
+                    </div>
                 </div>
                 {% endif %}
+        
             </div>
             <div class="bg-white p-8 rounded-lg shadow-md">
                 <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-dark">Mis Perfiles Profesionales</h3><a href="{% url 'perfiles_profesionales' %}" class="font-semibold text-primary hover:underline">Gestionar todos</a></div>
@@ -216,10 +238,9 @@
                         <div class="swiper-slide">
                             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
                                 <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        {% if offer.company_logo %}<img src="{{ offer.company_logo }}" alt="Logo Empresa" class="rounded-md object-contain w-full h-full">{% else %}<span class="text-sm text-gray-500">{{ offer.company|first }}</span>{% endif %}
-                                    </div>
-                                    <div><h4 class="font-bold text-dark text-lg">{{ offer.title }}</h4><p class="text-secondary text-sm">{{ offer.company }}</p></div>
+                                    <div class="w-16 h-16 bg-light-gray rounded-full flex-shrink-0 flex items-center justify-center mr-4">
+                                        {% if offer.company_logo %}<img src="{{ offer.company_logo }}" alt="Logo Empresa" class="rounded-full object-cover w-full h-full">{% else %}<span class="text-sm text-gray-500">{{ offer.company|first }}</span>{% endif %}
+                                    </div>                                    <div><h4 class="font-bold text-dark text-lg">{{ offer.title }}</h4><p class="text-secondary text-sm">{{ offer.company }}</p></div>
                                 </div>
                                 <p class="text-sm text-gray-600 mb-3 flex items-center"><i class="fas fa-map-marker-alt w-4 h-4 mr-1.5"></i>{{ offer.location }}</p>
                                 <div class="flex flex-wrap gap-2 mb-4">
@@ -439,7 +460,7 @@
                 breakpoints: {
                     640: { slidesPerView: 2 },
                     1024: { slidesPerView: 3 },
-                    1280: { slidesPerView: 4 },
+                    1280: { slidesPerView: 3 }, // Changed from 4 to 3
                 }
             });
 

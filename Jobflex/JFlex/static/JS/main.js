@@ -446,44 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                if (!selectedFile || (profileNameInput && profileNameInput.value.trim() === '')) {
-                    alert('Por favor, completa todos los campos y selecciona un archivo.');
-                    return;
-                }
 
-                // --- Loading State ---
-                saveBtn.disabled = true;
-                if (saveSpinner) saveSpinner.classList.remove('hidden');
-                if (saveBtnContent && saveBtnContent.querySelector('span:last-child')) {
-                    saveBtnContent.querySelector('span:last-child').classList.add('hidden');
-                }
-                if (progressBarContainer) progressBarContainer.classList.remove('hidden');
-                if (progressBar) progressBar.style.width = '0%';
-
-                // --- Simulate Upload ---
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 10;
-                    if (progressBar) progressBar.style.width = `${progress}%`;
-                    if (progress >= 100) {
-                        clearInterval(interval);
-
-                        // --- Success State ---
-                        if (saveBtnContent) saveBtnContent.classList.add('hidden');
-                        if (successBtnContent) successBtnContent.classList.remove('hidden');
-                        saveBtn.classList.remove('bg-primary');
-                        saveBtn.classList.add('bg-green-500');
-
-                        // --- Auto Close ---
-                        setTimeout(() => {
-                            closeModal();
-                        }, 1500); 
-                    }
-                }, 150);
-            });
-        }
     }
 
     // --- Application Modal Logic ---

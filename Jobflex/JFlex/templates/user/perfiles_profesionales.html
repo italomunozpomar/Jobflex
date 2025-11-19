@@ -763,7 +763,7 @@
                 <!-- Modal Footer -->
                 <div class="flex justify-end items-center space-x-4 p-6 bg-gray-50 rounded-b-2xl">
                     <button type="button" id="cancel-upload-btn" class="bg-white text-dark font-bold py-2 px-6 rounded-lg border-2 border-light-gray hover:bg-light-gray transition-colors">Cancelar</button>
-                    <button type="submit" name="submit_cv" id="save-cv-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50" disabled>
+                    <button type="submit" name="submit_cv" id="save-uploaded-cv-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50" disabled>
                         Guardar CV
                     </button>
                 </div>
@@ -837,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewContainer = document.getElementById('pdf-preview-container');
         const previewIframe = document.getElementById('pdf-preview-iframe');
         const changeFileBtn = document.getElementById('change-file-btn');
-        const saveBtn = document.getElementById('save-cv-btn');
+        const saveBtn = document.getElementById('save-uploaded-cv-btn');
 
         const openModal = () => {
             cvUploadModal.classList.remove('hidden');
