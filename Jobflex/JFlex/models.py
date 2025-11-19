@@ -306,6 +306,7 @@ class Postulacion(models.Model):
     cv_postulado = models.ForeignKey(CVCandidato, on_delete=models.CASCADE)
     fecha_postulacion = models.DateTimeField(auto_now_add=True)
     estado_postulacion = models.CharField(max_length=50)
+    cv_visto = models.BooleanField(default=False)
 
 class Entrevista(models.Model):
     id_entrevista = models.AutoField(primary_key=True)

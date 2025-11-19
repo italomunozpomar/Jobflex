@@ -219,12 +219,68 @@ def user_index(request):
                         
                         messages.success(request, "Tu CV ha sido subido y organizado exitosamente en S3.")
                         return redirect('user_index')
+            
+            # Fetch recent applications for the candidate
+            recent_applications_qs = Postulacion.objects.using('jflex_db').filter(
+                candidato=candidato
+            ).select_related(
+                'oferta__empresa', 'oferta__jornada', 'oferta__modalidad' # Select related to avoid N+1 queries in template
+            ).order_by('-fecha_postulacion')[:3]
+
+            processed_applications = []
+            for app in recent_applications_qs:
+                display_status = ""
+                status_class = ""
+                status_icon = ""
+
+                if app.estado_postulacion == 'rechazada':
+                    display_status = "Rechazado"
+                    status_class = "bg-red-100 text-red-800"
+                    status_icon = "fa-ban" # Signo de denegado
+                elif app.estado_postulacion == 'aceptada':
+                    display_status = "Aceptado"
+                    status_class = "bg-green-100 text-green-800"
+                    status_icon = "fa-check-circle" # Checkmark
+                elif app.estado_postulacion == 'entrevista':
+                    display_status = "Agendado"
+                    status_class = "bg-purple-100 text-purple-800"
+                    status_icon = "fa-calendar-alt" # Calendar icon
+                elif app.estado_postulacion == 'en proceso':
+                    display_status = "En Revisión"
+                    status_class = "bg-yellow-100 text-yellow-800"
+                    status_icon = "fa-clock" # Reloj
+                elif app.estado_postulacion == 'enviada':
+                    if app.cv_visto:
+                        display_status = "CV Visto"
+                        status_class = "bg-green-100 text-green-800" # Verde para CV visto
+                        status_icon = "fa-eye" # Ojo
+                    else:
+                        display_status = "Enviado"
+                        status_class = "bg-blue-100 text-blue-800" # Azul para Enviado
+                        status_icon = "fa-paper-plane" # Icono de enviado
+                else:
+                    display_status = "Desconocido"
+                    status_class = "bg-gray-100 text-gray-800"
+                    status_icon = "fa-question-circle"
+
+                processed_applications.append({
+                    'id': app.id_postulacion,
+                    'job_title': app.oferta.titulo_puesto,
+                    'company_name': app.oferta.empresa.nombre_comercial,
+                    'date_applied': app.fecha_postulacion.strftime('%d-%m-%Y'),
+                    'status': display_status,
+                    'status_class': status_class,
+                    'status_icon': status_icon,
+                    'job_jornada': app.oferta.jornada.tipo_jornada if app.oferta.jornada else 'N/A',
+                    'job_modalidad': app.oferta.modalidad.tipo_modalidad if app.oferta.modalidad else 'N/A',
+                })
 
             context = {
                 'show_modal': show_modal, 
                 'form': completar_perfil_form,
                 'cv_subido_form': cv_subido_form,
-                'all_regions': Region.objects.all() # Add this line
+                'all_regions': Region.objects.all(),
+                'recent_applications': processed_applications, # Add processed applications to context
             }
             return render(request, 'user/user_index.html', context)
 
@@ -1224,6 +1280,11 @@ def get_applicant_details(request, postulacion_id):
 
         if postulacion.oferta.empresa != empresa_usuario.empresa:
             return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+        
+        # Mark CV as viewed
+        if not postulacion.cv_visto:
+            postulacion.cv_visto = True
+            postulacion.save(using='jflex_db')
 
         candidato = postulacion.candidato
         cv = postulacion.cv_postulado

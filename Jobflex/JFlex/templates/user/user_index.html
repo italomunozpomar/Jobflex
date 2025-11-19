@@ -323,73 +323,31 @@
                 <a href="{% url 'postulaciones' %}" class="font-semibold text-primary hover:underline">Ver todas</a>
             </div>
             <div class="space-y-4">
-                <!-- Application Item 1 -->
+                {% for app in recent_applications %}
                 <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                     <div class="flex items-center mb-3 sm:mb-0">
-                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
+                        <div class="w-10 h-10 {{ app.status_class|default:'bg-gray-100 text-gray-800' }} rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas {{ app.status_icon|default:'fa-question-circle' }} w-6 h-6"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-dark">Desarrollador Backend</p>
-                            <p class="text-sm text-secondary">Postulado: 12 de Sep, 2025</p>
+                            <p class="font-bold text-dark">{{ app.job_title }} - {{ app.company_name }}</p>
+                            <p class="text-sm text-secondary">Postulado: {{ app.date_applied }}</p>
+                            <p class="text-xs text-gray-500">{{ app.job_jornada }} | {{ app.job_modalidad }}</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <span class="text-sm font-semibold py-1 px-3 rounded-full bg-yellow-200 text-yellow-800">En Revisión</span>
-                        <button class="text-gray-400 hover:text-primary">
+                        <span class="text-sm font-semibold py-1 px-3 rounded-full {{ app.status_class }}">{{ app.status }}</span>
+                        <a href="{% url 'postulaciones' %}" class="text-gray-400 hover:text-primary" title="Ver detalles">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                        </button>
+                        </a>
                     </div>
                 </div>
-                <!-- Application Item 2 -->
-                <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                    <div class="flex items-center mb-3 sm:mb-0">
-                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="font-bold text-dark">Especialista en Marketing Digital</p>
-                            <p class="text-sm text-secondary">Postulado: 08 de Sep, 2025</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm font-semibold py-1 px-3 rounded-full bg-green-200 text-green-800">CV Visto</span>
-                        <button class="text-gray-400 hover:text-primary">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <!-- Application Item 3 -->
-                <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                    <div class="flex items-center mb-3 sm:mb-0">
-                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="font-bold text-dark">Contador Público</p>
-                            <p class="text-sm text-secondary">Postulado: 05 de Sep, 2025</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm font-semibold py-1 px-3 rounded-full bg-red-200 text-red-800">No seleccionado</span>
-                        <button class="text-gray-400 hover:text-primary">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                {% empty %}
+                <p class="text-secondary text-center py-4">Aún no tienes postulaciones recientes.</p>
+                {% endfor %}
+            </div>
             </div>
         </section>
 
