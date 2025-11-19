@@ -327,7 +327,7 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                     <div class="flex items-center mb-3 sm:mb-0">
                         <div class="w-10 h-10 {{ app.status_class|default:'bg-gray-100 text-gray-800' }} rounded-lg flex items-center justify-center mr-4">
-                            <i class="fas {{ app.status_icon|default:'fa-question-circle' }} w-6 h-6"></i>
+                            <i class="fas {{ app.status_icon|default:'fa-question-circle' }} w-6 h-6 flex items-center justify-center"></i>
                         </div>
                         <div>
                             <p class="font-bold text-dark">{{ app.job_title }} - {{ app.company_name }}</p>
