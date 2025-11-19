@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ oferta.titulo_puesto }} - {{ oferta.empresa.nombre_comercial }}
+{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 md:px-6 py-8">
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        {% include 'offers/partials/_job_details.html' %}
+    </div>
+</main>
+{% endblock %}

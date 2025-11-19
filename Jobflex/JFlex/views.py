@@ -195,15 +195,12 @@ def user_index(request):
                     if cv_subido_form.is_valid():
                         file = cv_subido_form.cleaned_data['cv_file']
                         
-                        # Construir la nueva ruta del objeto para S3
                         username = request.user.username
                         filename = f"{uuid.uuid4().hex[:8]}_{file.name}"
                         s3_key = f"CVs/{username}/{filename}"
 
-                        # Subida manual a S3 con la nueva ruta
                         file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
 
-                        # Crear CVCandidato
                         cv_candidato = CVCandidato.objects.create(
                             candidato=candidato,
                             nombre_cv=cv_subido_form.cleaned_data['nombre_cv'],
@@ -211,7 +208,6 @@ def user_index(request):
                             tipo_cv='subido'
                         )
                         
-                        # Crear CVSubido con la URL de S3
                         CVSubido.objects.create(
                             id_cv_subido=cv_candidato,
                             ruta_archivo=file_url
@@ -220,49 +216,101 @@ def user_index(request):
                         messages.success(request, "Tu CV ha sido subido y organizado exitosamente en S3.")
                         return redirect('user_index')
             
-            # Fetch recent applications for the candidate
+            # --- Dynamic Stats ---
+            total_applications_count = Postulacion.objects.using('jflex_db').filter(candidato=candidato).count()
+            total_cvs_count = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).count()
+
+            # --- Smarter "Ofertas Destacadas" Carousel ---
+            recommended_offers = []
+            latest_cv = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).order_by('-id_cv_user').first()
+            
+            offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad')
+
+            if latest_cv and latest_cv.cargo_asociado:
+                keywords = latest_cv.cargo_asociado.split()
+                q_objects = Q()
+                for keyword in keywords:
+                    q_objects |= Q(titulo_puesto__icontains=keyword) | Q(descripcion_puesto__icontains=keyword)
+                
+                if candidato.ciudad:
+                    specific_offers_qs = offers_query.filter(q_objects, ciudad=candidato.ciudad).order_by('-fecha_publicacion')[:5]
+                    if specific_offers_qs.exists():
+                        offers_query = specific_offers_qs
+                    elif candidato.ciudad.region:
+                        offers_query = offers_query.filter(q_objects, ciudad__region=candidato.ciudad.region).order_by('-fecha_publicacion')[:5]
+                    else:
+                        offers_query = offers_query.filter(q_objects).order_by('-fecha_publicacion')[:5]
+                else:
+                    offers_query = offers_query.filter(q_objects).order_by('-fecha_publicacion')[:5]
+            
+            if not offers_query.exists():
+                offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad').order_by('-fecha_publicacion')[:5]
+
+            for offer in offers_query[:5]:
+                recommended_offers.append({
+                    'id': offer.id_oferta,
+                    'title': offer.titulo_puesto,
+                    'company': offer.empresa.nombre_comercial,
+                    'location': offer.ciudad.nombre if offer.ciudad else 'N/A',
+                    'modality': offer.modalidad.tipo_modalidad if offer.modalidad else 'N/A',
+                    'jornada': offer.jornada.tipo_jornada if offer.jornada else 'N/A',
+                    'company_logo': offer.empresa.imagen_perfil
+                })
+
+            # --- Profile Completion ---
+            profile_fields = [
+                ('RUT', candidato.rut_candidato),
+                ('Fecha de Nacimiento', candidato.fecha_nacimiento),
+                ('Teléfono', candidato.telefono),
+                ('URL de LinkedIn', candidato.linkedin_url),
+                ('Ciudad', candidato.ciudad),
+            ]
+            
+            has_cv = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).exists()
+            
+            completed_fields_count = 0
+            missing_profile_fields = []
+            
+            for field_name, field_value in profile_fields:
+                if field_value and str(field_value).strip() and field_value != date(1900, 1, 1):
+                    completed_fields_count += 1
+                else:
+                    missing_profile_fields.append(f"Falta {field_name}")
+
+            if has_cv:
+                completed_fields_count += 1
+            else:
+                missing_profile_fields.append("Subir o crear un CV")
+
+            total_profile_fields = len(profile_fields) + 1
+            profile_completion_percentage = int((completed_fields_count / total_profile_fields) * 100) if total_profile_fields > 0 else 0
+
+            # --- Fetch Recent Applications ---
             recent_applications_qs = Postulacion.objects.using('jflex_db').filter(
                 candidato=candidato
             ).select_related(
-                'oferta__empresa', 'oferta__jornada', 'oferta__modalidad' # Select related to avoid N+1 queries in template
+                'oferta__empresa', 'oferta__jornada', 'oferta__modalidad'
             ).order_by('-fecha_postulacion')[:3]
 
             processed_applications = []
             for app in recent_applications_qs:
-                display_status = ""
-                status_class = ""
-                status_icon = ""
-
+                display_status, status_class, status_icon = "", "", ""
                 if app.estado_postulacion == 'rechazada':
-                    display_status = "Rechazado"
-                    status_class = "bg-red-100 text-red-800"
-                    status_icon = "fa-ban" # Signo de denegado
+                    display_status, status_class, status_icon = "Rechazado", "bg-red-100 text-red-800", "fa-ban"
                 elif app.estado_postulacion == 'aceptada':
-                    display_status = "Aceptado"
-                    status_class = "bg-green-100 text-green-800"
-                    status_icon = "fa-check-circle" # Checkmark
+                    display_status, status_class, status_icon = "Aceptado", "bg-green-100 text-green-800", "fa-check-circle"
                 elif app.estado_postulacion == 'entrevista':
-                    display_status = "Agendado"
-                    status_class = "bg-purple-100 text-purple-800"
-                    status_icon = "fa-calendar-alt" # Calendar icon
+                    display_status, status_class, status_icon = "Agendado", "bg-purple-100 text-purple-800", "fa-calendar-alt"
                 elif app.estado_postulacion == 'en proceso':
-                    display_status = "En Revisión"
-                    status_class = "bg-yellow-100 text-yellow-800"
-                    status_icon = "fa-clock" # Reloj
-                elif app.estado_postulacion == 'enviada':
+                    display_status, status_class, status_icon = "En Revisión", "bg-yellow-100 text-yellow-800", "fa-clock"
+                elif app.estado_postulacion in ['enviada', 'Recibida']:
                     if app.cv_visto:
-                        display_status = "CV Visto"
-                        status_class = "bg-green-100 text-green-800" # Verde para CV visto
-                        status_icon = "fa-eye" # Ojo
+                        display_status, status_class, status_icon = "CV Visto", "bg-green-100 text-green-800", "fa-eye"
                     else:
-                        display_status = "Enviado"
-                        status_class = "bg-blue-100 text-blue-800" # Azul para Enviado
-                        status_icon = "fa-paper-plane" # Icono de enviado
+                        display_status, status_class, status_icon = "Enviado", "bg-blue-100 text-blue-800", "fa-paper-plane"
                 else:
-                    display_status = "Desconocido"
-                    status_class = "bg-gray-100 text-gray-800"
-                    status_icon = "fa-question-circle"
-
+                    display_status, status_class, status_icon = "Desconocido", "bg-gray-100 text-gray-800", "fa-question-circle"
+                
                 processed_applications.append({
                     'id': app.id_postulacion,
                     'job_title': app.oferta.titulo_puesto,
@@ -275,12 +323,37 @@ def user_index(request):
                     'job_modalidad': app.oferta.modalidad.tipo_modalidad if app.oferta.modalidad else 'N/A',
                 })
 
+            # --- Fetch User's CVs for the new section ---
+            cv_list = []
+            cvs_qs = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).select_related('cvcreado', 'cvsubido').order_by('-id_cv_user')[:3]
+
+            for cv in cvs_qs:
+                update_date = None
+                if cv.tipo_cv == 'creado' and hasattr(cv, 'cvcreado'):
+                    update_date = cv.cvcreado.ultima_actualizacion
+                elif cv.tipo_cv == 'subido' and hasattr(cv, 'cvsubido'):
+                    update_date = cv.cvsubido.fecha_subido
+
+                cv_list.append({
+                    'id_cv_user': cv.id_cv_user,
+                    'nombre_cv': cv.nombre_cv,
+                    'cargo_asociado': cv.cargo_asociado,
+                    'tipo_cv': cv.tipo_cv,
+                    'ultima_actualizacion': update_date.strftime('%d-%m-%Y') if update_date else 'N/A',
+                })
+
             context = {
                 'show_modal': show_modal, 
                 'form': completar_perfil_form,
                 'cv_subido_form': cv_subido_form,
                 'all_regions': Region.objects.all(),
-                'recent_applications': processed_applications, # Add processed applications to context
+                'recent_applications': processed_applications,
+                'total_applications_count': total_applications_count,
+                'total_cvs_count': total_cvs_count,
+                'recommended_offers': recommended_offers,
+                'profile_completion_percentage': profile_completion_percentage,
+                'missing_profile_fields': missing_profile_fields,
+                'cv_list': cv_list,
             }
             return render(request, 'user/user_index.html', context)
 
@@ -2810,17 +2883,14 @@ def job_offers(request: HttpRequest):
     q = request.GET.get('q', '').lower()
     region_id = request.GET.get('region', '')
     ciudad_id = request.GET.get('ciudad', '')
-    mode = request.GET.get('mode', '') # Keep as string to handle empty value
-    time = request.GET.get('time', '') # Keep as string to handle empty value
+    mode = request.GET.get('mode', '')
+    time_str = request.GET.get('time', '')
 
     ofertas_query = OfertaLaboral.objects.select_related("empresa", "jornada", "modalidad", "ciudad__region")
 
     # Apply keyword search
     if q:
-        # Split the query into individual terms
-        search_terms = q.split() # Corrected split to use a space as delimiter
-        
-        # Create a Q object for combining all keyword filters
+        search_terms = q.split()
         keyword_query = Q()
         for term in search_terms:
             keyword_query |= (
@@ -2835,38 +2905,36 @@ def job_offers(request: HttpRequest):
     if mode:
         try:
             mode_int = int(mode)
-            if mode_int > 0: # Assuming 0 means "any modality"
+            if mode_int > 0:
                 ofertas_query = ofertas_query.filter(modalidad_id=mode_int)
         except ValueError:
-            pass # Ignore invalid mode values
+            pass
 
-    # Apply time (jornada) filter
-    if time:
+    # Apply time (jornada) filter for multiple values
+    if time_str:
         try:
-            time_int = int(time)
-            if time_int > 0: # Assuming 0 means "any time"
-                ofertas_query = ofertas_query.filter(jornada_id=time_int)
-        except ValueError:
-            pass # Ignore invalid time values
+            time_values = [int(t) for t in time_str.split(',') if t.isdigit()]
+            if time_values:
+                ofertas_query = ofertas_query.filter(jornada_id__in=time_values)
+        except (ValueError, TypeError):
+            pass
 
     # Apply location filters
     if region_id:
         try:
             region_obj = Region.objects.get(pk=region_id)
-            # If "Cualquier Región" is selected, don't filter by region
             if region_obj.nombre != 'Cualquier Región':
                 ofertas_query = ofertas_query.filter(ciudad__region=region_obj)
                 
                 if ciudad_id:
                     try:
                         ciudad_obj = Ciudad.objects.get(pk=ciudad_id)
-                        # If "Cualquier comuna" is selected, don't filter by city
                         if ciudad_obj.nombre != 'Cualquier comuna':
                             ofertas_query = ofertas_query.filter(ciudad=ciudad_obj)
                     except Ciudad.DoesNotExist:
-                        pass # Invalid ciudad_id, ignore filter
+                        pass
         except Region.DoesNotExist:
-            pass # Invalid region_id, ignore filter
+            pass
 
     ofertas = ofertas_query.order_by('-fecha_publicacion')
     
@@ -2892,17 +2960,17 @@ def job_offers(request: HttpRequest):
 
     ctx = {
       'page_obj': page_obj,
-      'search_params': { # Renamed to avoid conflict with 'search' in user_index
+      'search_params': {
         'q': q,
         'region_id': region_id,
         'ciudad_id': ciudad_id,
         'mode': mode,
-        'time': time
+        'time': time_str
       },
       'all_regions': all_regions,
       'selected_region': selected_region_obj,
       'selected_ciudad': selected_ciudad_obj,
-      'ofertas': ofertas # This might be redundant if page_obj is used for iteration
+      'ofertas': ofertas
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         html = render(request, 'offers/partials/_job_paginator.html', ctx).content.decode('utf-8')
@@ -2934,7 +3002,7 @@ def job_details(request: HttpRequest,id_oferta:int):
       'beneficios':boons,
       'has_applied': has_applied
     }
-    return render(request ,'offers/partials/_job_details.html',ctx)
+    return render(request ,'offers/job_details_page.html',ctx)
 
 def company_profile(request, company_id):
     from django.shortcuts import get_object_or_404
@@ -3047,7 +3115,7 @@ def apply_to_offer(request, offer_id):
                 oferta=offer,
                 candidato=candidato,
                 cv_postulado=selected_cv,
-                estado_postulacion='Recibida'
+                estado_postulacion='enviada'
             )
             
             return JsonResponse({'success': True, 'message': '¡Postulación enviada con éxito!'})

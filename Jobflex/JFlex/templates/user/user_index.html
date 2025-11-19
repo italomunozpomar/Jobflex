@@ -28,12 +28,12 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-6 max-w-sm mx-auto md:mx-0">
                         <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <p class="text-3xl font-bold text-primary">12</p>
-                            <p class="text-sm text-secondary">Ofertas vistas</p>
+                            <p class="text-3xl font-bold text-primary">{{ total_applications_count }}</p>
+                            <p class="text-sm text-secondary">Postulaciones</p>
                         </div>
                         <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <p class="text-3xl font-bold text-primary">5</p>
-                            <p class="text-sm text-secondary">Postulaciones</p>
+                            <p class="text-3xl font-bold text-primary">{{ total_cvs_count }}</p>
+                            <p class="text-sm text-secondary">CVs creados</p>
                         </div>
                     </div>
                 </div>
@@ -62,7 +62,6 @@
                         </a>
                         <button id="open-cv-modal-btn" class="w-full bg-white text-primary font-bold py-3 px-6 rounded-lg border-2 border-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- Original: M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12 -->
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                             </svg>
                             Subir CV
@@ -72,251 +71,112 @@
             </div>
         </section>
 
-        <!-- Sección 2: Búsqueda y Ofertas Destacadas -->
+        <!-- Sección 2: Buscador Principal -->
         <section class="bg-white p-8 rounded-lg shadow-md">
-            <!-- Buscador Principal -->
-            <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl mb-6" id="search-form">
+            <form action="{% url 'job_offers' %}" method="get" class="bg-light-gray bg-opacity-50 p-6 rounded-xl" id="search-form">
+                <input type="hidden" name="time" id="time-filter-input">
                 <div class="flex flex-col md:flex-row gap-2 items-center">
-                    <!-- Barra de búsqueda principal -->
                     <div class="relative flex-grow w-full">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" name="q" id="search_query" placeholder="Buscar empleo por puesto, palabra clave o empresa..." 
-                               class="w-full pl-12 p-4 text-lg border-2 border-light-gray rounded-full focus:outline-none focus:ring-2 focus:ring-primary bg-white shadow-sm">
+                        <input type="text" name="q" id="search_query" placeholder="Buscar empleo por puesto, palabra clave o empresa..." class="w-full pl-12 p-4 text-lg border-2 border-light-gray rounded-full focus:outline-none focus:ring-2 focus:ring-primary bg-white shadow-sm">
                     </div>
-                    
-                    <!-- Botón para abrir menú de filtros -->
                     <button type="button" id="filter-toggle-btn" class="flex-shrink-0 bg-white border-2 border-primary text-primary font-bold py-4 px-6 rounded-full hover:bg-primary hover:text-white transition-all flex items-center justify-center w-full md:w-auto">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                         Filtros
                     </button>
-
-                    <!-- Botón de búsqueda -->
                     <button type="submit" class="flex-shrink-0 bg-primary text-white font-bold py-4 px-8 rounded-full hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center w-full md:w-auto">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         Buscar
                     </button>
                 </div>
-
-                <!-- Menú de Filtros Desplegable -->
                 <div id="filter-menu" class="hidden mt-6 pt-6 border-t border-gray-200">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                        <!-- Filtro de Región -->
                         <div>
                             <label for="search_region" class="block text-sm font-medium text-secondary mb-1">Región</label>
                             <select name="region" id="search_region" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
                                 <option value="">Todas las Regiones</option>
-                                {% for region in all_regions %}
-                                    <option value="{{ region.id_region }}">{{ region.nombre }}</option>
-                                {% endfor %}
+                                {% for region in all_regions %}<option value="{{ region.id_region }}">{{ region.nombre }}</option>{% endfor %}
                             </select>
                         </div>
-                        <!-- Filtro de Ciudad -->
                         <div>
                             <label for="search_ciudad" class="block text-sm font-medium text-secondary mb-1">Ciudad</label>
                             <select name="ciudad" id="search_ciudad" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
                                 <option value="">Todas las Ciudades</option>
                             </select>
                         </div>
-                        <!-- Filtro de Modalidad -->
                         <div>
                             <label for="search_mode" class="block text-sm font-medium text-secondary mb-1">Modalidad</label>
                             <select name="mode" id="search_mode" class="appearance-none w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-dark">
                                 <option value="">Modalidad</option>
-                                <option value="3">Remoto</option>
-                                <option value="2">Híbrido</option>
-                                <option value="1">Presencial</option>
+                                <option value="3">Remoto</option><option value="2">Híbrido</option><option value="1">Presencial</option>
                             </select>
                         </div>
-                        <!-- Botón Limpiar Filtros -->
                         <div class="flex justify-start">
-                            <button type="button" id="clear-filters-btn" class="bg-gray-200 text-dark font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all w-full md:w-auto">
-                                Limpiar Filtros
-                            </button>
+                            <button type="button" id="clear-filters-btn" class="bg-gray-200 text-dark font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all w-full md:w-auto">Limpiar Filtros</button>
                         </div>
                     </div>
                     <!-- Filtros Rápidos (Jornada) -->
                     <div class="mt-6">
                         <p class="text-sm font-semibold text-dark mb-2">Tipo de Jornada:</p>
                         <div class="flex flex-wrap gap-2" id="time-filters">
-                            <button type="button" data-time-value="1" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                                Tiempo Completo
+                            <button type="button" data-time-value="1" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors flex items-center">
+                                Tiempo Completo <i class="fas fa-times ml-2 hidden"></i>
                             </button>
-                            <button type="button" data-time-value="2" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                                Medio Tiempo
+                            <button type="button" data-time-value="2" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors flex items-center">
+                                Medio Tiempo <i class="fas fa-times ml-2 hidden"></i>
                             </button>
-                            <button type="button" data-time-value="3" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                                Freelance
+                            <button type="button" data-time-value="3" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors flex items-center">
+                                Freelance <i class="fas fa-times ml-2 hidden"></i>
                             </button>
-                            <button type="button" data-time-value="4" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors">
-                                Prácticas
+                            <button type="button" data-time-value="4" class="filter-button bg-white px-4 py-2 rounded-full text-sm font-medium text-primary border border-primary hover:bg-primary hover:text-white transition-colors flex items-center">
+                                Prácticas <i class="fas fa-times ml-2 hidden"></i>
                             </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Búsquedas Populares -->
-                <div class="mt-4">
-                    <p class="text-sm text-secondary mb-2">Búsquedas populares:</p>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="{%url 'job_offers' %}?q=Desarrollador%20Frontend" class="text-primary hover:underline text-sm">Desarrollador Frontend</a>
-                        <span class="text-gray-300">•</span>
-                        <a href="{%url 'job_offers' %}?q=Marketing%20Digital" class="text-primary hover:underline text-sm">Marketing Digital</a>
-                        <span class="text-gray-300">•</span>
-                        <a href="{%url 'job_offers' %}?q=Diseñador%20UX%2FUI" class="text-primary hover:underline text-sm">Diseñador UX/UI</a>
-                        <span class="text-gray-300">•</span>
-                        <a href="{%url 'job_offers' %}?q=Data%20Scientist" class="text-primary hover:underline text-sm">Data Scientist</a>
                     </div>
                 </div>
             </form>
-            
-            <h3 class="text-2xl font-bold text-dark mb-4">Ofertas Destacadas para ti</h3>
-            <div class="relative px-12">
-                <div class="swiper-container job-carousel overflow-hidden">
-                    <div class="swiper-wrapper pb-12">
-                        <!-- Job Card 1 -->
-                        <div class="swiper-slide">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                                <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        <img src="https://picsum.photos/seed/job1/48/48" alt="Logo" class="rounded-md">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-lg">Desarrollador Frontend</h4>
-                                        <p class="text-secondary text-sm">Tech Solutions Inc.</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3 flex items-center">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Remoto
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">React</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">Node.js</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-yellow-100 text-yellow-800">Senior</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <a href="#" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Job Card 2 -->
-                        <div class="swiper-slide">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                                <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        <img src="https://picsum.photos/seed/job2/48/48" alt="Logo" class="rounded-md">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-lg">Analista de Datos</h4>
-                                        <p class="text-secondary text-sm">Data Insights Co.</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3 flex items-center">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Ciudad de México
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">SQL</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">Power BI</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-purple-100 text-purple-800">Híbrido</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <a href="#" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Job Card 3 -->
-                        <div class="swiper-slide">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                                <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        <img src="https://picsum.photos/seed/job3/48/48" alt="Logo" class="rounded-md">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-lg">Gerente de Proyectos</h4>
-                                        <p class="text-secondary text-sm">Innovate Group</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3 flex items-center">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Híbrido
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">Agile</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">Scrum</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <a href="#" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Job Card 4 -->
-                        <div class="swiper-slide">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                                <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        <img src="https://picsum.photos/seed/job4/48/48" alt="Logo" class="rounded-md">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-lg">Diseñador UX/UI</h4>
-                                        <p class="text-secondary text-sm">Creative Minds</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3 flex items-center">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Remoto
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">Figma</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-yellow-100 text-yellow-800">Mid-Level</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <a href="#" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Job Card 5 -->
-                        <div class="swiper-slide">
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                                <div class="flex items-start mb-3">
-                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
-                                        <img src="https://picsum.photos/seed/job5/48/48" alt="Logo" class="rounded-md">
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-lg">DevOps Engineer</h4>
-                                        <p class="text-secondary text-sm">Cloud Services</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3 flex items-center">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Remoto
-                                </p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">AWS</span>
-                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">Kubernetes</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <a href="#" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-pagination"></div>
+        </section>
 
-                    <!-- Navigation buttons -->
-                    <div class="swiper-button-next text-primary"></div>
-                    <div class="swiper-button-prev text-primary"></div>
+        <!-- Sección 3: Progreso y CVs -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <h3 class="text-2xl font-bold text-dark mb-4">Progreso de tu Perfil</h3>
+                <div class="w-full bg-light-gray rounded-full h-4 mb-2"><div class="bg-primary h-4 rounded-full" style="width: {{ profile_completion_percentage }}%"></div></div>
+                <p class="text-sm text-secondary mb-4 text-right">{{ profile_completion_percentage }}% Completado</p>
+                {% if missing_profile_fields %}
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                    <p class="font-bold">¡Casi listo!</p>
+                    <p>Completa la siguiente información para mejorar tus posibilidades:</p>
+                    <ul class="list-disc list-inside mt-2 text-sm">
+                        {% for field in missing_profile_fields %}<li>{{ field }}</li>{% endfor %}
+                    </ul>
+                    <a href="{% url 'profile' %}" class="text-sm text-yellow-800 font-semibold hover:underline mt-2 inline-block">Ir a mi perfil para completar</a>
+                </div>
+                {% else %}
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
+                    <p class="font-bold">¡Tu perfil está completo!</p>
+                    <p>¡Excelente! Tu perfil está listo para atraer las mejores oportunidades.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-dark">Mis Perfiles Profesionales</h3><a href="{% url 'perfiles_profesionales' %}" class="font-semibold text-primary hover:underline">Gestionar todos</a></div>
+                <div class="space-y-4">
+                    {% for cv in cv_list %}
+                    <div class="flex items-center justify-between p-3 bg-light-gray bg-opacity-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mr-4"><i class="fas {% if cv.tipo_cv == 'creado' %}fa-file-alt{% else %}fa-file-upload{% endif %} text-primary"></i></div>
+                            <div><p class="font-bold text-dark">{{ cv.nombre_cv }}</p><p class="text-sm text-secondary">{{ cv.cargo_asociado }}</p></div>
+                        </div>
+                        <div class="text-sm text-gray-500">Actualizado: {{ cv.ultima_actualizacion }}</div>
+                    </div>
+                    {% empty %}<p class="text-secondary text-center py-4">Aún no tienes ningún CV. ¡Crea o sube uno para empezar!</p>{% endfor %}
                 </div>
             </div>
         </section>
 
-        <!-- Sección 3: Postulaciones Recientes -->
         <section class="bg-white p-8 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-dark">Mis Postulaciones Recientes</h3>
@@ -327,7 +187,7 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                     <div class="flex items-center mb-3 sm:mb-0">
                         <div class="w-10 h-10 {{ app.status_class|default:'bg-gray-100 text-gray-800' }} rounded-lg flex items-center justify-center mr-4">
-                            <i class="fas {{ app.status_icon|default:'fa-question-circle' }} w-6 h-6"></i>
+                            <i class="fas {{ app.status_icon|default:'fa-question-circle' }}"></i>
                         </div>
                         <div>
                             <p class="font-bold text-dark">{{ app.job_title }} - {{ app.company_name }}</p>
@@ -337,68 +197,50 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <span class="text-sm font-semibold py-1 px-3 rounded-full {{ app.status_class }}">{{ app.status }}</span>
-                        <a href="{% url 'postulaciones' %}" class="text-gray-400 hover:text-primary" title="Ver detalles">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </a>
+                        <a href="{% url 'postulaciones' %}" class="text-gray-400 hover:text-primary" title="Ver detalles"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></a>
                     </div>
                 </div>
                 {% empty %}
                 <p class="text-secondary text-center py-4">Aún no tienes postulaciones recientes.</p>
                 {% endfor %}
             </div>
-            </div>
         </section>
 
-        <!-- Sección 4: Recomendaciones Personalizadas -->
+        <!-- Sección 4: Ofertas Destacadas -->
         <section class="bg-white p-8 rounded-lg shadow-md">
-            <h3 class="text-2xl font-bold text-dark mb-6">Recomendaciones para ti</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Recommended Job 1 -->
-                <div class="bg-light-gray bg-opacity-50 p-4 rounded-lg flex items-start">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
+            <h3 class="text-2xl font-bold text-dark mb-4">Ofertas Destacadas para ti</h3>
+            <div class="relative px-12">
+                <div class="swiper-container job-carousel overflow-hidden">
+                    <div class="swiper-wrapper pb-12">
+                        {% for offer in recommended_offers %}
+                        <div class="swiper-slide">
+                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+                                <div class="flex items-start mb-3">
+                                    <div class="w-12 h-12 bg-light-gray rounded-lg flex items-center justify-center mr-4">
+                                        {% if offer.company_logo %}<img src="{{ offer.company_logo }}" alt="Logo Empresa" class="rounded-md object-contain w-full h-full">{% else %}<span class="text-sm text-gray-500">{{ offer.company|first }}</span>{% endif %}
+                                    </div>
+                                    <div><h4 class="font-bold text-dark text-lg">{{ offer.title }}</h4><p class="text-secondary text-sm">{{ offer.company }}</p></div>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3 flex items-center"><i class="fas fa-map-marker-alt w-4 h-4 mr-1.5"></i>{{ offer.location }}</p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-blue-100 text-blue-800">{{ offer.modality }}</span>
+                                    <span class="text-xs font-semibold py-1 px-2.5 rounded-full bg-green-100 text-green-800">{{ offer.jornada }}</span>
+                                </div>
+                                <div class="mt-auto"><a href="{% url 'job_offers' %}?oferta={{ offer.id }}" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a></div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="swiper-slide"><p class="text-secondary text-center py-4">No se encontraron ofertas recomendadas para ti en este momento.</p></div>
+                        {% endfor %}
                     </div>
-                    <div>
-                        <h4 class="font-bold text-dark">Product Manager</h4>
-                        <p class="text-sm text-secondary">Innovate Corp.</p>
-                        <p class="text-sm text-gray-600 mt-1">Remoto • Full-Time</p>
-                        <a href="#" class="text-sm font-semibold text-primary hover:underline mt-2 inline-block">Ver más</a>
-                    </div>
-                </div>
-                <!-- Recommended Job 2 -->
-                <div class="bg-light-gray bg-opacity-50 p-4 rounded-lg flex items-start">
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-dark">Líder de Equipo de Ventas</h4>
-                        <p class="text-sm text-secondary">Global Sales</p>
-                        <p class="text-sm text-gray-600 mt-1">Híbrido • Senior</p>
-                        <a href="#" class="text-sm font-semibold text-primary hover:underline mt-2 inline-block">Ver más</a>
-                    </div>
-                </div>
-                <!-- Recommended Job 3 -->
-                <div class="bg-light-gray bg-opacity-50 p-4 rounded-lg flex items-start">
-                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-dark">Soporte Técnico IT</h4>
-                        <p class="text-sm text-secondary">HelpDesk Solutions</p>
-                        <p class="text-sm text-gray-600 mt-1">Presencial • Entry-Level</p>
-                        <a href="#" class="text-sm font-semibold text-primary hover:underline mt-2 inline-block">Ver más</a>
-                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-next text-primary"></div><div class="swiper-button-prev text-primary"></div>
                 </div>
             </div>
         </section>
+        
+        <!-- Sección 5: Postulaciones Recientes -->
+        
     </main>
 
     <!-- CV Upload Modal -->
@@ -640,8 +482,12 @@
 
             if (filterToggleBtn && filterMenu) {
                 filterToggleBtn.addEventListener('click', () => {
-                    filterMenu.classList.toggle('hidden');
+                    const isHidden = filterMenu.classList.toggle('hidden');
+                    localStorage.setItem('filterMenuOpen', isHidden ? 'false' : 'true');
                 });
+                if (localStorage.getItem('filterMenuOpen') === 'true') {
+                    filterMenu.classList.remove('hidden');
+                }
             }
             
             const searchRegionSelect = document.getElementById('search_region');
@@ -651,6 +497,7 @@
             const searchModeSelect = document.getElementById('search_mode');
             const clearFiltersBtn = document.getElementById('clear-filters-btn');
             const timeFilterButtons = document.querySelectorAll('#time-filters .filter-button');
+            const timeFilterInput = document.getElementById('time-filter-input');
 
             if (searchRegionSelect && searchCiudadSelect) {
                 const urlTemplate = "{% url 'get_ciudades' 0 %}"; // Use the same URL template
@@ -683,9 +530,11 @@
                     populateSearchCities(selectedRegionId);
                 });
 
-                // Initial population if a region is pre-selected (e.g., from previous search)
-                // This would require passing initial values from the view
-                // For now, we'll assume no initial selection on page load for search.
+                // Initial population if a region is pre-selected
+                const initialRegionId = searchRegionSelect.value;
+                if(initialRegionId) {
+                    populateSearchCities(initialRegionId, '{{ search_params.ciudad_id }}');
+                }
             }
 
             // Clear Filters functionality
@@ -695,38 +544,37 @@
                     searchRegionSelect.value = '';
                     searchCiudadSelect.innerHTML = '<option value="">Todas las Ciudades</option>'; // Reset cities
                     searchModeSelect.value = '';
+                    timeFilterInput.value = '';
                     
-                    // Remove active state from time filter buttons
                     timeFilterButtons.forEach(button => {
-                        button.classList.remove('bg-primary', 'text-white');
+                        button.classList.remove('active', 'bg-primary', 'text-white');
                         button.classList.add('bg-white', 'text-primary');
+                        button.querySelector('.fa-times').classList.add('hidden');
                     });
 
-                    // Submit the form to clear results
                     searchForm.submit();
                 });
             }
 
             // Time Filter Buttons functionality
-            if (timeFilterButtons.length > 0 && searchForm) {
+            if (timeFilterButtons.length > 0 && timeFilterInput) {
                 timeFilterButtons.forEach(button => {
                     button.addEventListener('click', function() {
-                        // Remove active state from all buttons
+                        const isActive = this.classList.toggle('active');
+                        
+                        this.classList.toggle('bg-primary', isActive);
+                        this.classList.toggle('text-white', isActive);
+                        this.classList.toggle('bg-white', !isActive);
+                        this.classList.toggle('text-primary', !isActive);
+                        this.querySelector('.fa-times').classList.toggle('hidden', !isActive);
+
+                        const selectedValues = [];
                         timeFilterButtons.forEach(btn => {
-                            btn.classList.remove('bg-primary', 'text-white');
-                            btn.classList.add('bg-white', 'text-primary');
+                            if (btn.classList.contains('active')) {
+                                selectedValues.push(btn.dataset.timeValue);
+                            }
                         });
-
-                        // Add active state to the clicked button
-                        this.classList.remove('bg-white', 'text-primary');
-                        this.classList.add('bg-primary', 'text-white');
-
-                        // Update the form's action URL with the selected time filter
-                        const timeValue = this.dataset.timeValue;
-                        const currentUrl = new URL(searchForm.action);
-                        currentUrl.searchParams.set('time', timeValue);
-                        searchForm.action = currentUrl.toString();
-                        searchForm.submit(); // Submit the form with the new filter
+                        timeFilterInput.value = selectedValues.join(',');
                     });
                 });
             }
