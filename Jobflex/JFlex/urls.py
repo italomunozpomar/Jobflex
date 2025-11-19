@@ -10,6 +10,7 @@ urlpatterns = [
     path('register/', views.signup, name='register'), # Alias para signup
     path('verify_code/', views.verify_code, name='verify_code'),
     path('user_index/', views.user_index, name='user_index'),
+    path('toggle-missy-view/', views.toggle_missy_view, name='toggle_missy_view'),
 
 
     # Vistas de autenticación de Django (login, logout)

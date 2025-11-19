@@ -3,8 +3,340 @@
 
 {% block title %}JobFlex - Mi Dashboard {% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Layout general */
+#avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 10px;
+}
+
+/* Círculo + conejo apilados verticalmente */
+#avatar-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -10px;
+}
+
+/* Círculo verde */
+#user-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #8aa21a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 22px;
+    margin-bottom: -10px;
+}
+
+/* Ajustes del conejo */
+#rabbit-avatar {
+    position: relative;
+    width: 110px;
+    height: 150px;
+    transform: translateY(0);
+    animation: rabbit-appear 0.5s ease-out forwards;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes rabbit-appear {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cabeza */
+.rabbit-head {
+    width: 80px;
+    height: 65px;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    border: 3px solid #dee2e6;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Orejas */
+.rabbit-ear {
+    width: 25px;
+    height: 55px;
+    background-color: #f8f9fa;
+    border-radius: 40% 40% 5px 5px;
+    border: 3px solid #dee2e6;
+    position: absolute;
+}
+
+#rabbit-ear-left  { left: 15px; top: -40px; transform: rotate(-20deg); }
+#rabbit-ear-right { right: 15px; top: -40px; transform: rotate(20deg); }
+
+/* Cuerpo */
+.rabbit-body {
+    width: 100px;
+    height: 85px;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    border: 3px solid #dee2e6;
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+/* Ojos */
+.eye {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    border: 1px solid #e4a899;
+    position: absolute;
+    top: 23px;
+}
+
+#eye-left  { left: 18px; }
+#eye-right { right: 18px; }
+
+.pupil {
+    width: 9px;
+    height: 9px;
+    background: #9c4c4c;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transition: transform 0.05s linear;
+}
+
+/* Nariz */
+.nose {
+    width: 12px;
+    height: 8px;
+    background: #9e9e9eb2;
+    border-radius: 50%;
+    position: absolute;
+    top: 42px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* BRAZO — posición inicial abajo */
+.rabbit-arm {
+    width: 40px;
+    height: 22px;
+    background: #f8f9fa;
+    border: 3px solid #dee2e6;
+    border-radius: 12px;
+
+    position: absolute;
+    bottom: 40px;
+    left: -5px;
+    z-index: 2;
+
+    transform-origin: 85% 40%;
+    transform: rotate(100deg); /* reposo */
+}
+
+/* SALUDO + ROTACIÓN FINAL */
+#rabbit-avatar.waving .rabbit-arm:not(.rabbit-arm-right) {
+    animation: arm-wave 3s ease-in-out forwards;
+}
+
+@keyframes arm-wave {
+    0%   { transform: rotate(100deg); }      /* reposo */
+    20%  { transform: rotate(35deg); }       /* sube suave */
+    45%  { transform: rotate(65deg); }       /* baja un poco */
+    65%  { transform: rotate(35deg); }       /* sube suave */
+    80%  { transform: rotate(100deg); }      /* vuelve a reposo */
+    100% { transform: rotate(280deg); }      /* giro de 180° */
+}
+/* Brazo derecho (reflejo del izquierdo) */
+.rabbit-arm-right {
+    width: 40px;
+    height: 22px;
+    background: #f8f9fa;
+    border: 3px solid #dee2e6;
+    border-radius: 12px;
+
+    position: absolute;
+    bottom: 10px;
+
+    /* <-- POSICIÓN SIMÉTRICA EXACTA */
+    left: calc(50% + 23px);
+
+    /* origen del giro como reflejo */
+    transform-origin: 10% 40%;
+
+    /* posición de reposo (espejo del izquierdo) */
+    transform: rotate(260deg);
+}
+/* GLOBO DE TEXTO */
+#welcome-textbox {
+    background: #f3f4f6;
+    padding: 22px 28px;
+    border-radius: 20px;
+    width: 420px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .4s ease, transform .4s ease;
+}
+
+#welcome-textbox.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#welcome-textbox::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 40px;
+    border-width: 10px 12px 10px 0;
+    border-style: solid;
+    border-color: transparent #f3f4f6 transparent transparent;
+}
+
+#welcome-textbox h4 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #3d4852;
+    margin-bottom: 8px;
+}
+
+#welcome-textbox p {
+    font-size: 15px;
+
+    line-height: 1.6;
+}
+
+.grass-foreground {
+    position: absolute;
+    bottom: -10px; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content; /* Adjust as needed */
+    height: 50px    ; /* Adjust as needed */
+    z-index: 0; /* Behind the rabbit */
+}
+
+</style>
+{% endblock %}
+
 {% block content %}
     <main class="container mx-auto px-4 md:px-6 space-y-8 pb-12">      
+        <!-- Sección 1: Bienvenida y CV -->
+        {% if request.session.show_missy %}
+        <section class="bg-white p-8 rounded-xl shadow-lg">
+            <div class="flex flex-col md:flex-row items-start justify-center md:gap-x-12">
+                <!-- Avatar y Mensaje de Bienvenida -->
+                <div id="avatar-section">
+                    <div id="avatar-stack">
+                        <div id="user-circle">
+                            <span>{{ user.first_name|first|upper }}</span>
+                        </div>
+
+                        <div id="rabbit-avatar">
+                            <div class="rabbit-ear" id="rabbit-ear-left"></div>
+                            <div class="rabbit-ear" id="rabbit-ear-right"></div>
+                            <div class="rabbit-head">
+                                <div id="eye-left" class="eye">
+                                    <div class="pupil"></div>
+                                </div>
+                                <div id="eye-right" class="eye">
+                                    <div class="pupil"></div>
+                                </div>
+                                <div class="nose"></div>
+                            </div>
+                            <div class="rabbit-body"></div>
+                            <div class="rabbit-arm"></div>
+                            <div class="rabbit-arm rabbit-arm-right"></div>
+
+                        </div>
+                    </div>
+
+                    <div id="welcome-textbox" class="shadow-lg">
+                        <h4>¡Bienvenid@, <span class="text-primary">{{ user.first_name }}</span>!</h4>
+                        <p class="text-secondary"> Soy Missy, tu compañera de aventura y estamos listos para esta travesia.  
+                        ¡Encontremos juntos esa oportunidad que estás buscando!</p>
+                        
+                        <!-- Estadísticas Rápidas Integradas -->
+                        <div class="mt-6 grid grid-cols-2 gap-6 text-center border-t border-gray-200 pt-4">
+                            <div>
+                                 <p class="text-4xl font-bold text-green-600">{{ total_applications_count }}</p>
+                                 <p class="text-sm text-secondary mt-1">Postulaciones</p>
+                            </div>
+                            <div>
+                                 <p class="text-4xl font-bold text-purple-600">{{ total_cvs_count }}</p>
+                                 <p class="text-sm text-secondary mt-1">CVs Creados</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de CV -->
+                <div class="md:w-1/2 bg-white p-6 rounded-xl shadow-sm border border-light-gray mt-4">
+                    <div class="flex items-start mb-4">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-lg">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-dark">Tu CV</h3>
+                            <p class="text-secondary text-sm">Actualiza tu CV para destacar entre los candidatos</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="relative group w-full">
+                            <a href="{% url 'create_cv' %}" class="w-full">
+                                <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Crear CV
+                                    <i class="fas fa-info-circle ml-2 text-white text-opacity-80"></i>
+                                </button>
+                            </a>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                Crea tu cv con un formato Harvard compatible con estandares ATS, rapido y estilizado.
+                            </div>
+                        </div>
+                        <div class="relative group w-full">
+                            <button id="open-cv-modal-btn" class="w-full bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Subir CV
+                                <i class="fas fa-info-circle ml-2 text-secondary group-hover:text-white"></i>
+                            </button>                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                Simplifica el proceso subiendo tu CV en formato pdf.
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Toggle para Missy -->
+                    <div class="mt-6 border-t pt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">
+                                {% if request.session.show_missy %}Ocultar a Missy{% else %}Mostrar a Missy{% endif %}
+                            </span>
+                            <a href="{% url 'toggle_missy_view' %}" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="missy-toggle" class="sr-only peer" {% if request.session.show_missy %}checked{% endif %} onclick="event.preventDefault(); window.location.href='{% url 'toggle_missy_view' %}'">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% else %}
         <!-- Sección 1: Bienvenida y CV -->
         <section class="bg-white p-8 rounded-xl shadow-lg">
             <div class="flex flex-col md:flex-row items-center justify-between">
@@ -67,9 +399,22 @@
                             Subir CV
                         </button>
                     </div>
+                     <!-- Toggle para Missy -->
+                    <div class="mt-6 border-t pt-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">
+                                {% if request.session.show_missy %}Ocultar Avatar{% else %}Mostrar Avatar{% endif %}
+                            </span>
+                            <a href="{% url 'toggle_missy_view' %}" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="missy-toggle" class="sr-only peer" {% if request.session.show_missy %}checked{% endif %} onclick="event.preventDefault(); window.location.href='{% url 'toggle_missy_view' %}'">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
+        {% endif %}
 
         <!-- Sección 2: Buscador Principal -->
         <section class="bg-white p-8 rounded-lg shadow-md">
@@ -645,6 +990,37 @@
                         if(cvFileInput) cvFileInput.files = files;
                         handleFile(files[0]);
                     }
+                });
+            }
+        });
+
+        // --- Rabbit Avatar Animation + Globo de saludo ---
+       document.addEventListener('DOMContentLoaded', function () {
+            const rabbit = document.getElementById('rabbit-avatar');
+            if(rabbit){
+                const pupils = document.querySelectorAll('.pupil');
+                const welcomeBox = document.getElementById('welcome-textbox');
+
+                // Mostrar globo
+                setTimeout(() => {
+                    if(welcomeBox) welcomeBox.classList.add('visible');
+                }, 600);
+
+                // animación de saludo del conejo
+                rabbit.classList.add('waving');
+
+                // ojos siguen al mouse
+                document.addEventListener('mousemove', e => {
+                    pupils.forEach(pupil => {
+                        const eyeRect = pupil.parentElement.getBoundingClientRect();
+                        const cx = eyeRect.left + eyeRect.width / 2;
+                        const cy = eyeRect.top + eyeRect.height / 2;
+                        const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+                        const max = 4;
+
+                        pupil.style.transform = `translate(calc(-50% + ${Math.cos(angle)*max}px),
+                                                        calc(-50% + ${Math.sin(angle)*max}px))`;
+                    });
                 });
             }
         });

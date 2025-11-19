@@ -367,6 +367,19 @@ def user_index(request):
         messages.error(request, "No se encontró un perfil para tu usuario.")
         return redirect('index')
 
+@login_required
+def toggle_missy_view(request):
+    """
+    Toggles the 'show_missy' flag in the user's session and redirects back to the user index.
+    """
+    if 'show_missy' not in request.session:
+        request.session['show_missy'] = True  # Default to showing Missy if not set
+    else:
+        request.session['show_missy'] = not request.session['show_missy']
+    request.session.modified = True # Ensure the session is saved
+    messages.info(request, "¡Cambio de vista realizado!") # Optional: give feedback to the user
+    return redirect('user_index')
+
 
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -3078,6 +3091,10 @@ def job_details(request: HttpRequest,id_oferta:int):
       'beneficios':boons,
       'has_applied': has_applied
     }
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'offers/partials/_job_details.html', ctx)
+        
     return render(request ,'offers/job_details_page.html',ctx)
 
 def company_profile(request, company_id):
