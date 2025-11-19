@@ -16,23 +16,23 @@
                     <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Actividad Semanal</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2 bg-gray-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-primary">{{totales.total}}</p>
+                            <p class="text-2xl font-bold text-primary">{{tot_week.total}}</p>
                             <p class="text-sm text-secondary">Total de Postulaciones</p>
                         </div>
                         <div class="bg-blue-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-blue-600">{{totales.sent}}</p>
+                            <p class="text-2xl font-bold text-blue-600">{{tot_week.sent}}</p>
                             <p class="text-sm text-secondary">Enviados</p>
                         </div>
                         <div class="bg-yellow-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-yellow-600">{{totales.in_progress}}</p>
+                            <p class="text-2xl font-bold text-yellow-600">{{tot_week.in_progress}}</p>
                             <p class="text-sm text-secondary">En Proceso</p>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-green-600">{{totales.aproved}}</p>
+                            <p class="text-2xl font-bold text-green-600">{{tot_week.aproved}}</p>
                             <p class="text-sm text-secondary">Aceptado</p>
                         </div>
                         <div class="bg-red-100 p-4 rounded-lg text-center">
-                            <p class="text-2xl font-bold text-red-600">{{totales.rejected}}</p>
+                            <p class="text-2xl font-bold text-red-600">{{tot_week.rejected}}</p>
                             <p class="text-sm text-secondary">Rechazado</p>
                         </div>
                     </div>
@@ -354,7 +354,7 @@
 											labels: ['Aceptado', 'Rechazado', 'En proceso', 'Enviados'], 
 											datasets: [{
 												label: 'Postulaciones del Mes',
-												data: [{{totales.aproved}}, {{totales.rejected}}, {{totales.in_progress}}, {{totales.sent}}], 
+												data: [{{tot_month.aproved}}, {{tot_month.rejected}}, {{tot_month.in_progress}}, {{tot_month.sent}}], 
 												backgroundColor: ['#4ade80', '#f87171', '#facc15', '#3b82f6'], 
 												borderColor: '#FFFFFF', borderWidth: 2
 											}]
@@ -371,13 +371,13 @@
                         datasets: [
                             {
                                 label: 'Aceptadas',
-                                data: [1, 2, 3, 2, 4, 3, 5, 3, 4, 2, 1, 2],
+                                data: {{tot_year.aproved|safe}},
                                 backgroundColor: '#4ade80',
                                 borderRadius: 4
                             },
                             {
                                 label: 'Rechazadas',
-                                data: [4, 5, 5, 8, 11, 9, 9, 8, 8, 7, 5, 2],
+                                data: {{tot_year.rejected|safe}},
                                 backgroundColor: '#f87171',
                                 borderRadius: 4
                             }

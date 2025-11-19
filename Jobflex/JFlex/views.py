@@ -1570,19 +1570,57 @@ def delete_interview(request, interview_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
 
 
+from django.db.models.functions import ExtractMonth
 @login_required
 def postulaciones(request:HttpRequest):
-    postu = Postulacion.objects.all().filter(candidato_id=request.user.pk)
-    totales=(postu.aggregate(
-          total=Count('id_postulacion'),
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    month_start = today.replace(day=1)
+    year_start = today.replace(month=1, day=1)
+
+    def count_statuses(queryset):
+      return queryset.aggregate(
+          total=Count("id_postulacion"),
           sent=Count("id_postulacion", filter=Q(estado_postulacion="Recibida")),
           in_progress=Count("id_postulacion", filter=Q(estado_postulacion="en proceso")),
           aproved=Count("id_postulacion", filter=Q(estado_postulacion="aprobada")),
-          rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada"))
-      ))
+          rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada")),
+      )
+    postu = Postulacion.objects.all().filter(candidato_id=request.user.pk)
+    week_qs  = postu.filter(fecha_postulacion__date__gte=week_start)
+    month_qs = postu.filter(fecha_postulacion__date__gte=month_start)
+
+    week_stats  = count_statuses(week_qs)
+    month_stats = count_statuses(month_qs)
+
+    year_qs  = (postu.filter(fecha_postulacion__date__gte=year_start).annotate(month=ExtractMonth("fecha_postulacion"))
+      .values("month")
+      .annotate(
+          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aprobada")),
+          rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada")),
+      )
+      .order_by("month"))
+    # Inicializar meses con 0
+    stats_by_month = {
+        m: {"aproved": 0, "rejected": 0}
+        for m in range(1, 12 + 1)
+    }
+    # Rellenar con datos reales
+    for row in year_qs:
+        m = row["month"]
+        stats_by_month[m]["aproved"] = row["aproved"]
+        stats_by_month[m]["rejected"] = row["rejected"]
+    apro_data = [stats_by_month[m]["aproved"] for m in range(1, 13)]
+    recho_data = [stats_by_month[m]["rejected"] for m in range(1, 13)]
+
     ctx={
       'applied':postu,
-      'totales':totales
+      'tot_week':week_stats,
+      'tot_month':month_stats,
+      'tot_year':{
+          'aproved':apro_data,
+          'rejected':recho_data
+      }
     }
     return render(request, 'user/postulaciones.html',ctx)
 
