@@ -282,42 +282,39 @@
                 </div>
 
                 <!-- Panel de CV -->
-                <div class="md:w-1/2 bg-white p-6 rounded-xl shadow-sm border border-light-gray mt-4">
-                    <div class="flex items-start mb-4">
-                        <div class="p-3 bg-primary bg-opacity-10 rounded-lg">
-                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-dark">Tu CV</h3>
-                            <p class="text-secondary text-sm">Actualiza tu CV para destacar entre los candidatos</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="relative group w-full">
-                            <a href="{% url 'create_cv' %}" class="w-full">
-                                <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                    Crear CV
-                                    <i class="fas fa-info-circle ml-2 text-white text-opacity-80"></i>
-                                </button>
-                            </a>
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
-                                Crea tu cv con un formato Harvard compatible con estandares ATS, rapido y estilizado.
+                <div class="md:w-1/2 flex flex-col">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-light-gray flex-grow">
+                        <div class="flex items-start mb-4">
+                            <div class="p-3 bg-primary bg-opacity-10 rounded-lg">
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-dark">Tu CV</h3>
+                                <p class="text-secondary text-sm">Actualiza tu CV para destacar entre los candidatos</p>
                             </div>
                         </div>
-                        <div class="relative group w-full">
-                            <button id="open-cv-modal-btn" class="w-full bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
-                                Subir CV
-                                <i class="fas fa-info-circle ml-2 text-secondary group-hover:text-white"></i>
-                            </button>                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
-                                Simplifica el proceso subiendo tu CV en formato pdf.
+                        <div class="space-y-3">
+                            <div class="relative group w-full">
+                                <a href="{% url 'create_cv' %}" class="w-full">
+                                    <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        Crear CV
+                                        <i class="fas fa-info-circle ml-2 text-white text-opacity-80"></i>
+                                    </button>
+                                </a>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                    Crea tu cv con un formato Harvard compatible con estandares ATS, rapido y estilizado.
+                                </div>
+                            </div>
+                            <div class="relative group w-full">
+                                <button id="open-cv-modal-btn" class="w-full bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    Subir CV
+                                    <i class="fas fa-info-circle ml-2 text-secondary group-hover:text-white"></i>
+                                </button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                    Simplifica el proceso subiendo tu CV en formato pdf.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -337,80 +334,97 @@
             </div>
         </section>
         {% else %}
-        <!-- Sección 1: Bienvenida y CV -->
+        <!-- Sección 1: Bienvenida y CV (Default View) -->
         <section class="bg-white p-8 rounded-xl shadow-lg">
-            <div class="flex flex-col md:flex-row items-stretch justify-between">
-                <!-- Información de bienvenida -->
-                <div class="md:w-1/2 text-center md:text-left mb-8 md:mb-0 flex flex-col justify-between">
+            <!-- Cabecera de Bienvenida con Toggle -->
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-dark">¡Bienvenid@, {{ user.first_name|default:'Usuario' }}!</h2>
+                    <p class="text-secondary mt-1">Este es tu centro de control. Gestiona tus CVs, sigue tus postulaciones y encuentra tu próxima oportunidad.</p>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                     <span class="text-sm font-medium text-gray-600 hidden md:inline">Vista Missy</span>
+                     <a href="{% url 'toggle_missy_view' %}" class="relative inline-flex items-center cursor-pointer">
+                         <input type="checkbox" id="missy-toggle-default" class="sr-only peer" {% if request.session.show_missy %}checked{% endif %} onclick="event.preventDefault(); window.location.href='{% url 'toggle_missy_view' %}'">
+                         <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                     </a>
+                </div>
+            </div>
+
+            <!-- Contenido Principal en 2 Columnas -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Columna Izquierda: Pasos y Estadísticas -->
+                <div class="space-y-8">
+                    <!-- Siguientes Pasos -->
                     <div>
-                        <div class="flex items-center justify-center md:justify-start mb-4">
-                            <div class="relative">
-                                <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                    {{ user.first_name|default:'U'|first|upper }}
+                         <h3 class="text-xl font-bold text-dark mb-4">Siguientes Pasos</h3>
+                         <div class="space-y-3">
+                            <a href="{% url 'settings' %}" class="block bg-primary/10 p-4 rounded-lg hover:bg-primary/20 transition-colors">
+                                <div class="flex items-center">
+                                    <div class="bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0"><i class="fas fa-cog"></i></div>
+                                    <div class="ml-3">
+                                        <p class="font-bold text-primary">Configuraciones</p>
+                                        <p class="text-xs text-secondary">Acciones de la cuenta y seguridad.</p>
+                                    </div>
                                 </div>
-                                <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-6 h-6 border-4 border-white flex items-center justify-center">
-                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
+                            </a>
+                            <a href="{% url 'perfiles_profesionales' %}" class="block bg-gray-100 p-4 rounded-lg hover:bg-gray-200 transition-colors">
+                                 <div class="flex items-center">
+                                    <div class="bg-secondary text-white rounded-full h-8 w-8 flex items-center justify-center flex-shrink-0"><i class="fas fa-file-alt"></i></div>
+                                    <div class="ml-3">
+                                        <p class="font-bold text-dark">Gestiona tus CVs</p>
+                                        <p class="text-xs text-secondary">Crea, edita y organiza tus perfiles profesionales.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="ml-4 text-left">
-                                <h2 class="text-3xl font-bold text-dark">¡Bienvenid@, {{ user.first_name|default:'Usuario' }}!</h2>
-                                <p class="text-secondary">¿Listo para encontrar tu próxima oportunidad?</p>
-                            </div>
+                            </a>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 mb-6 max-w-sm mx-auto md:mx-0">
-                        <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <p class="text-3xl font-bold text-primary">{{ total_applications_count }}</p>
-                            <p class="text-sm text-secondary">Postulaciones</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <p class="text-3xl font-bold text-primary">{{ total_cvs_count }}</p>
-                            <p class="text-sm text-secondary">CVs creados</p>
+                    <!-- Estadísticas -->
+                    <div>
+                         <h3 class="text-xl font-bold text-dark mb-4">Tus Estadísticas</h3>
+                         <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner border border-gray-200">
+                                <p class="text-3xl font-bold text-primary">{{ total_applications_count }}</p>
+                                <p class="text-sm text-secondary">Postulaciones</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg shadow-inner border border-gray-200">
+                                <p class="text-3xl font-bold text-primary">{{ total_cvs_count }}</p>
+                                <p class="text-sm text-secondary">CVs creados</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel de CV -->
-                <div class="md:w-1/2 bg-white p-6 rounded-xl shadow-sm border border-light-gray">
-                    <div class="flex items-start mb-4">
-                        <div class="p-3 bg-primary bg-opacity-10 rounded-lg">
-                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-dark">Tu CV</h3>
-                            <p class="text-secondary text-sm">Actualiza tu CV para destacar entre los candidatos</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <a href="{% url 'create_cv' %}" class="w-full">
-                            <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Crear CV
-                            </button>
-                        </a>
-                        <button id="open-cv-modal-btn" class="w-full bg-white text-primary font-bold py-3 px-6 rounded-lg border-2 border-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                            </svg>
-                            Subir CV
-                        </button>
-                    </div>
-                     <!-- Toggle para Missy -->
-                    <div class="mt-6 border-t pt-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-700">
-                                {% if request.session.show_missy %}Ocultar a Missy{% else %}Mostrar a Missy{% endif %}
-                            </span>
-                            <a href="{% url 'toggle_missy_view' %}" class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="missy-toggle" class="sr-only peer" {% if request.session.show_missy %}checked{% endif %} onclick="event.preventDefault(); window.location.href='{% url 'toggle_missy_view' %}'">
-                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                            </a>
+                <!-- Columna Derecha: Panel de CV -->
+                <div>
+                    <h3 class="text-xl font-bold text-dark mb-4">Tu Perfil Profesional</h3>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-light-gray">
+                        <p class="text-secondary text-sm mb-6">
+                            Crea perfiles profesionales enfocados en los cargos a los que quieres postular. Guarda y gestiona múltiples CVs para futuras oportunidades.
+                        </p>
+                        <div class="space-y-3">
+                            <div class="relative group w-full">
+                                <a href="{% url 'create_cv' %}" class="w-full">
+                                    <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        Crear CV
+                                        <i class="fas fa-info-circle ml-2 text-white text-opacity-80"></i>
+                                    </button>
+                                </a>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                    Crea tu cv con un formato Harvard compatible con estandares ATS, rapido y estilizado.
+                                </div>
+                            </div>
+                            <div class="relative group w-full">
+                                <button id="open-cv-modal-btn" class="w-full bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    Subir CV
+                                    <i class="fas fa-info-circle ml-2 text-secondary group-hover:text-white"></i>
+                                </button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-xs rounded-lg py-2 px-3 z-10 hidden group-hover:block pointer-events-none">
+                                    Simplifica el proceso subiendo tu CV en formato pdf.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
