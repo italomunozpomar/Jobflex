@@ -586,6 +586,44 @@ def user_index(request):
                     'tipo_cv': cv.tipo_cv,
                     'ultima_actualizacion': update_date.strftime('%d-%m-%Y') if update_date else 'N/A',
                 })
+            
+            # --- Metrics for Charts ---
+            today_local = timezone.localdate() # Get today's date in the current timezone
+            
+            # Weekly Submissions (last 7 days, including today)
+            weekly_submission_labels = []
+            weekly_submission_data = []
+            
+            spanish_day_map = {
+                'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 'Thu': 'Jue',
+                'Fri': 'Vie', 'Sat': 'Sáb', 'Sun': 'Dom'
+            }
+
+            for i in range(7):
+                current_day = today_local - timedelta(days=i)
+                day_name = current_day.strftime('%a') # e.g., "Mon"
+                display_day_name = spanish_day_map.get(day_name, day_name)
+                
+                applications_count = Postulacion.objects.using('jflex_db').filter(
+                    candidato=candidato,
+                    fecha_postulacion__date=current_day
+                ).count()
+                
+                weekly_submission_labels.insert(0, display_day_name) # Insert at the beginning to reverse order
+                weekly_submission_data.insert(0, applications_count) # Insert at the beginning to reverse order
+
+            # CV Usage
+            cv_usage_counts = Postulacion.objects.using('jflex_db').filter(candidato=candidato) \
+                .values('cv_postulado__nombre_cv') \
+                .annotate(count=Count('cv_postulado')) \
+                .order_by('-count')
+
+            cv_usage_labels = [item['cv_postulado__nombre_cv'] for item in cv_usage_counts]
+            cv_usage_data = [item['count'] for item in cv_usage_counts]
+            
+            if not cv_usage_labels:
+                cv_usage_labels = ['No hay CVs utilizados']
+                cv_usage_data = [1] # A small placeholder value for the chart to render
 
             context = {
                 'show_modal': show_modal, 
@@ -602,6 +640,10 @@ def user_index(request):
                 'has_cv': has_cv,
                 'is_2fa_active': is_2fa_active,
                 'cv_list': cv_list,
+                'weekly_submission_labels': json.dumps(weekly_submission_labels),
+                'weekly_submission_data': json.dumps(weekly_submission_data),
+                'cv_usage_labels': json.dumps(cv_usage_labels),
+                'cv_usage_data': json.dumps(cv_usage_data),
             }
             return render(request, 'user/user_index.html', context)
 

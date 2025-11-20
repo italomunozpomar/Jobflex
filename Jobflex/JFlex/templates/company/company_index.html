@@ -169,13 +169,13 @@
             <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-dark mb-4">Fuente de Candidatos</h3>
-                    <div>
+                    <div class="relative h-80">
                         <canvas id="candidatesSourceChart"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-lg font-semibold text-dark mb-4">Candidatos por Mes</h3>
-                    <div>
+                    <div class="relative h-80">
                         <canvas id="monthlyApplicantsChart"></canvas>
                     </div>
                 </div>
@@ -341,31 +341,33 @@
         </div>
         <!-- Tools Content -->
         <div id="tools" class="tab-content hidden">
-            <h1 class="text-3xl font-bold text-dark mb-6">Herramientas</h1>
+            <h1 class="text-3xl font-bold text-dark mb-6">Herramientas <span class="text-lg font-normal text-gray-500">(Próximamente)</span></h1>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center opacity-50">
                     <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mb-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </div>
                     <h3 class="text-lg font-semibold text-primary">Analizador de CVs</h3>
                     <p class="text-dark mt-2">Sube un CV y extrae la información relevante de forma automática para acelerar tu proceso de selección.</p>
-                    <button class="mt-4 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90">Usar Herramienta</button>
+                    <button class="mt-4 bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Usar Herramienta</button>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center opacity-50">
                     <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </div>
-                    <h3 class="text-lg font-semibold text-primary">Agendador de Entrevistas</h3>
-                    <p class="text-dark mt-2">Sincroniza tu calendario y permite que los candidatos agenden entrevistas automáticamente.</p>
-                    <button class="mt-4 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90">Configurar</button>
+                    <h3 class="text-lg font-semibold text-primary">Automatización ATS</h3>
+                    <p class="text-dark mt-2">Optimiza la selección revisando y estandarizando la estructura de los CVs recibidos.</p>
+                    <button class="mt-4 bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Configurar</button>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center opacity-50">
                     <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center mb-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z"></path></svg>
                     </div>
                     <h3 class="text-lg font-semibold text-primary">Asistente IA para Descripciones</h3>
                     <p class="text-dark mt-2">Genera descripciones de trabajo atractivas y efectivas con la ayuda de inteligencia artificial.</p>
-                    <button class="mt-4 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90">Probar Asistente</button>
+                    <button class="mt-4 bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Probar Asistente</button>
                 </div>
             </div>
         </div>
