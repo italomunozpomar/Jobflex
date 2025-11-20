@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Verificación de Dos Factores{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 md:px-6 py-12">
+    <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-dark text-center">Verifica tu Identidad</h1>
+        <p class="text-secondary mt-2 text-center">Hemos enviado un código de 6 dígitos a tu correo electrónico. Ingrésalo a continuación para completar el inicio de sesión.</p>
+
+        <form method="post" action="{% url 'verify_2fa' %}" class="space-y-6 mt-8">
+            {% csrf_token %}
+            <div>
+                <label for="id_code" class="block text-sm font-medium text-dark">Código de Verificación</label>
+                <input type="text" name="code" id="id_code" maxlength="6" class="mt-1 block w-full p-4 border border-light-gray rounded-lg text-center text-2xl tracking-[.5em]" required autofocus>
+                {% if form.code.errors %}
+                    {% for error in form.code.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                         <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="flex items-center">
+                <input id="remember-device" name="remember_device" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                <label for="remember-device" class="ml-2 block text-sm text-gray-900">Recordar este dispositivo por 30 días</label>
+            </div>
+
+            <button type="submit" class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all">Verificar e Iniciar Sesión</button>
+        </form>
+        <div class="text-center mt-4">
+            <a href="{% url 'login' %}" class="text-sm text-secondary hover:underline">Volver al inicio de sesión</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

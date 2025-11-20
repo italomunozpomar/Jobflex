@@ -43,6 +43,7 @@ class RegistroUsuarios(models.Model):
     contrasena = models.CharField(max_length=255)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
+    autenticacion_dos_factores_activa = models.BooleanField(default=False)
     ultimo_ingreso = models.DateTimeField(null=True, blank=True)
     tipo_usuario = models.ForeignKey(TipoUsuario, on_delete=models.SET_NULL, null=True, blank=True)
 

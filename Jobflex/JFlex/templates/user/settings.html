@@ -12,6 +12,28 @@
             <p class="text-secondary mt-2">Aquí puedes gestionar la configuración de tu cuenta, incluyendo tu contraseña y la eliminación de la cuenta.</p>
         </div>
 
+        <!-- Sección de Seguridad de la Cuenta (2FA) -->
+        <div class="bg-white p-8 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-bold text-dark mb-4">Seguridad de la Cuenta</h2>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-dark">Autenticación de Dos Factores (2FA)</h3>
+                    <p class="text-secondary mt-1 max-w-xl">
+                        Aumenta la seguridad de tu cuenta. Si activas esta opción, te enviaremos un código a tu correo electrónico cada vez que inicies sesión.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                     <span class="text-sm font-bold {% if request.user.registrousuarios.autenticacion_dos_factores_activa %}text-primary{% else %}text-gray-500{% endif %}">
+                         {% if request.user.registrousuarios.autenticacion_dos_factores_activa %}Activado{% else %}Desactivado{% endif %}
+                     </span>
+                     <a href="{% url 'toggle_2fa' %}" class="relative inline-flex items-center cursor-pointer">
+                         <input type="checkbox" class="sr-only peer" {% if request.user.registrousuarios.autenticacion_dos_factores_activa %}checked{% endif %} onclick="event.preventDefault(); window.location.href='{% url 'toggle_2fa' %}'">
+                         <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                     </a>
+                </div>
+            </div>
+        </div>
+
         <!-- Sección de Cambio de Contraseña -->
         <div class="bg-white p-8 rounded-xl shadow-lg mb-8">
             <h2 class="text-2xl font-bold text-dark mb-6">Cambiar Contraseña</h2>

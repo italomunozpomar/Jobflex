@@ -28,13 +28,19 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse # Import reverse here
+from django.core.signing import BadSignature
 from playwright.sync_api import sync_playwright
+from django import forms
 
 # ... (rest of the imports)
 
 # 1. Importar los formularios y modelos necesarios y limpios
 from .forms import SignUpForm, VerificationForm, CandidatoForm, CVCandidatoForm, CompletarPerfilForm, InvitationForm, SetInvitationPasswordForm, CVSubidoForm, OfertaLaboralForm
 from .models import CompanyInvitationToken, TipoUsuario, RegistroUsuarios, Candidato, EmpresaUsuario, Empresa, RolesEmpresa, CVCandidato, CVCreado, CVSubido, DatosPersonalesCV, ObjetivoProfesionalCV, EducacionCV, ExperienciaLaboralCV, CertificacionesCV, HabilidadCV, IdiomaCV, ProyectosCV, ReferenciasCV, VoluntariadoCV, Postulacion, Entrevista, ModoOnline, ModoPresencial, TipoNotificacion, Notificaciones, NotificacionCandidato, NotificacionEmpresa, Region, Ciudad, RubroIndustria
+
+# --- 2FA Form ---
+class TwoFactorForm(forms.Form):
+    code = forms.CharField(label="Código de Verificación", max_length=6, required=True)
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
@@ -118,6 +124,125 @@ def verify_code(request):
     else:
         form = VerificationForm()
     return render(request, 'registration/enter_code.html', {'form': form})
+
+
+def verify_2fa(request):
+    user_pk = request.session.get('2fa_user_pk')
+    if not user_pk:
+        messages.error(request, "Sesión inválida para verificación 2FA. Por favor, inicia sesión de nuevo.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = TwoFactorForm(request.POST)
+        if form.is_valid():
+            entered_code = form.cleaned_data['code']
+            stored_code = request.session.get('2fa_code')
+            
+            expiry_str = request.session.get('2fa_code_expiry')
+            if not expiry_str or timezone.now() > datetime.fromisoformat(expiry_str):
+                messages.error(request, "El código de verificación ha expirado. Por favor, intenta iniciar sesión de nuevo.")
+                for key in ['2fa_user_pk', '2fa_code', '2fa_code_expiry']:
+                    request.session.pop(key, None)
+                return redirect('login')
+
+            if entered_code == stored_code:
+                try:
+                    user = User.objects.get(pk=user_pk)
+                    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                    
+                    for key in ['2fa_user_pk', '2fa_code', '2fa_code_expiry']:
+                        request.session.pop(key, None)
+                            
+                    response = redirect('user_index')
+                    if request.POST.get('remember_device'):
+                        response.set_signed_cookie('trusted_device', user.username, salt='jobflex-2fa-salt', max_age=30*24*60*60)
+                    
+                    return response
+                except User.DoesNotExist:
+                    messages.error(request, "Usuario no encontrado durante la verificación 2FA.")
+                    return redirect('login')
+            else:
+                form.add_error(None, "El código introducido no es correcto.")
+    else:
+        form = TwoFactorForm()
+        
+    return render(request, 'registration/verify_2fa.html', {'form': form})
+
+
+@login_required
+def toggle_2fa(request):
+    """
+    Initiates the process of enabling or disabling 2FA by sending a verification code.
+    """
+    try:
+        user_profile = request.user.registrousuarios
+        action = 'enable' if not user_profile.autenticacion_dos_factores_activa else 'disable'
+
+        code = str(random.randint(100000, 999999))
+        request.session['2fa_change_code'] = code
+        request.session['2fa_change_action'] = action
+        request.session['2fa_change_expiry'] = (timezone.now() + timedelta(minutes=10)).isoformat()
+
+        send_mail(
+            f'Código para cambiar tu configuración 2FA: {code}',
+            f'Usa este código para confirmar tu cambio de seguridad 2FA: {code}\nEste código expira en 10 minutos.',
+            'noreply@jobflex.com',
+            [request.user.email],
+            fail_silently=False,
+        )
+        messages.info(request, "Te hemos enviado un código al correo para confirmar el cambio.")
+        return redirect('verify_2fa_change')
+
+    except RegistroUsuarios.DoesNotExist:
+        messages.error(request, "No se encontró tu perfil de registro.")
+        return redirect('settings')
+
+def verify_2fa_change(request):
+    """
+    Verifies the code to finalize enabling or disabling 2FA.
+    """
+    if request.method == 'POST':
+        form = TwoFactorForm(request.POST)
+        if form.is_valid():
+            entered_code = form.cleaned_data['code']
+            stored_code = request.session.get('2fa_change_code')
+            action = request.session.get('2fa_change_action')
+            expiry_str = request.session.get('2fa_change_expiry')
+
+            if not all([stored_code, action, expiry_str]):
+                messages.error(request, "La sesión ha expirado o es inválida. Por favor, inténtalo de nuevo.")
+                return redirect('settings')
+            
+            if timezone.now() > datetime.fromisoformat(expiry_str):
+                messages.error(request, "El código ha expirado. Por favor, inténtalo de nuevo.")
+                return redirect('settings')
+
+            if entered_code == stored_code:
+                try:
+                    user_profile = request.user.registrousuarios
+                    if action == 'enable':
+                        user_profile.autenticacion_dos_factores_activa = True
+                        messages.success(request, "¡Has activado la autenticación de dos factores!")
+                    elif action == 'disable':
+                        user_profile.autenticacion_dos_factores_activa = False
+                        messages.success(request, "Has desactivado la autenticación de dos factores.")
+                    
+                    user_profile.save(using='jflex_db')
+
+                    for key in ['2fa_change_code', '2fa_change_action', '2fa_change_expiry']:
+                        if key in request.session:
+                            del request.session[key]
+                    
+                    return redirect('settings')
+                except RegistroUsuarios.DoesNotExist:
+                    messages.error(request, "No se encontró tu perfil de registro.")
+                    return redirect('settings')
+            else:
+                form.add_error(None, "El código no es correcto.")
+    else:
+        form = TwoFactorForm()
+
+    return render(request, 'registration/verify_2fa_change.html', {'form': form})
 
 def index(req):
     if req.user.is_authenticated:
@@ -321,7 +446,8 @@ def user_index(request):
             ]
             
             has_cv = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).exists()
-            
+            is_2fa_active = request.user.registrousuarios.autenticacion_dos_factores_activa
+
             completed_fields_count = 0
             missing_profile_fields = []
             
@@ -329,14 +455,19 @@ def user_index(request):
                 if field_value and str(field_value).strip() and field_value != date(1900, 1, 1):
                     completed_fields_count += 1
                 else:
-                    missing_profile_fields.append(f"Falta {field_name}")
+                    missing_profile_fields.append(f"Completa tu {field_name}")
 
             if has_cv:
                 completed_fields_count += 1
             else:
-                missing_profile_fields.append("Subir o crear un CV")
+                missing_profile_fields.append("Sube o crea al menos un CV")
 
-            total_profile_fields = len(profile_fields) + 1
+            if is_2fa_active:
+                completed_fields_count += 1
+            else:
+                missing_profile_fields.append("Activa la Autenticación de Dos Factores (2FA) para mayor seguridad")
+
+            total_profile_fields = len(profile_fields) + 2 # Now 5 fields + CV + 2FA
             profile_completion_percentage = int((completed_fields_count / total_profile_fields) * 100) if total_profile_fields > 0 else 0
 
             # --- Fetch Recent Applications ---
@@ -2986,9 +3117,38 @@ class CustomLoginView(auth_views.LoginView):
         return super().form_invalid(form)
 
     def form_valid(self, form):
-        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            login(self.request, form.get_user())
-            return JsonResponse({'success': True})
+        user = form.get_user()
+        
+        try:
+            trusted_user = self.request.get_signed_cookie('trusted_device', default=None, salt='jobflex-2fa-salt')
+            if trusted_user == user.username:
+                login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return super().form_valid(form)
+        except (KeyError, BadSignature):
+            pass
+
+        try:
+            registro_usuario = RegistroUsuarios.objects.using('jflex_db').get(id_registro=user)
+            if registro_usuario.autenticacion_dos_factores_activa:
+                self.request.session['2fa_user_pk'] = user.pk
+                
+                code = str(random.randint(100000, 999999))
+                self.request.session['2fa_code'] = code
+                self.request.session['2fa_code_expiry'] = (timezone.now() + timedelta(minutes=5)).isoformat()
+
+                send_mail(
+                    f'Tu código de verificación para JobFlex es {code}',
+                    f'Usa este código para completar tu inicio de sesión: {code}\nEste código expira en 5 minutos.',
+                    'noreply@jobflex.com',
+                    [user.email],
+                    fail_silently=False,
+                )
+                
+                return redirect('verify_2fa')
+        except RegistroUsuarios.DoesNotExist:
+            pass
+
+        login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
         return super().form_valid(form)
 @login_required
 def edit_cv_meta(request, cv_id):

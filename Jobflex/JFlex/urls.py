@@ -9,9 +9,11 @@ urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path('register/', views.signup, name='register'), # Alias para signup
     path('verify_code/', views.verify_code, name='verify_code'),
+    path('verify-2fa/', views.verify_2fa, name='verify_2fa'),
+    path('verify-2fa-change/', views.verify_2fa_change, name='verify_2fa_change'),
     path('user_index/', views.user_index, name='user_index'),
     path('toggle-missy-view/', views.toggle_missy_view, name='toggle_missy_view'),
-
+    path('toggle-2fa/', views.toggle_2fa, name='toggle_2fa'),
 
     # Vistas de autenticación de Django (login, logout)
     path('login/', views.CustomLoginView.as_view(template_name='registration/login.html'), name='login'),
