@@ -72,6 +72,7 @@ urlpatterns = [
 	    path('company_index/', views.company_index, name='company_index'),
     path('offer/<int:offer_id>/applicants/', views.view_offer_applicants, name='view_offer_applicants'),
     path('company/accept-invitation/<str:token>/', views.accept_company_invitation, name='accept_company_invitation'),
+    path('company/analytics/offer/<int:offer_id>/', views.company_offer_analytics, name='company_offer_analytics'),
 
     # --- Rutas para Páginas Estáticas ---
     path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),

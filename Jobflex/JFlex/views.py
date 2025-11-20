@@ -1,3 +1,7 @@
+from django.db.models import F, Sum, Count, Avg, Case, When, Value, IntegerField
+from django.db.models.functions import ExtractMonth, ExtractYear, ExtractHour, ExtractWeekDay, TruncDate
+from collections import Counter
+import datetime
 from multiprocessing.managers import BaseManager
 import re
 import os
@@ -1540,6 +1544,83 @@ def company_index(request):
         })
     # --- End Dashboard Feeds ---
 
+    # --- End Dashboard Feeds ---
+
+    # --- General Analytics Data ---
+    # Fetch all relevant Postulacion objects for the company
+    company_postulations_qs = Postulacion.objects.filter(oferta__empresa=company)
+
+    # 1. Unique Applicants Count
+    unique_applicants_count = company_postulations_qs.values('candidato').distinct().count()
+
+    # 2. General Hiring Funnel Data
+    funnel_status_counts = company_postulations_qs.values('estado_postulacion') \
+                                                  .annotate(count=Count('id_postulacion'))
+
+    general_hiring_funnel_data = {
+        'enviada': 0, 'en proceso': 0, 'entrevista': 0, 'aceptada': 0, 'rechazada': 0
+    }
+    for item in funnel_status_counts:
+        general_hiring_funnel_data[item['estado_postulacion']] = item['count']
+
+    # 3. Applicant Age Distribution
+    # Get distinct candidates who applied to avoid counting the same candidate multiple times
+    distinct_applicant_ids = company_postulations_qs.values_list('candidato_id', flat=True).distinct()
+    all_applicants_profiles = Candidato.objects.filter(id_candidato__in=distinct_applicant_ids)
+
+    age_bins = {'<25': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0}
+    today = date.today()
+    for applicant_profile in all_applicants_profiles:
+        if applicant_profile.fecha_nacimiento:
+            age = today.year - applicant_profile.fecha_nacimiento.year - \
+                  ((today.month, today.day) < (applicant_profile.fecha_nacimiento.month, applicant_profile.fecha_nacimiento.day))
+            
+            if age < 25:
+                age_bins['<25'] += 1
+            elif 25 <= age <= 34:
+                age_bins['25-34'] += 1
+            elif 35 <= age <= 44:
+                age_bins['35-44'] += 1
+            elif 45 <= age <= 54:
+                age_bins['45-54'] += 1
+            else:
+                age_bins['55+'] += 1
+    
+    applicant_age_labels = list(age_bins.keys())
+    applicant_age_data = list(age_bins.values())
+
+    # 4. Applicant Region Distribution
+    region_counts_qs = all_applicants_profiles.values('ciudad__region__nombre') \
+                                              .annotate(count=Count('id_candidato')) \
+                                              .order_by('-count')
+    applicant_region_labels = [item['ciudad__region__nombre'] or 'Sin Región' for item in region_counts_qs]
+    applicant_region_data = [item['count'] for item in region_counts_qs]
+
+    # 5. General Conversion Rate (Accepted vs. Total Applications)
+    total_applications_all = company_postulations_qs.count()
+    accepted_applications_all = company_postulations_qs.filter(estado_postulacion='aceptada').count()
+    general_conversion_rate = (accepted_applications_all / total_applications_all * 100) if total_applications_all > 0 else 0
+
+    # 6. Average Time to Hire (approximated)
+    # Calculated in Python to avoid DB-specific errors
+    accepted_postulations = company_postulations_qs.filter(
+        estado_postulacion='aceptada', 
+        oferta__fecha_publicacion__isnull=False
+    ).select_related('oferta')
+
+    time_diffs_days = []
+    for p in accepted_postulations:
+        postulation_date = p.fecha_postulacion.date()
+        time_diff = postulation_date - p.oferta.fecha_publicacion
+        time_diffs_days.append(time_diff.days)
+
+    avg_time_to_hire_days = None
+    if time_diffs_days:
+        avg_time_to_hire_days = round(sum(time_diffs_days) / len(time_diffs_days))
+
+    # --- Offers for Analytics Dropdown ---
+    all_offers_for_analytics = OfertaLaboral.objects.filter(empresa=company).order_by('titulo_puesto')
+
     context = {
         'company': company,
         'company_logo_url': logo_url,
@@ -1571,7 +1652,17 @@ def company_index(request):
             'q': q_filter or '',
             'categoria': categoria_filter or '',
             'estado': estado_filter or '',
-        }
+        },
+        # --- New General Analytics Context ---
+        'unique_applicants_count': unique_applicants_count,
+        'general_hiring_funnel_data': json.dumps(general_hiring_funnel_data),
+        'applicant_age_labels': json.dumps(applicant_age_labels),
+        'applicant_age_data': json.dumps(applicant_age_data),
+        'applicant_region_labels': json.dumps(applicant_region_labels),
+        'applicant_region_data': json.dumps(applicant_region_data),
+        'general_conversion_rate': round(general_conversion_rate, 2),
+        'avg_time_to_hire_days': avg_time_to_hire_days,
+        'all_offers_for_analytics': all_offers_for_analytics,
     }
     return render(request, 'company/company_index.html', context)
 
@@ -3296,6 +3387,111 @@ def accept_company_invitation(request, token):
         'invited_email': user.email,
     }
     return render(request, 'company/accept_invitation.html', context)
+
+    return render(request, 'company/accept_invitation.html', context)
+
+
+@login_required
+def company_offer_analytics(request, offer_id):
+    try:
+        empresa_usuario = EmpresaUsuario.objects.select_related('empresa').get(id_empresa_user=request.user)
+        company = empresa_usuario.empresa
+    except EmpresaUsuario.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not associated with any company.'}, status=403)
+
+    offer = get_object_or_404(OfertaLaboral, pk=offer_id, empresa=company)
+    
+    # Filter postulations for this specific offer
+    offer_postulations_qs = Postulacion.objects.filter(oferta=offer)
+
+    # 1. Unique Applicants Count for Offer
+    offer_unique_applicants_count = offer_postulations_qs.values('candidato').distinct().count()
+
+    # 2. Offer-specific Hiring Funnel Data
+    offer_funnel_status_counts = offer_postulations_qs.values('estado_postulacion') \
+                                                      .annotate(count=Count('id_postulacion'))
+
+    offer_hiring_funnel_data = {
+        'enviada': 0, 'en proceso': 0, 'entrevista': 0, 'aceptada': 0, 'rechazada': 0
+    }
+    for item in offer_funnel_status_counts:
+        offer_hiring_funnel_data[item['estado_postulacion']] = item['count']
+
+    # 3. Offer-specific Applicant Age Distribution
+    distinct_offer_applicant_ids = offer_postulations_qs.values_list('candidato_id', flat=True).distinct()
+    offer_applicants_profiles = Candidato.objects.filter(id_candidato__in=distinct_offer_applicant_ids)
+
+    offer_age_bins = {'<25': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0}
+    today = date.today()
+    for applicant_profile in offer_applicants_profiles:
+        if applicant_profile.fecha_nacimiento:
+            age = today.year - applicant_profile.fecha_nacimiento.year - \
+                  ((today.month, today.day) < (applicant_profile.fecha_nacimiento.month, applicant_profile.fecha_nacimiento.day))
+            
+            if age < 25:
+                offer_age_bins['<25'] += 1
+            elif 25 <= age <= 34:
+                offer_age_bins['25-34'] += 1
+            elif 35 <= age <= 44:
+                offer_age_bins['35-44'] += 1
+            elif 45 <= age <= 54:
+                offer_age_bins['45-54'] += 1
+            else:
+                offer_age_bins['55+'] += 1
+    
+    offer_applicant_age_labels = list(offer_age_bins.keys())
+    offer_applicant_age_data = list(offer_age_bins.values())
+
+    # 4. Offer-specific Applicant Region Distribution
+    offer_region_counts_qs = offer_applicants_profiles.values('ciudad__region__nombre') \
+                                                    .annotate(count=Count('id_candidato')) \
+                                                    .order_by('-count')
+    offer_applicant_region_labels = [item['ciudad__region__nombre'] or 'Sin Región' for item in offer_region_counts_qs]
+    offer_applicant_region_data = [item['count'] for item in offer_region_counts_qs]
+
+    # 5. Offer-specific Conversion Rate
+    total_offer_applications = offer_postulations_qs.count()
+    accepted_offer_applications = offer_postulations_qs.filter(estado_postulacion='aceptada').count()
+    offer_conversion_rate = (accepted_offer_applications / total_offer_applications * 100) if total_offer_applications > 0 else 0
+
+    # 6. Offer-specific Average Time to Hire (approximated)
+    # Calculated in Python to avoid DB-specific errors
+    accepted_offer_postulations = offer_postulations_qs.filter(
+        estado_postulacion='aceptada', 
+        oferta__fecha_publicacion__isnull=False
+    ).select_related('oferta')
+
+    offer_time_diffs_days = []
+    for p in accepted_offer_postulations:
+        postulation_date = p.fecha_postulacion.date()
+        time_diff = postulation_date - p.oferta.fecha_publicacion
+        offer_time_diffs_days.append(time_diff.days)
+
+    offer_avg_time_to_hire_days = None
+    if offer_time_diffs_days:
+        offer_avg_time_to_hire_days = round(sum(offer_time_diffs_days) / len(offer_time_diffs_days))
+
+    # 7. Peak Application Time Analysis (by day of week and hour of day)
+    peak_times_data = [[0 for _ in range(24)] for _ in range(7)] # [day_of_week][hour]
+    for postulation in offer_postulations_qs:
+        if postulation.fecha_postulacion:
+            day_of_week = postulation.fecha_postulacion.weekday() # Monday is 0, Sunday is 6
+            hour_of_day = postulation.fecha_postulacion.hour
+            peak_times_data[day_of_week][hour_of_day] += 1
+            
+    response_data = {
+        'offer_unique_applicants_count': offer_unique_applicants_count,
+        'offer_hiring_funnel_data': offer_hiring_funnel_data,
+        'offer_applicant_age_labels': offer_applicant_age_labels,
+        'offer_applicant_age_data': offer_applicant_age_data,
+        'offer_applicant_region_labels': offer_applicant_region_labels,
+        'offer_applicant_region_data': offer_applicant_region_data,
+        'offer_conversion_rate': round(offer_conversion_rate, 2),
+        'offer_avg_time_to_hire_days': offer_avg_time_to_hire_days,
+        'peak_application_times_data': peak_times_data,
+    }
+
+    return JsonResponse(response_data)
 
 def job_offers(request: HttpRequest):
     q = request.GET.get('q', '').lower()

@@ -1,0 +1,166 @@
+<div id="analytics-content">
+    <h1 class="text-3xl font-bold text-dark mb-6">Análisis Detallado</h1>
+
+    <!-- Sub-navigation for Analytics -->
+    <div class="mb-6 border-b border-gray-200">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="analytics-tab" data-tabs-toggle="#analytics-tab-content" role="tablist">
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg analytics-sub-tab-link active" id="general-analytics-tab" data-tabs-target="#general-analytics" type="button" role="tab" aria-controls="general-analytics" aria-selected="true">Análisis General</button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 analytics-sub-tab-link" id="offer-analytics-tab" data-tabs-target="#offer-analytics" type="button" role="tab" aria-controls="offer-analytics" aria-selected="false">Análisis por Oferta</button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="analytics-tab-content">
+        <!-- General Analytics Tab Content -->
+        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="general-analytics" role="tabpanel" aria-labelledby="general-analytics-tab">
+            <h2 class="text-2xl font-semibold text-dark mb-4">Análisis a Nivel de Empresa</h2>
+            
+            <!-- Cards for General Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-primary">Tasa de Conversión General</h3>
+                    <p class="text-3xl font-bold text-dark mt-2" id="conversion-rate-card"></p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-primary">Postulantes Únicos</h3>
+                    <p class="text-3xl font-bold text-dark mt-2">{{ unique_applicants_count }}</p>
+                </div>
+            </div>
+
+            <!-- Hiring Funnel Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-lg font-semibold text-dark mb-4">Embudo de Contratación General</h3>
+                <div>
+                    <canvas id="generalHiringFunnelChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                 <!-- Applicant Age Distribution Chart -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Distribución de Edad de Postulantes</h3>
+                    <div>
+                        <canvas id="applicantAgeDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Applicant Location Distribution Chart -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Distribución de Postulantes por Región</h3>
+                    <div>
+                        <canvas id="applicantRegionDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Offer-specific Analytics Tab Content -->
+        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hidden" id="offer-analytics" role="tabpanel" aria-labelledby="offer-analytics-tab">
+            <h2 class="text-2xl font-semibold text-dark mb-4">Análisis por Oferta</h2>
+            
+            <!-- Offer Selector -->
+            <div class="mb-6 bg-white p-4 rounded-lg shadow-md flex items-center space-x-4">
+                <label for="offer-select" class="block text-sm font-medium text-gray-700">Seleccionar Oferta:</label>
+                <select id="offer-select" class="flex-grow block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+                    <option value="">-- Seleccionar Oferta --</option>
+                    {% for offer in all_offers_for_analytics %}
+                        <option value="{{ offer.id_oferta }}">{{ offer.titulo_puesto }}</option>
+                    {% endfor %}
+                </select>
+                <div id="offer-analysis-loading-spinner" class="hidden text-primary">
+                    <svg class="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div id="selected-offer-analytics-data" class="hidden">
+                 <!-- Cards for Offer-specific Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-primary">Tasa de Conversión (Oferta)</h3>
+                        <p class="text-3xl font-bold text-dark mt-2" id="offer-conversion-rate-card"></p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-primary">Postulantes Únicos (Oferta)</h3>
+                        <p class="text-3xl font-bold text-dark mt-2" id="offer-unique-applicants-card"></p>
+                    </div>
+                </div>
+
+                <!-- Hiring Funnel Chart for Specific Offer -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Embudo de Contratación de la Oferta</h3>
+                    <div>
+                        <canvas id="offerHiringFunnelChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Peak Application Times Heatmap/Chart -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Horas Pico de Postulación</h3>
+                    <div>
+                        <canvas id="peakApplicationTimesChart"></canvas>
+                    </div>
+                </div>
+
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                     <!-- Applicant Age Distribution Chart (Offer) -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-dark mb-4">Distribución de Edad de Postulantes (Oferta)</h3>
+                        <div>
+                            <canvas id="offerApplicantAgeDistributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Applicant Location Distribution Chart (Offer) -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-dark mb-4">Distribución de Postulantes por Región (Oferta)</h3>
+                        <div>
+                            <canvas id="offerApplicantRegionDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="no-offer-selected" class="text-center py-8 text-gray-500">
+                <p>Por favor, selecciona una oferta para ver su análisis detallado.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
+    const analyticsSubTabLinks = document.querySelectorAll('.analytics-sub-tab-link');
+    const analyticsSubTabContents = document.querySelectorAll('#analytics-tab-content > div');
+
+    analyticsSubTabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            console.log('Tab link clicked:', this.id);
+            e.preventDefault();
+            analyticsSubTabLinks.forEach(l => l.classList.remove('active', 'border-primary', 'hover:text-gray-600', 'hover:border-gray-300'));
+            analyticsSubTabLinks.forEach(l => l.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'));
+            
+            this.classList.add('active', 'border-primary');
+            this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+
+            const target = this.dataset.tabsTarget;
+            analyticsSubTabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.querySelector(target).classList.remove('hidden');
+        });
+    });
+
+    // Initial active tab
+    if (document.querySelector('.analytics-sub-tab-link.active')) {
+        document.querySelector('.analytics-sub-tab-link.active').click(); 
+    }
+});
+</script>
