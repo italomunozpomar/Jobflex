@@ -72,8 +72,8 @@
                     <p class="text-3xl font-bold text-dark mt-2">{{ upcoming_interviews_count }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-primary">Vistas del Perfil</h3>
-                    <p class="text-3xl font-bold text-dark mt-2">N/A</p>
+                    <h3 class="text-lg font-semibold text-primary">Vistas de Ofertas</h3>
+                    <p class="text-3xl font-bold text-dark mt-2">{{ total_offer_views }}</p>
                 </div>
             </div>
 
@@ -141,6 +141,7 @@
                     <h3 class="text-lg font-semibold text-dark mb-4">Actividad Reciente</h3>
                     <div class="space-y-4">
                         {% for activity in recent_activities %}
+                        {% if activity.tipo_notificacion.nombre_tipo != 'Nueva Postulación' %}
                         <a href="{{ activity.link_relacionado|default:'#' }}" class="flex items-start hover:bg-gray-50 p-2 rounded-md">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-gray-200 text-primary flex items-center justify-center">
@@ -158,9 +159,24 @@
                                 <p class="text-xs text-secondary">{{ activity.fecha_envio|timesince }} atrás</p>
                             </div>
                         </a>
+                        {% endif %}
                         {% empty %}
                         <p class="text-sm text-gray-500">No hay actividad reciente.</p>
                         {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Fuente de Candidatos</h3>
+                    <div>
+                        <canvas id="candidatesSourceChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Candidatos por Mes</h3>
+                    <div>
+                        <canvas id="monthlyApplicantsChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -321,21 +337,6 @@
         </div>
         <!-- Analytics Content -->
         <div id="analytics" class="tab-content hidden">
-            <h1 class="text-3xl font-bold text-dark mb-6">Análisis</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-dark mb-4">Fuente de Candidatos</h3>
-                    <div>
-                        <canvas id="candidatesSourceChart"></canvas>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-lg font-semibold text-dark mb-4">Candidatos por Mes</h3>
-                    <div>
-                        <canvas id="monthlyApplicantsChart"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
         <!-- Tools Content -->
         <div id="tools" class="tab-content hidden">
@@ -463,6 +464,74 @@ document.addEventListener('DOMContentLoaded', function () {
             details.classList.toggle('hidden');
         });
     });
+
+    // --- CHART.JS LOGIC ---
+    const sourceCanvas = document.getElementById('candidatesSourceChart');
+    if (sourceCanvas) {
+        new Chart(sourceCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: {{ candidate_source_labels|safe }},
+                datasets: [{
+                    label: 'Fuente de Candidatos',
+                    data: {{ candidate_source_data|safe }},
+                    backgroundColor: [
+                        'rgba(140, 160, 26, 0.7)',
+                        'rgba(26, 140, 160, 0.7)',
+                        'rgba(216, 217, 221, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                    ],
+                    borderColor: [
+                        'rgba(140, 160, 26, 1)',
+                        'rgba(26, 140, 160, 1)',
+                        'rgba(216, 217, 221, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(59, 130, 246, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+    }
+
+    const monthlyCanvas = document.getElementById('monthlyApplicantsChart');
+    if (monthlyCanvas) {
+        new Chart(monthlyCanvas, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_applicants_labels|safe }},
+                datasets: [{
+                    label: 'Postulantes por Mes',
+                    data: {{ monthly_applicants_data|safe }},
+                    backgroundColor: 'rgba(26, 140, 160, 0.5)',
+                    borderColor: 'rgba(26, 140, 160, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

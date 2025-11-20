@@ -14,7 +14,9 @@ import calendar
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, Sum
+from django.db.models.functions import ExtractMonth
+from calendar import month_name
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash, logout
 from django.contrib.auth import views as auth_views
@@ -1388,6 +1390,30 @@ def company_index(request):
         fecha_postulacion__gte=timezone.now() - timedelta(days=7)
     ).count()
     total_users_count = len(members_for_template)
+    total_offer_views = OfertaLaboral.objects.filter(empresa=company).aggregate(total=Sum('vistas'))['total'] or 0
+
+    # --- Chart Data ---
+    # Monthly Applicants
+    monthly_applicants_qs = Postulacion.objects.filter(
+        oferta__empresa=company,
+        fecha_postulacion__year=timezone.now().year
+    ).annotate(month=ExtractMonth('fecha_postulacion')) \
+     .values('month') \
+     .annotate(count=Count('id_postulacion')) \
+     .order_by('month')
+
+    monthly_applicants_data = [0] * 12
+    for item in monthly_applicants_qs:
+        monthly_applicants_data[item['month'] - 1] = item['count']
+
+    # Candidate Sources (by city)
+    source_qs = Postulacion.objects.filter(oferta__empresa=company) \
+        .values('candidato__ciudad__nombre') \
+        .annotate(count=Count('candidato__id_candidato')) \
+        .order_by('-count')
+
+    source_labels = [item['candidato__ciudad__nombre'] or 'No especificada' for item in source_qs]
+    source_data = [item['count'] for item in source_qs]
 
     # Get upcoming interviews for the list on the right
     upcoming_interviews_qs = Entrevista.objects.filter(
@@ -1536,6 +1562,11 @@ def company_index(request):
         'upcoming_interviews_count': upcoming_interviews_qs.count(),                                             
         'recent_activities': recent_activities,                                                                  
         'recent_applicants': recent_applicants,
+        'total_offer_views': total_offer_views,
+        'monthly_applicants_labels': json.dumps([month_name[i] for i in range(1, 13)]),
+        'monthly_applicants_data': json.dumps(monthly_applicants_data),
+        'candidate_source_labels': json.dumps(source_labels),
+        'candidate_source_data': json.dumps(source_data),
         'filter_values': {
             'q': q_filter or '',
             'categoria': categoria_filter or '',
