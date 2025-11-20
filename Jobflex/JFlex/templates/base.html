@@ -209,7 +209,7 @@
         {% block content %}
         {% endblock %}
     </main>
-
+    {% block footer %}{% endblock %}
     <div id="apply-modal-placeholder"></div>
     {% include 'partials/_auth_modal.html' %}
 
@@ -452,6 +452,36 @@
     <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
     
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <!-- Botón de Soporte Flotante -->
+    <style>
+        .support-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #8CA01A; /* Color primario del tema */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .support-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .support-button-img {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
+    <a href="#" class="support-button" title="Soporte">
+        <img src="https://jobflex-archives.s3.sa-east-1.amazonaws.com/imgs/message-54.png" alt="Soporte" class="support-button-img">
+    </a>
 
 </body>
 </html>

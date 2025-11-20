@@ -459,23 +459,19 @@ def user_index(request):
             is_2fa_active = request.user.registrousuarios.autenticacion_dos_factores_activa
 
             completed_fields_count = 0
-            missing_profile_fields = []
+            missing_profile_fields_text = []
             
             for field_name, field_value in profile_fields:
                 if field_value and str(field_value).strip() and field_value != date(1900, 1, 1):
                     completed_fields_count += 1
                 else:
-                    missing_profile_fields.append(f"Completa tu {field_name}")
+                    missing_profile_fields_text.append(f"Completa tu {field_name}")
 
             if has_cv:
                 completed_fields_count += 1
-            else:
-                missing_profile_fields.append("Sube o crea al menos un CV")
 
             if is_2fa_active:
                 completed_fields_count += 1
-            else:
-                missing_profile_fields.append("Activa la Autenticación de Dos Factores (2FA) para mayor seguridad")
 
             total_profile_fields = len(profile_fields) + 2 # Now 5 fields + CV + 2FA
             profile_completion_percentage = int((completed_fields_count / total_profile_fields) * 100) if total_profile_fields > 0 else 0
@@ -595,7 +591,9 @@ def user_index(request):
                 'total_cvs_count': total_cvs_count,
                 'recommended_offers': recommended_offers,
                 'profile_completion_percentage': profile_completion_percentage,
-                'missing_profile_fields': missing_profile_fields,
+                'missing_profile_fields_text': missing_profile_fields_text,
+                'has_cv': has_cv,
+                'is_2fa_active': is_2fa_active,
                 'cv_list': cv_list,
             }
             return render(request, 'user/user_index.html', context)
@@ -1002,16 +1000,17 @@ def register_emp(request):
 
 def get_ciudades(request, region_id):
     try:
+        # This logic is for the search form, which we don't want to break.
+        # The form now excludes "Cualquier Región", so this part of the if will not be hit by the modal.
         cualquier_region = Region.objects.get(nombre='Cualquier Región')
         if region_id == cualquier_region.id_region:
-            # If "Cualquier Región" is selected, return only "Cualquier comuna" for that region
             ciudades = list(Ciudad.objects.filter(region=cualquier_region, nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
         else:
-            # Otherwise, return cities for the selected region
-            ciudades = list(Ciudad.objects.filter(region_id=region_id).values('id_ciudad', 'nombre').order_by('nombre'))
+            # Exclude "Cualquier comuna" for all other regions.
+            ciudades = list(Ciudad.objects.filter(region_id=region_id).exclude(nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
     except Region.DoesNotExist:
-        # Fallback if "Cualquier Región" doesn't exist (shouldn't happen if SQL was run)
-        ciudades = list(Ciudad.objects.filter(region_id=region_id).values('id_ciudad', 'nombre').order_by('nombre'))
+        # Also exclude here in the fallback.
+        ciudades = list(Ciudad.objects.filter(region_id=region_id).exclude(nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
     
     return JsonResponse(ciudades, safe=False)
 

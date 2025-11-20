@@ -518,14 +518,38 @@
                 <h3 class="text-2xl font-bold text-dark mb-4">Progreso de tu Perfil</h3>
                 <div class="w-full bg-light-gray rounded-full h-4 mb-2"><div class="bg-primary h-4 rounded-full" style="width: {{ profile_completion_percentage }}%"></div></div>
                 <p class="text-sm text-secondary mb-4 text-right">{{ profile_completion_percentage }}% Completado</p>
-                {% if missing_profile_fields %}
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                {% if missing_profile_fields_text or not has_cv or not is_2fa_active %}
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded" role="alert">
                     <p class="font-bold">¡Casi listo!</p>
-                    <p>Completa la siguiente información para mejorar tus posibilidades / seguridad:</p>
-                    <ul class="list-disc list-inside mt-2 text-sm">
-                        {% for field in missing_profile_fields %}<li>{{ field }}</li>{% endfor %}
-                    </ul>
-                    <a href="{% url 'settings' %}" class="text-sm text-yellow-800 font-semibold hover:underline mt-2 inline-block">Ir a configuraciones para completar..</a>
+                    <p class="mb-3">Completa la siguiente información para mejorar tus posibilidades y la seguridad de tu cuenta:</p>
+                    
+                    {% if missing_profile_fields_text %}
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+                        <p class="font-semibold text-yellow-800">Completa tu información de perfil</p>
+                        <ul class="list-disc list-inside text-sm text-yellow-700 mt-1">
+                            {% for field in missing_profile_fields_text %}
+                                <li>{{ field }}</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{% url 'profile' %}" class="text-sm text-yellow-800 font-bold hover:underline mt-2 inline-block">Ir a Mi Perfil &rarr;</a>
+                    </div>
+                    {% endif %}
+
+                    {% if not has_cv %}
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+                        <p class="font-semibold text-yellow-800">Añade tu primer CV</p>
+                        <p class="text-sm text-yellow-700 mt-1">Sube o crea al menos un CV para poder postularte a las ofertas.</p>
+                        <a href="{% url 'perfiles_profesionales' %}" class="text-sm text-yellow-800 font-bold hover:underline mt-2 inline-block">Ir a Perfiles Profesionales &rarr;</a>
+                    </div>
+                    {% endif %}
+
+                    {% if not is_2fa_active %}
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="font-semibold text-yellow-800">Aumenta tu seguridad</p>
+                        <p class="text-sm text-yellow-700 mt-1">Activa la Autenticación de Dos Factores (2FA).</p>
+                        <a href="{% url 'settings' %}" class="text-sm text-yellow-800 font-bold hover:underline mt-2 inline-block">Ir a Configuraciones &rarr;</a>
+                    </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="text-center p-4">
@@ -686,11 +710,55 @@
             <div class="p-6">
                 <h3 class="text-xl font-bold text-dark">Completa tu perfil</h3>
                 <p class="text-secondary mb-6">Antes de continuar, por favor completa los siguientes datos para poder utilizar la plataforma.</p>
-                <form method="post">
+                <form method="post" action="{% url 'user_index' %}" class="space-y-6">
                     {% csrf_token %}
-                    {{ form.as_p }}
-                    <div class="mt-6">
-                        <button type="submit" name="submit_perfil" class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all">Guardar y continuar</button>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.rut_candidato.id_for_label }}" class="block text-sm font-medium text-gray-700">RUT</label>
+                            {{ form.rut_candidato }}
+                            {% if form.rut_candidato.errors %}<p class="text-red-500 text-xs mt-1">{{ form.rut_candidato.errors|first }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form.fecha_nacimiento.id_for_label }}" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                            {{ form.fecha_nacimiento }}
+                            {% if form.fecha_nacimiento.errors %}<p class="text-red-500 text-xs mt-1">{{ form.fecha_nacimiento.errors|first }}</p>{% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.telefono.id_for_label }}" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}<p class="text-red-500 text-xs mt-1">{{ form.telefono.errors|first }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.linkedin_url.id_for_label }}" class="block text-sm font-medium text-gray-700">URL de tu Perfil de LinkedIn (Opcional)</label>
+                        {{ form.linkedin_url }}
+                        {% if form.linkedin_url.errors %}<p class="text-red-500 text-xs mt-1">{{ form.linkedin_url.errors|first }}</p>{% endif %}
+                    </div>
+
+                    <fieldset class="border-t border-gray-200 pt-6">
+                        <legend class="text-lg font-medium text-gray-900 mb-4">Tu ubicación</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="{{ form.region.id_for_label }}" class="block text-sm font-medium text-gray-700">Región</label>
+                                {{ form.region }}
+                                {% if form.region.errors %}<p class="text-red-500 text-xs mt-1">{{ form.region.errors|first }}</p>{% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.ciudad.id_for_label }}" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                                {{ form.ciudad }}
+                                {% if form.ciudad.errors %}<p class="text-red-500 text-xs mt-1">{{ form.ciudad.errors|first }}</p>{% endif %}
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="pt-6">
+                        <button type="submit" name="submit_perfil" class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Guardar y continuar
+                        </button>
                     </div>
                 </form>
             </div>
@@ -853,9 +921,39 @@
             }
 
             if (regionSelect && ciudadSelect) {
-                // This block is for the complete-profile-modal, which uses regionSelect and ciudadSelect
-                // The new search dropdowns will use different IDs: search_region and search_ciudad
-                // The logic for the complete-profile-modal's region/ciudad dropdowns remains as is.
+                const urlTemplate = "{% url 'get_ciudades' 0 %}";
+
+                const populateCities = (regionId, initialCiudadId = null) => {
+                    ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+                    if (!regionId) {
+                        return;
+                    }
+                    const url = urlTemplate.replace('0', regionId);
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) { console.error(data.error); return; }
+                            data.forEach(ciudad => {
+                                const option = document.createElement('option');
+                                option.value = ciudad.id_ciudad;
+                                option.textContent = ciudad.nombre;
+                                if (String(ciudad.id_ciudad) === String(initialCiudadId)) {
+                                    option.selected = true;
+                                }
+                                ciudadSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching cities for modal:', error));
+                };
+
+                regionSelect.addEventListener('change', function() {
+                    populateCities(this.value);
+                });
+
+                if (regionSelect.value) {
+                    const initialCiudadValue = '{{ form.instance.ciudad.id|default_if_none:"" }}';
+                    populateCities(regionSelect.value, initialCiudadValue);
+                }
             }
 
             // Dependent Dropdowns for Job Search Form

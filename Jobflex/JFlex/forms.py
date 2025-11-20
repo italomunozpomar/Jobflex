@@ -170,17 +170,20 @@ class CompletarPerfilForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        # Exclude 'Cualquier Región' from the region dropdown
+        self.fields['region'].queryset = Region.objects.exclude(nombre='Cualquier Región')
+        
         self.fields['ciudad'].queryset = Ciudad.objects.none()
 
         if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].ciudad:
             instance = kwargs['instance']
             self.fields['region'].initial = instance.ciudad.region
-            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).order_by('nombre')
+            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=instance.ciudad.region).exclude(nombre='Cualquier comuna').order_by('nombre')
             self.fields['ciudad'].initial = instance.ciudad
         elif 'region' in self.data:
             try:
                 region_id = int(self.data.get('region'))
-                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).exclude(nombre='Cualquier comuna').order_by('nombre')
             except (ValueError, TypeError):
                 pass
         
