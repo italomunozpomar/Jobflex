@@ -1,3 +1,4 @@
+from multiprocessing.managers import BaseManager
 import re
 import os
 import json
@@ -170,6 +171,59 @@ def build_company_asset_key(company_obj, asset_folder: str, filename: str) -> st
     )
     return f"Empresas/{base_folder}/{asset_folder}/{filename}"
 
+#helper, also used on postulaciones
+def application_status(qs,dt_format='%d-%m-%Y'):
+    processed_applications = []
+    app:Postulacion
+    for app in qs:
+        display_status = ""
+        status_class = ""
+        status_icon = ""
+
+        if app.estado_postulacion == 'rechazada':
+            display_status = "Rechazado"
+            status_class = "bg-red-100 text-red-800"
+            status_icon = "fa-ban" # Signo de denegado
+        elif app.estado_postulacion == 'aceptada':
+            display_status = "Aceptado"
+            status_class = "bg-green-100 text-green-800"
+            status_icon = "fa-check-circle" # Checkmark
+        elif app.estado_postulacion == 'entrevista':
+            display_status = "Agendado"
+            status_class = "bg-purple-100 text-purple-800"
+            status_icon = "fa-calendar-alt" # Calendar icon
+        elif app.estado_postulacion == 'en proceso':
+            display_status = "En Revisión"
+            status_class = "bg-yellow-100 text-yellow-800"
+            status_icon = "fa-clock" # Reloj
+        elif app.estado_postulacion == 'enviada':
+            if app.cv_visto:
+                display_status = "CV Visto"
+                status_class = "bg-green-100 text-green-800" # Verde para CV visto
+                status_icon = "fa-eye" # Ojo
+            else:
+                display_status = "Enviado"
+                status_class = "bg-blue-100 text-blue-800" # Azul para Enviado
+                status_icon = "fa-paper-plane" # Icono de enviado
+        else:
+            display_status = "Desconocido"
+            status_class = "bg-gray-100 text-gray-800"
+            status_icon = "fa-question-circle"
+
+        processed_applications.append({
+            'id': app.id_postulacion,
+            'job_title': app.oferta.titulo_puesto,
+            'company_name': app.oferta.empresa.nombre_comercial,
+            'date_applied': app.fecha_postulacion.strftime(dt_format),
+            'status': display_status,
+            'status_class': status_class,
+            'status_icon': status_icon,
+            'job_jornada': app.oferta.jornada.tipo_jornada if app.oferta.jornada else 'N/A',
+            'job_modalidad': app.oferta.modalidad.tipo_modalidad if app.oferta.modalidad else 'N/A',
+            'cv':app.cv_postulado,
+        })
+    return processed_applications
+
 @login_required
 def user_index(request):
     try:
@@ -322,6 +376,53 @@ def user_index(request):
                     'job_jornada': app.oferta.jornada.tipo_jornada if app.oferta.jornada else 'N/A',
                     'job_modalidad': app.oferta.modalidad.tipo_modalidad if app.oferta.modalidad else 'N/A',
                 })
+            apps = application_status(recent_applications_qs)
+            # for app in recent_applications_qs:
+            #     display_status = ""
+            #     status_class = ""
+            #     status_icon = ""
+
+            #     if app.estado_postulacion == 'rechazada':
+            #         display_status = "Rechazado"
+            #         status_class = "bg-red-100 text-red-800"
+            #         status_icon = "fa-ban" # Signo de denegado
+            #     elif app.estado_postulacion == 'aceptada':
+            #         display_status = "Aceptado"
+            #         status_class = "bg-green-100 text-green-800"
+            #         status_icon = "fa-check-circle" # Checkmark
+            #     elif app.estado_postulacion == 'entrevista':
+            #         display_status = "Agendado"
+            #         status_class = "bg-purple-100 text-purple-800"
+            #         status_icon = "fa-calendar-alt" # Calendar icon
+            #     elif app.estado_postulacion == 'en proceso':
+            #         display_status = "En Revisión"
+            #         status_class = "bg-yellow-100 text-yellow-800"
+            #         status_icon = "fa-clock" # Reloj
+            #     elif app.estado_postulacion == 'enviada':
+            #         if app.cv_visto:
+            #             display_status = "CV Visto"
+            #             status_class = "bg-green-100 text-green-800" # Verde para CV visto
+            #             status_icon = "fa-eye" # Ojo
+            #         else:
+            #             display_status = "Enviado"
+            #             status_class = "bg-blue-100 text-blue-800" # Azul para Enviado
+            #             status_icon = "fa-paper-plane" # Icono de enviado
+            #     else:
+            #         display_status = "Desconocido"
+            #         status_class = "bg-gray-100 text-gray-800"
+            #         status_icon = "fa-question-circle"
+
+            #     processed_applications.append({
+            #         'id': app.id_postulacion,
+            #         'job_title': app.oferta.titulo_puesto,
+            #         'company_name': app.oferta.empresa.nombre_comercial,
+            #         'date_applied': app.fecha_postulacion.strftime('%d-%m-%Y'),
+            #         'status': display_status,
+            #         'status_class': status_class,
+            #         'status_icon': status_icon,
+            #         'job_jornada': app.oferta.jornada.tipo_jornada if app.oferta.jornada else 'N/A',
+            #         'job_modalidad': app.oferta.modalidad.tipo_modalidad if app.oferta.modalidad else 'N/A',
+            #     })
 
             # --- Fetch User's CVs for the new section ---
             cv_list = []
@@ -347,6 +448,7 @@ def user_index(request):
                 'form': completar_perfil_form,
                 'cv_subido_form': cv_subido_form,
                 'all_regions': Region.objects.all(),
+                'recent_applications': apps, # Add processed applications to context
                 'recent_applications': processed_applications,
                 'total_applications_count': total_applications_count,
                 'total_cvs_count': total_cvs_count,
@@ -1792,6 +1894,7 @@ def delete_interview(request, interview_id):
 from django.db.models.functions import ExtractMonth
 @login_required
 def postulaciones(request:HttpRequest):
+    #postulacion
     today = timezone.now().date()
     week_start = today - timedelta(days=today.weekday())
     month_start = today.replace(day=1)
@@ -1800,22 +1903,22 @@ def postulaciones(request:HttpRequest):
     def count_statuses(queryset):
       return queryset.aggregate(
           total=Count("id_postulacion"),
-          sent=Count("id_postulacion", filter=Q(estado_postulacion="Recibida")),
+          sent=Count("id_postulacion", filter=Q(estado_postulacion="enviada")),
           in_progress=Count("id_postulacion", filter=Q(estado_postulacion="en proceso")),
-          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aprobada")),
+          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aceptada")|Q(estado_postulacion="entrevista")),
           rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada")),
       )
     postu = Postulacion.objects.all().filter(candidato_id=request.user.pk)
     week_qs  = postu.filter(fecha_postulacion__date__gte=week_start)
     month_qs = postu.filter(fecha_postulacion__date__gte=month_start)
 
-    week_stats  = count_statuses(week_qs)
+    week_stats = count_statuses(week_qs)
     month_stats = count_statuses(month_qs)
 
     year_qs  = (postu.filter(fecha_postulacion__date__gte=year_start).annotate(month=ExtractMonth("fecha_postulacion"))
       .values("month")
       .annotate(
-          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aprobada")),
+          aproved=Count("id_postulacion", filter=Q(estado_postulacion="aceptada")|Q(estado_postulacion="entrevista")),
           rejected=Count("id_postulacion", filter=Q(estado_postulacion="rechazada")),
       )
       .order_by("month"))
@@ -1831,9 +1934,12 @@ def postulaciones(request:HttpRequest):
         stats_by_month[m]["rejected"] = row["rejected"]
     apro_data = [stats_by_month[m]["aproved"] for m in range(1, 13)]
     recho_data = [stats_by_month[m]["rejected"] for m in range(1, 13)]
-
+    apps = application_status(postu,'%d de %b, %Y')
+    #entrevista
+    inters = Entrevista.objects.filter(postulacion__in=postu).select_related("modoonline","modopresencial")
     ctx={
-      'applied':postu,
+      'applied':apps,
+      'interviews':inters,
       'tot_week':week_stats,
       'tot_month':month_stats,
       'tot_year':{

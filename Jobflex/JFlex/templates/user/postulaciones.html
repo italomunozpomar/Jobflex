@@ -96,53 +96,17 @@
 										{% for p in applied %}
 										<div class="application-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                         <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-													{% if p.estado_postulacion == "Recibida" %}
-													<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-														<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-														</svg>
+													<div class="w-10 h-10 {{ p.status_class|default:'bg-gray-100 text-gray-800' }} rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas {{ p.status_icon|default:'fa-question-circle' }} w-6 h-6 flex items-center justify-center"></i>
 													</div>
-													{% elif p.estado_postulacion == "en proceso" %}
-													<div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-														<svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-														</svg>
+													<div>
+														<p class="font-bold text-dark">{{p.job_title}}</p>
+														<p class="text-sm text-secondary">{{p.company_name}} - Postulado: {{p.date_applied}}</p>
+                            <p class="text-xs text-gray-500">Postulado con cv: {{ p.cv.nombre_cv }}</p>
 													</div>
-													{% elif p.estado_postulacion == "aprobada" %}
-													<div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-														<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-													</div>
-													{% elif p.estado_postulacion == "rechazada" %}
-													<div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-														<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-														</svg>
-													</div>
-													{% else %}
-													<div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-														<p class="text-sm font-semibold py-1 px-3 rounded-full bg-gray-200 text-gray-800">?</p>
-													</div>
-													{% endif %}
-                            <div>
-                                <p class="font-bold text-dark">{{p.oferta.titulo_puesto}}<!-- offer.titulo_puesto --></p>
-                                <p class="text-sm text-secondary">{{p.oferta.empresa}}<!-- offer.empresa --> - Postulado: {{p.fecha_postulacion|date:"d \\d\\e M, Y" }}<!-- postulacion.fecha_postulacion --></p>
-                            </div>
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0">
-													{% if p.estado_postulacion == "Recibida" %}
-														<span class="text-sm font-semibold py-1 px-3 rounded-full bg-blue-200 text-blue-800">Enviado</span>
-													{% elif p.estado_postulacion == "en proceso" %}
-													<span class="text-sm font-semibold py-1 px-3 rounded-full bg-yellow-200 text-yellow-800">En Proceso</span>
-													{% elif p.estado_postulacion == "aprobada" %}
-													<span class="text-sm font-semibold py-1 px-3 rounded-full bg-green-200 text-green-800">Aceptado</span>
-													{% elif p.estado_postulacion == "rechazada" %}
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-red-200 text-red-800">Rechazado</span>
-													{% else %}
-                            <span class="text-sm font-semibold py-1 px-3 rounded-full bg-gray-200 text-gray-800">?</span>
-													{% endif %}
+														<span class="text-sm font-semibold py-1 px-3 rounded-full {{ p.status_class }}">{{ p.status }}</span>
                         </div>
                     </div>
 										{% empty %}
@@ -160,108 +124,32 @@
                 <h2 class="text-2xl font-bold text-dark mb-6">Mis Entrevistas</h2>
                 <div id="interview-list" class="space-y-4">
 									<!-- for -->
+										{% for e in interviews %}
 										<div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                         <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
+                            <!-- <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+															<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+														</div> -->
+														<img 
+															src="{% if e.postulacion.oferta.empresa.imagen_perfil %}{{ e.postulacion.oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}"
+															alt="Logo de {{ e.postulacion.oferta.empresa }}" 
+															class="w-12 h-12 rounded-lg object-cover mr-4">
                             <div>
-                                <p class="font-bold text-dark"><!-- entrevista>postulacion>oferta>empresa --></p>
-                                <p class="text-sm text-secondary"><!-- empresa --> - Agendada: <!-- entrevista.fecha_entrevista --></p>
+                                <p class="font-bold text-dark">{{e.postulacion.oferta.empresa}}<!-- entrevista>postulacion>oferta>empresa --></p>
+                                <p class="text-sm text-secondary">{{e.postulacion.oferta}} - Agendada: {{e.fecha_entrevista|date:'d \\d\\e M, Y'}}<!-- entrevista.fecha_entrevista --></p>
+																<p class="text-xs text-gray-500">A la hora: {{e.hora_entrevista}} con {{e.nombre_reclutador}}</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
+                            <a href="{% if e.modoonline %}{{e.modoonline.url_reunion}}{% else %}https://maps.google.com/?q={{e.modopresencial.direccion}}{% endif %}" target="_blank" rel="noopener noreferrer" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
                                 Abrir
-                            </button>
+                            </a>
                         </div>
                     </div>
+										{% empty %}
+										<p>Sin Entrevistas agendadas.</p>
+										{% endfor %}
 										<!-- endfor -->
-                    <!-- Entrevista 1 -->
-                    <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="font-bold text-dark">Global Sales</p>
-                                <p class="text-sm text-secondary">Líder de Equipo de Ventas - Postulado: 05 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Entrevista 2 -->
-                    <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="font-bold text-dark">People First</p>
-                                <p class="text-sm text-secondary">Gerente de RRHH - Postulado: 19 de Ago, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Entrevista 3 -->
-                    <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="font-bold text-dark">Tech Solutions Inc.</p>
-                                <p class="text-sm text-secondary">Desarrollador Frontend - Postulado: 15 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Entrevista 4 -->
-                    <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="font-bold text-dark">Innovate Group</p>
-                                <p class="text-sm text-secondary">Gerente de Proyecto - Postulado: 08 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Entrevista 5 -->
-                    <div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                                <svg class="w-7 h-7 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="font-bold text-dark">Cloud Services</p>
-                                <p class="text-sm text-secondary">DevOps Engineer - Postulado: 02 de Sep, 2025</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <button class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </button>
-                        </div>
-                    </div>
                 </div>
                 <div id="paginator-container-interviews">
                     {% include 'partials/paginator.html' %}
