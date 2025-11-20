@@ -31,13 +31,14 @@ urlpatterns = [
 
     path('settings/', views.settings, name='settings'),
     path('change_password/', views.settings, name='change_password'),
-    path('delete_account/', views.delete_account, name='delete_account'),
-
-
+        path('delete_account/', views.delete_account, name='delete_account'),
     
-    path('ajax/ciudades/<int:region_id>/', views.get_ciudades, name='get_ciudades'),
-    # --- Rutas comentadas para funcionalidades futuras o de empresa ---
-    path("register_emp/", views.register_emp, name="register_emp"),
+                # Notificaciones
+                path('notifications/mark-all-read/', views.mark_all_as_read, name='mark_all_as_read'),
+                path('notifications/delete-all/', views.delete_all_notifications, name='delete_all_notifications'),        
+            
+            path('ajax/ciudades/<int:region_id>/', views.get_ciudades, name='get_ciudades'),        # --- Rutas comentadas para funcionalidades futuras o de empresa ---
+        path("register_emp/", views.register_emp, name="register_emp"),
     path("validate/", views.Validate, name="validate"),
     path('profile/', views.Profile, name='profile'),
     path('update_availability/', views.update_availability, name='update_availability'),

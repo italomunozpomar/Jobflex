@@ -14,7 +14,7 @@ import calendar
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash, logout
 from django.contrib.auth import views as auth_views
@@ -31,6 +31,7 @@ from django.urls import reverse # Import reverse here
 from django.core.signing import BadSignature
 from playwright.sync_api import sync_playwright
 from django import forms
+from django.views.decorators.http import require_POST
 
 # ... (rest of the imports)
 
@@ -419,7 +420,7 @@ def user_index(request):
                 keywords = latest_cv.cargo_asociado.split()
                 q_objects = Q()
                 for keyword in keywords:
-                    q_objects |= Q(titulo_puesto__icontains=keyword) | Q(descripcion_puesto__icontains=keyword)
+                    q_objects |= (Q(titulo_puesto__icontains=keyword) | Q(descripcion_puesto__icontains=keyword))
                 
                 if candidato.ciudad:
                     specific_offers_qs = offers_query.filter(q_objects, ciudad=candidato.ciudad).order_by('-fecha_publicacion')[:5]
@@ -677,9 +678,9 @@ def Profile(request):
     from django.db.models.functions import Coalesce
 
     # Order CVs by the most recent date from either CVCreado or CVSubido
-    cvs_qs = CVCandidato.objects.filter(candidato=candidato)		.select_related('cvcreado', 'cvsubido')		.annotate(
+    cvs_qs = CVCandidato.objects.filter(candidato=candidato)        .select_related('cvcreado', 'cvsubido')        .annotate(
             latest_date=Coalesce('cvcreado__ultima_actualizacion', 'cvsubido__fecha_subido')
-        )		.order_by('-latest_date')[:3] # Slice to get the latest 3
+        )        .order_by('-latest_date')[:3] # Slice to get the latest 3
     cv_list = []
     for cv in cvs_qs:
         cv_item = {
@@ -827,10 +828,7 @@ def Profile(request):
         weekly_submission_data.insert(0, applications_count) # Insert at the beginning to reverse order
 
     # CV Usage
-    cv_usage_counts = Postulacion.objects.using('jflex_db').filter(candidato=candidato)\
-                                     .values('cv_postulado__nombre_cv')\
-                                     .annotate(count=Count('cv_postulado'))\
-                                     .order_by('-count')
+    cv_usage_counts = Postulacion.objects.using('jflex_db').filter(candidato=candidato)        .values('cv_postulado__nombre_cv')        .annotate(count=Count('cv_postulado'))        .order_by('-count')
 
     cv_usage_labels = [item['cv_postulado__nombre_cv'] for item in cv_usage_counts]
     cv_usage_data = [item['count'] for item in cv_usage_counts]
@@ -1492,6 +1490,30 @@ def company_index(request):
     rubros_list = list(all_rubros_qs.values('pk', 'nombre_rubro'))
     all_rubros_json = json.dumps(rubros_list)
 
+    # --- Dashboard Feeds (New) ---
+    company_user_pks = EmpresaUsuario.objects.filter(empresa=company).values_list('id_empresa_user_id', flat=True)
+    recent_activities = Notificaciones.objects.filter(
+        usuario_destino_id__in=company_user_pks
+    ).select_related('tipo_notificacion').order_by('-fecha_envio')[:5]
+    
+    recent_applicants_qs = Postulacion.objects.filter(
+        oferta__empresa=company
+    ).select_related('candidato', 'oferta').order_by('-fecha_postulacion')[:5]
+    
+    applicant_user_ids = [p.candidato.id_candidato_id for p in recent_applicants_qs]
+    applicant_users = User.objects.using('default').filter(pk__in=applicant_user_ids)
+    applicant_user_map = {user.pk: user.get_full_name() for user in applicant_users}
+
+    recent_applicants = []
+    for p in recent_applicants_qs:
+        recent_applicants.append({
+            'full_name': applicant_user_map.get(p.candidato.id_candidato_id, 'Candidato Desconocido'),
+            'job_title': p.oferta.titulo_puesto,
+            'date': p.fecha_postulacion,
+            'offer_id': p.oferta.id_oferta
+        })
+    # --- End Dashboard Feeds ---
+
     context = {
         'company': company,
         'company_logo_url': logo_url,
@@ -1511,6 +1533,9 @@ def company_index(request):
         'total_users_count': total_users_count,
         'calendar_context': calendar_context,
         'upcoming_interviews': upcoming_interviews_list,
+        'upcoming_interviews_count': upcoming_interviews_qs.count(),                                             
+        'recent_activities': recent_activities,                                                                  
+        'recent_applicants': recent_applicants,
         'filter_values': {
             'q': q_filter or '',
             'categoria': categoria_filter or '',
@@ -1520,7 +1545,6 @@ def company_index(request):
     return render(request, 'company/company_index.html', context)
 
 from django.views.decorators.csrf import ensure_csrf_cookie
-
 @login_required
 @ensure_csrf_cookie
 def view_offer_applicants(request, offer_id):
@@ -2033,7 +2057,7 @@ def delete_interview(request, interview_id):
 
 from django.db.models.functions import ExtractMonth
 @login_required
-def postulaciones(request:HttpRequest):
+def postulaciones(request: HttpRequest):
     #postulacion
     today = timezone.now().date()
     week_start = today - timedelta(days=today.weekday())
@@ -2491,7 +2515,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         errors['personalData.linkedin_link'] = 'El link de LinkedIn no puede exceder los 255 caracteres.'
     # Basic URL validation for linkedin_link
     if personal_data.get('linkedin_link') and not (personal_data.get('linkedin_link').startswith('http://') or personal_data.get('linkedin_link').startswith('https://')):
-        errors['personalData.linkedin_link'] = 'El link de LinkedIn debe ser una URL válida (empezar con http:// o https://).' 
+        errors['personalData.linkedin_link'] = 'El link de LinkedIn debe ser una URL válida (empezar con http:// o https://).'
 
 
     # Validate ObjetivoProfesionalCV fields
@@ -2684,7 +2708,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         if proj_data.get('link') and len(proj_data.get('link', '')) > 255:
             errors[prefix + 'link'] = 'El enlace no puede exceder los 255 caracteres.'
         elif proj_data.get('link') and not (proj_data.get('link').startswith('http://') or proj_data.get('link').startswith('https://')):
-            errors[prefix + 'link'] = 'El enlace debe ser una URL válida (empezar con http:// o https://).' 
+            errors[prefix + 'link'] = 'El enlace debe ser una URL válida (empezar con http:// o https://).'
 
     # Validate VoluntariadoCV fields
     for i, vol_data in enumerate(cv_data.get('volunteering', [])):
@@ -2718,7 +2742,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
             try:
                 datetime.strptime(vol_data['start_date'], '%Y-%m-%d').date()
             except ValueError:
-                errors[prefix + 'start_date'] = 'Formato de fecha de inicio inválido (YYYY-MM-DD).' 
+                errors[prefix + 'start_date'] = 'Formato de fecha de inicio inválido (YYYY-MM-DD).'
 
         if not (vol_data.get('current') == 'on' or vol_data.get('current') == True):
             if not vol_data.get('end_date'):
@@ -2766,7 +2790,7 @@ def _validate_cv_data(cv_name, cargo_asociado, cv_data):
         if ref_data.get('linkedin_url') and len(ref_data.get('linkedin_url', '')) > 255:
             errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente no puede exceder los 255 caracteres.'
         elif ref_data.get('linkedin_url') and not (ref_data.get('linkedin_url').startswith('http://') or ref_data.get('linkedin_url').startswith('https://')):
-            errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente debe ser una URL válida (empezar con http:// o https://).' 
+            errors[prefix + 'linkedin_url'] = 'El link de LinkedIn del referente debe ser una URL válida (empezar con http:// o https://).'
 
     return errors
 
@@ -3342,6 +3366,17 @@ def job_offers(request: HttpRequest):
 
 def job_details(request: HttpRequest,id_oferta:int):
     oferta=get_object_or_404(OfertaLaboral,pk=int(id_oferta))
+
+    # --- Track view count ---
+    viewed_offers = request.session.get('viewed_offers', [])
+    if id_oferta not in viewed_offers:
+        oferta.vistas = F('vistas') + 1
+        oferta.save(update_fields=['vistas'])
+        oferta.refresh_from_db()
+        viewed_offers.append(id_oferta)
+        request.session['viewed_offers'] = viewed_offers
+    # --- End Track view count ---
+
     skills = json.loads(oferta.habilidades_clave)
     skills = [s["value"] for s in skills]
     boons= json.loads(oferta.beneficios)
@@ -3595,3 +3630,89 @@ def upload_cv_from_modal(request):
             return JsonResponse({'success': False, 'message': f'Error al subir el CV a S3: {str(e)}'}, status=500)
     else:
         return JsonResponse({'success': False, 'errors': form.errors.get_json_data()}, status=400)
+# Helper function to create notifications
+def crear_notificacion(usuario_destino_obj, tipo_notificacion_nombre, mensaje_str, link_relacionado_str=None, motivo_str=None):
+    # Get or create TipoNotificacion
+    tipo_notificacion_obj, created = TipoNotificacion.objects.get_or_create(
+        nombre_tipo=tipo_notificacion_nombre,
+        defaults={'descripcion': tipo_notificacion_nombre} # Default description
+    )
+
+    # Create Notificaciones object
+    notificacion_base = Notificaciones.objects.create(
+        usuario_destino=usuario_destino_obj,
+        tipo_notificacion=tipo_notificacion_obj,
+        mensaje=mensaje_str,
+        link_relacionado=link_relacionado_str,
+    )
+
+    # Create specialized notification based on user type
+    # Assuming usuario_destino_obj is a User instance
+    try:
+        # Check if the user is a Candidate
+        candidato_profile = Candidato.objects.filter(id_candidato=usuario_destino_obj).first()
+        if candidato_profile:
+            NotificacionCandidato.objects.create(
+                id_notificacion_candidato=notificacion_base,
+                motivo=motivo_str if motivo_str else tipo_notificacion_nombre
+            )
+            return
+    except Candidato.DoesNotExist:
+        pass # Not a candidate, check for employer
+
+    try:
+        # Check if the user is an Employer (EmpresaUsuario)
+        empresa_profile = EmpresaUsuario.objects.filter(id_empresa_user=usuario_destino_obj).first()
+        if empresa_profile:
+            NotificacionEmpresa.objects.create(
+                id_notificacion_empresa=notificacion_base,
+                motivo=motivo_str if motivo_str else tipo_notificacion_nombre
+            )
+            return
+    except EmpresaUsuario.DoesNotExist:
+        pass # Not an employer
+    
+    # If no specialized notification is created, log a warning or handle as needed
+    print(f"WARNING: No specialized notification created for user {usuario_destino_obj.username}")
+@login_required
+@require_POST
+def mark_all_as_read(request):
+    try:
+        registro_usuario = RegistroUsuarios.objects.get(id_registro=request.user)
+
+        all_notifications_qs = Notificaciones.objects.filter(
+            usuario_destino=request.user,
+            leida=False
+        )
+
+        # Filter by specialized notification types based on user's role
+        if registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'candidato':
+            notifications_to_mark = all_notifications_qs.filter(
+                notificacioncandidato__isnull=False
+            )
+        elif registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'empresa':
+            notifications_to_mark = all_notifications_qs.filter(
+                notificacionempresa__isnull=False
+            )
+        else:
+            notifications_to_mark = all_notifications_qs.none()
+        
+        count = notifications_to_mark.update(leida=True)
+        messages.success(request, f"{count} notificaciones han sido marcadas como leídas.")
+    except RegistroUsuarios.DoesNotExist:
+        messages.error(request, "No se encontró tu perfil de registro.")
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error al marcar las notificaciones: {e}")
+    
+    # Redirect to the previous page or a fallback
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+@login_required
+@require_POST
+def delete_all_notifications(request):
+    try:
+        Notificaciones.objects.filter(usuario_destino=request.user).delete()
+        messages.success(request, "Todas tus notificaciones han sido eliminadas.")
+    except Exception as e:
+        messages.error(request, f"Ocurrió un error al eliminar las notificaciones: {e}")
+    
+    return redirect(request.META.get('HTTP_REFERER', '/'))

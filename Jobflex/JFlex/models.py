@@ -178,6 +178,7 @@ class OfertaLaboral(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
     jornada = models.ForeignKey(Jornada, on_delete=models.SET_NULL, null=True)
     modalidad = models.ForeignKey(Modalidad, on_delete=models.SET_NULL, null=True)
+    vistas = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.titulo_puesto

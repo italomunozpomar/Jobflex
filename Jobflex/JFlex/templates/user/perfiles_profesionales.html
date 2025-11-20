@@ -476,32 +476,7 @@
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Dropdown menus logic
-        function setupDropdown(buttonId, menuId) {
-            const button = document.getElementById(buttonId);
-            const menu = document.getElementById(menuId);
-            if (button && menu) {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    menu.classList.toggle('hidden');
-                });
-            }
-        }
-        setupDropdown('user-menu-button', 'user-menu');
-        setupDropdown('download-cv-button', 'download-cv-menu');
-
-        window.addEventListener('click', function(e){
-            ['user-menu', 'download-cv-menu'].forEach(menuId => {
-                const menu = document.getElementById(menuId);
-                const button = document.getElementById(menuId.replace('-menu', '-button'));
-                if (menu && !menu.classList.contains('hidden') && button && !button.contains(e.target)){
-                    menu.classList.add('hidden');
-                }
-            });
-        });
-
         
-
         // Details Button Logic
         document.querySelectorAll('.details-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
