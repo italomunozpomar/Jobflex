@@ -1,0 +1,26 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Tu Código de Seguridad de JobFlex{% endblock %}
+
+{% block preheader %}Tu código de seguridad es {{ code }}.{% endblock %}
+
+{% block content %}
+    <h2>Tu Código de Seguridad</h2>
+    <p>Hola,</p>
+    <p>Estás realizando una acción que requiere verificación. Usa el siguiente código para confirmar tu identidad y completar la acción:</p>
+    
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <div style="background-color: #f4f5f7; border-radius: 6px; padding: 16px; text-align: center;">
+                    <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; color: #312F32; margin: 0;">
+                        {{ code }}
+                    </p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <p>Este código es válido por un tiempo limitado. Si no solicitaste este código, es posible que alguien esté intentando acceder a tu cuenta. Te recomendamos cambiar tu contraseña.</p>
+    <p>— El equipo de JobFlex</p>
+{% endblock %}

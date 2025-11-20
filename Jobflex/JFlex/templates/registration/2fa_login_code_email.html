@@ -1,0 +1,26 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Tu Código de Inicio de Sesión de JobFlex{% endblock %}
+
+{% block preheader %}Tu código para iniciar sesión es {{ code }}.{% endblock %}
+
+{% block content %}
+    <h2>Tu Código de Inicio de Sesión</h2>
+    <p>Hola,</p>
+    <p>Para completar tu inicio de sesión, usa el siguiente código:</p>
+    
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <div style="background-color: #f4f5f7; border-radius: 6px; padding: 16px; text-align: center;">
+                    <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; color: #312F32; margin: 0;">
+                        {{ code }}
+                    </p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <p>Este código es válido por 5 minutos. Si no intentaste iniciar sesión, puedes ignorar este correo, pero te recomendamos revisar la seguridad de tu cuenta.</p>
+    <p>— El equipo de JobFlex</p>
+{% endblock %}

@@ -521,11 +521,11 @@
                 {% if missing_profile_fields %}
                 <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
                     <p class="font-bold">¡Casi listo!</p>
-                    <p>Completa la siguiente información para mejorar tus posibilidades:</p>
+                    <p>Completa la siguiente información para mejorar tus posibilidades / seguridad:</p>
                     <ul class="list-disc list-inside mt-2 text-sm">
                         {% for field in missing_profile_fields %}<li>{{ field }}</li>{% endfor %}
                     </ul>
-                    <a href="{% url 'profile' %}" class="text-sm text-yellow-800 font-semibold hover:underline mt-2 inline-block">Ir a mi perfil para completar</a>
+                    <a href="{% url 'settings' %}" class="text-sm text-yellow-800 font-semibold hover:underline mt-2 inline-block">Ir a configuraciones para completar..</a>
                 </div>
                 {% else %}
                 <div class="text-center p-4">

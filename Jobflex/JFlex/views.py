@@ -43,6 +43,16 @@ class TwoFactorForm(forms.Form):
     code = forms.CharField(label="Código de Verificación", max_length=6, required=True)
 from django.http import HttpRequest, JsonResponse, HttpResponse
 
+def send_verification_email(user_email, code, subject_template, html_template_path):
+    """
+    A helper function to send verification-style emails.
+    """
+    mail_subject = subject_template.format(code=code)
+    message = render_to_string(html_template_path, {'code': code})
+    email = EmailMessage(mail_subject, message, to=[user_email])
+    email.content_subtype = "html" # Ensure it sends as HTML
+    email.send()
+
 @transaction.atomic # Usar una transacción para asegurar la integridad de los datos
 def signup(request):
     if request.method == 'POST':
@@ -78,11 +88,12 @@ def signup(request):
             request.session['verification_code'] = code
             request.session['user_pk_for_verification'] = user.pk
 
-            mail_subject = f'Tu código de activación para JobFlex es {code}'
-            message = render_to_string('registration/code_email.html', {'code': code})
-            to_email = form.cleaned_data.get('email')
-            email = EmailMessage(mail_subject, message, to=[to_email])
-            email.send()
+            send_verification_email(
+                form.cleaned_data.get('email'),
+                code,
+                'Tu código de activación para JobFlex es {code}',
+                'registration/code_email.html'
+            )
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'redirect_url': reverse('verify_code')})
@@ -183,12 +194,11 @@ def toggle_2fa(request):
         request.session['2fa_change_action'] = action
         request.session['2fa_change_expiry'] = (timezone.now() + timedelta(minutes=10)).isoformat()
 
-        send_mail(
-            f'Código para cambiar tu configuración 2FA: {code}',
-            f'Usa este código para confirmar tu cambio de seguridad 2FA: {code}\nEste código expira en 10 minutos.',
-            'noreply@jobflex.com',
-            [request.user.email],
-            fail_silently=False,
+        send_verification_email(
+            request.user.email,
+            code,
+            'Tu Código de Seguridad de JobFlex',
+            'registration/2fa_code_email.html'
         )
         messages.info(request, "Te hemos enviado un código al correo para confirmar el cambio.")
         return redirect('verify_2fa_change')
@@ -3136,12 +3146,11 @@ class CustomLoginView(auth_views.LoginView):
                 self.request.session['2fa_code'] = code
                 self.request.session['2fa_code_expiry'] = (timezone.now() + timedelta(minutes=5)).isoformat()
 
-                send_mail(
-                    f'Tu código de verificación para JobFlex es {code}',
-                    f'Usa este código para completar tu inicio de sesión: {code}\nEste código expira en 5 minutos.',
-                    'noreply@jobflex.com',
-                    [user.email],
-                    fail_silently=False,
+                send_verification_email(
+                    user.email,
+                    code,
+                    f'Tu código de inicio de sesión para JobFlex es {code}',
+                    'registration/2fa_login_code_email.html'
                 )
                 
                 return redirect('verify_2fa')
