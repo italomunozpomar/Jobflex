@@ -96,7 +96,7 @@
         <aside id="job-list-aside" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 flex flex-col">
             <div class="p-4 border-b border-gray-200 flex-shrink-0">
                 <h2 class="text-lg font-bold text-dark">Resultados de Búsqueda</h2>
-                <p class="text-sm text-secondary">12 ofertas encontradas</p>
+                <p class="text-sm text-secondary">{{ page_obj.paginator.count }} ofertas encontradas</p>
             </div>
             <div class="job-list-container overflow-y-auto flex-grow">
 							{% include "offers/partials/_job_paginator.html" %}
@@ -214,12 +214,12 @@
                 })
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text();
+                    return response.json();
                 })
                 .then(data => {
                     const jobListContainer = document.querySelector(".job-list-container");
                     if (jobListContainer) {
-                        jobListContainer.innerHTML = data;
+                        jobListContainer.innerHTML = data.html;
                     }
                     if (push) {
                         history.pushState({ url: url }, "", url);

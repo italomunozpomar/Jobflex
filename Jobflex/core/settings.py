@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'storages',
+    'googleapiclient',
     'django.contrib.sitemaps'
 ]
 
@@ -101,6 +102,14 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+# Google Calendar API credentials
+GOOGLE_CALENDAR_OAUTH_CLIENT_ID = env('GOOGLE_CALENDAR_OAUTH_CLIENT_ID', default=None)
+GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET = env('GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET', default=None)
+
+# The full callback URI needs to be defined here to be used in the auth flow
+# NOTE: This will need to be changed for production
+GOOGLE_CALENDAR_REDIRECT_URI = 'http://127.0.0.1:8000/google/oauth2callback/'
 
 ACCOUNT_FORMS = {
     'login': 'JFlex.forms.CustomLoginForm',
@@ -133,6 +142,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 # 'JFlex.context_processors.company_context',
+                'JFlex.context_processors.notifications_processor',
             ],
         },
     },
