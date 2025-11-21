@@ -15,11 +15,11 @@
             </div>
         </div>
         
-        <div class="p-6">
-            <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between sm:space-x-5 -mt-20 relative z-20">
+        <div class="p-6 pt-0"> <!-- Adjusted padding here -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between sm:space-x-5 relative z-20">
                 <div class="flex items-center space-x-5">
                     <!-- Logo de la Empresa -->
-                    <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0">
+                    <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0 -mt-20">
                         <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
                     </div>
                     
