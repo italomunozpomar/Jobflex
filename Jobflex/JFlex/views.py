@@ -1215,35 +1215,44 @@ def company_index(request):
             return redirect('company_index')
 
         elif action == 'update_company_data' and is_admin:
-            company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company)
+            company_data_form = EmpresaDataForm(request.POST, request.FILES, instance=company, prefix="modal")
             if company_data_form.is_valid():
-                # Save the form instance without committing to get the updated company object
-                # but without saving the image fields yet.
+                # Guardamos los campos del modelo que están en el form (todos menos las imágenes)
                 updated_company = company_data_form.save(commit=False)
 
-                # Handle image uploads to S3
-                if 'imagen_perfil' in request.FILES:
-                    file = request.FILES['imagen_perfil']
+                # --- Manejo Manual de las Imágenes ---
+
+                # 1. Manejar Imagen de Perfil
+                profile_image_data = company_data_form.cleaned_data.get('imagen_perfil')
+                if profile_image_data is False:
+                    # `False` significa que el usuario marcó la casilla "limpiar".
+                    updated_company.imagen_perfil = None
+                elif profile_image_data:
+                    # Un nuevo archivo fue subido
+                    file = profile_image_data
                     file_ext = os.path.splitext(file.name)[1].lower()
                     filename = f"logo_{uuid.uuid4().hex[:8]}{file_ext}"
                     s3_key = build_company_asset_key(updated_company, 'Logo', filename)
                     file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
                     updated_company.imagen_perfil = file_url
-                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
-                
-                if 'imagen_portada' in request.FILES:
-                    file = request.FILES['imagen_portada']
+                # Si `profile_image_data` es `None`, el usuario no tocó este campo, por lo que no hacemos nada y se preserva la imagen existente.
+
+                # 2. Manejar Imagen de Portada
+                banner_image_data = company_data_form.cleaned_data.get('imagen_portada')
+                if banner_image_data is False:
+                    updated_company.imagen_portada = None
+                elif banner_image_data:
+                    file = banner_image_data
                     file_ext = os.path.splitext(file.name)[1].lower()
                     filename = f"banner_{uuid.uuid4().hex[:8]}{file_ext}"
                     s3_key = build_company_asset_key(updated_company, 'Banner', filename)
                     file_url = upload_to_s3(file, django_settings.AWS_STORAGE_BUCKET_NAME, s3_key)
                     updated_company.imagen_portada = file_url
-                # If no new file is uploaded, the existing value from 'instance=company' will be retained.
-                
-                # Now save the updated company object to the database
+
+                # Guardar la instancia con todos los cambios aplicados
                 updated_company.save()
+                
                 messages.success(request, "Los datos de la empresa han sido actualizados.")
-                company = updated_company # Update the company object in the view's scope
                 return redirect('company_index')
             else:
                 print("DEBUG: EmpresaDataForm errors ->", company_data_form.errors)
