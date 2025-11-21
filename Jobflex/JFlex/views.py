@@ -635,6 +635,14 @@ def user_index(request):
                 cv_usage_labels = ['No hay CVs utilizados']
                 cv_usage_data = [1] # A small placeholder value for the chart to render
 
+            # Determine if any filters are active for the search form
+            q_filter = request.GET.get('q')
+            region_filter = request.GET.get('region')
+            ciudad_filter = request.GET.get('ciudad')
+            mode_filter = request.GET.get('mode')
+            time_filter = request.GET.get('time')
+            filters_active = any([q_filter, region_filter, ciudad_filter, mode_filter, time_filter])
+
             context = {
                 'show_modal': show_modal, 
                 'form': completar_perfil_form,
@@ -654,6 +662,7 @@ def user_index(request):
                 'weekly_submission_data': json.dumps(weekly_submission_data),
                 'cv_usage_labels': json.dumps(cv_usage_labels),
                 'cv_usage_data': json.dumps(cv_usage_data),
+                'filters_active': filters_active, # Add filters_active to context
             }
             return render(request, 'user/user_index.html', context)
 

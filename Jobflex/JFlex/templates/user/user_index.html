@@ -964,15 +964,21 @@
             // Dependent Dropdowns for Job Search Form
             const filterToggleBtn = document.getElementById('filter-toggle-btn');
             const filterMenu = document.getElementById('filter-menu');
+            const filtersActiveFromDjango = {{ filters_active|yesno:"true,false" }}; // New variable from Django
 
             if (filterToggleBtn && filterMenu) {
-                filterToggleBtn.addEventListener('click', () => {
-                    const isHidden = filterMenu.classList.toggle('hidden');
-                    localStorage.setItem('filterMenuOpen', isHidden ? 'false' : 'true');
-                });
-                if (localStorage.getItem('filterMenuOpen') === 'true') {
+                // Determine initial state
+                let shouldBeOpen = filtersActiveFromDjango || (localStorage.getItem('filterMenuOpen') === 'true');
+                if (shouldBeOpen) {
                     filterMenu.classList.remove('hidden');
+                } else {
+                    filterMenu.classList.add('hidden');
                 }
+
+                filterToggleBtn.addEventListener('click', () => {
+                    const isOpen = filterMenu.classList.toggle('hidden'); // This toggles the hidden class
+                    localStorage.setItem('filterMenuOpen', isOpen ? 'false' : 'true'); // Save the *new* state
+                });
             }
             
             const searchRegionSelect = document.getElementById('search_region');
