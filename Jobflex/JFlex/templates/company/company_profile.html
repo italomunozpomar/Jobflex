@@ -15,7 +15,7 @@
             </div>
         </div>
         
-        <div class="p-6 pt-0"> <!-- Adjusted padding here -->
+        <div class="p-6 pt-0">
             <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between sm:space-x-5 relative z-20">
                 <div class="flex items-center space-x-5">
                     <!-- Logo de la Empresa -->
@@ -25,14 +25,16 @@
                     
                     <!-- Nombre, Tagline e Industria -->
                     <div class="mt-4 sm:mt-0 text-center sm:text-left">
-                        <h1 class="text-3xl font-bold text-dark">{{ empresa.nombre_comercial }}</h1>
+                        <h1 class="text-4xl font-extrabold text-dark tracking-tight">{{ empresa.nombre_comercial }}</h1>
                         {% if empresa.razon_social %}
-                            <p class="text-lg text-secondary mt-1">{{ empresa.razon_social }}</p>
+                            <p class="text-xl text-secondary font-light mt-1">{{ empresa.razon_social }}</p>
                         {% endif %}
                         {% if empresa.rubro %}
-                            <p class="text-md text-secondary mt-1">
-                                {{ empresa.rubro.nombre_rubro }}
-                            </p>
+                            <div class="mt-2">
+                                <span class="inline-block bg-secondary text-white text-sm font-semibold px-3 py-1 rounded-full">
+                                    {{ empresa.rubro.nombre_rubro }}
+                                </span>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -49,7 +51,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    <button data-modal-toggle="company-data-modal" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">
+                    <button data-modal-toggle="company-data-modal" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-all text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                         Editar Perfil
                     </button>
                 </div>
