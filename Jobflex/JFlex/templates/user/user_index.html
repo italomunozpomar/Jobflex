@@ -357,7 +357,7 @@
                 <div class="space-y-8">
                     <!-- Siguientes Pasos -->
                     <div>
-                         <h3 class="text-xl font-bold text-dark mb-4">Siguientes Pasos</h3>
+                         <h3 class="text-xl font-bold text-dark mb-4">Accesos Rapidos</h3>
                          <div class="space-y-3">
                             <a href="{% url 'settings' %}" class="block bg-primary/10 p-4 rounded-lg hover:bg-primary/20 transition-colors">
                                 <div class="flex items-center">
@@ -616,6 +616,7 @@
         <!-- Sección 4: Ofertas Destacadas -->
         <section class="bg-white p-8 rounded-lg shadow-md">
             <h3 class="text-2xl font-bold text-dark mb-4">Ofertas Destacadas para ti</h3>
+            {% if recommended_offers %}
             <div class="relative px-12">
                 <div class="swiper-container job-carousel overflow-hidden">
                     <div class="swiper-wrapper pb-12">
@@ -635,14 +636,18 @@
                                 <div class="mt-auto"><a href="{% url 'job_offers' %}?oferta={{ offer.id }}" class="w-full text-center bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all block">Ver Oferta</a></div>
                             </div>
                         </div>
-                        {% empty %}
-                        <div class="swiper-slide"><p class="text-secondary text-center py-4">No se encontraron ofertas recomendadas para ti en este momento.</p></div>
                         {% endfor %}
                     </div>
                     <div class="swiper-pagination"></div>
                     <div class="swiper-button-next text-primary"></div><div class="swiper-button-prev text-primary"></div>
                 </div>
             </div>
+            {% else %}
+            <div class="text-center py-8">
+                <p class="text-secondary text-lg">No se encontraron ofertas recomendadas para ti en este momento.</p>
+                <p class="text-gray-500 text-sm mt-2">Completa tu perfil y sube tu CV para obtener las mejores recomendaciones.</p>
+            </div>
+            {% endif %}
         </section>
         
         <!-- Sección 5: Postulaciones Recientes -->

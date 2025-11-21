@@ -258,9 +258,16 @@
                     <!-- Gráfico de CVs más usados -->
                     <div class="border border-gray-200 rounded-lg p-4">
                         <h3 class="text-xl font-bold text-dark mb-4 text-center">CVs más Usados</h3>
+                        {% if cv_usage_labels %}
                         <div class="max-w-xs mx-auto">
                             <canvas id="cvPieChart"></canvas>
                         </div>
+                        {% else %}
+                        <div class="text-center py-8 text-secondary">
+                            <p>Aún no hay datos de uso de CVs.</p>
+                            <p class="text-sm">Postula a una oferta para ver tus estadísticas.</p>
+                        </div>
+                        {% endif %}
                     </div>
                     <!-- Gráfico de envíos por día -->
                     <div class="border border-gray-200 rounded-lg p-4">

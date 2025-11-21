@@ -420,38 +420,43 @@ def user_index(request):
             recommended_offers = []
             latest_cv = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).order_by('-id_cv_user').first()
             
-            offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad')
-
             if latest_cv and latest_cv.cargo_asociado:
+                offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad')
                 keywords = latest_cv.cargo_asociado.split()
                 q_objects = Q()
                 for keyword in keywords:
                     q_objects |= (Q(titulo_puesto__icontains=keyword) | Q(descripcion_puesto__icontains=keyword))
                 
-                if candidato.ciudad:
-                    specific_offers_qs = offers_query.filter(q_objects, ciudad=candidato.ciudad).order_by('-fecha_publicacion')[:5]
-                    if specific_offers_qs.exists():
-                        offers_query = specific_offers_qs
-                    elif candidato.ciudad.region:
-                        offers_query = offers_query.filter(q_objects, ciudad__region=candidato.ciudad.region).order_by('-fecha_publicacion')[:5]
-                    else:
-                        offers_query = offers_query.filter(q_objects).order_by('-fecha_publicacion')[:5]
-                else:
-                    offers_query = offers_query.filter(q_objects).order_by('-fecha_publicacion')[:5]
-            
-            if not offers_query.exists():
-                offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad').order_by('-fecha_publicacion')[:5]
+                # Apply keyword filter first
+                base_filtered_offers = offers_query.filter(q_objects)
 
-            for offer in offers_query[:5]:
-                recommended_offers.append({
-                    'id': offer.id_oferta,
-                    'title': offer.titulo_puesto,
-                    'company': offer.empresa.nombre_comercial,
-                    'location': offer.ciudad.nombre if offer.ciudad else 'N/A',
-                    'modality': offer.modalidad.tipo_modalidad if offer.modalidad else 'N/A',
-                    'jornada': offer.jornada.tipo_jornada if offer.jornada else 'N/A',
-                    'company_logo': offer.empresa.imagen_perfil
-                })
+                # Now try to narrow down by location
+                final_offers_qs = None
+                if candidato.ciudad:
+                    # Try city first
+                    city_offers = base_filtered_offers.filter(ciudad=candidato.ciudad).order_by('-fecha_publicacion')[:5]
+                    if city_offers.exists():
+                        final_offers_qs = city_offers
+                    # Then try region
+                    elif candidato.ciudad.region:
+                        region_offers = base_filtered_offers.filter(ciudad__region=candidato.ciudad.region).order_by('-fecha_publicacion')[:5]
+                        if region_offers.exists():
+                            final_offers_qs = region_offers
+
+                # Fallback to keyword-only search if no location match
+                if not final_offers_qs:
+                    final_offers_qs = base_filtered_offers.order_by('-fecha_publicacion')[:5]
+
+                for offer in final_offers_qs:
+                    recommended_offers.append({
+                        'id': offer.id_oferta,
+                        'title': offer.titulo_puesto,
+                        'company': offer.empresa.nombre_comercial,
+                        'location': offer.ciudad.nombre if offer.ciudad else 'N/A',
+                        'modality': offer.modalidad.tipo_modalidad if offer.modalidad else 'N/A',
+                        'jornada': offer.jornada.tipo_jornada if offer.jornada else 'N/A',
+                        'company_logo': offer.empresa.imagen_perfil
+                    })
 
             # --- Profile Completion ---
             profile_fields = [
@@ -880,10 +885,6 @@ def Profile(request):
 
     cv_usage_labels = [item['cv_postulado__nombre_cv'] for item in cv_usage_counts]
     cv_usage_data = [item['count'] for item in cv_usage_counts]
-    
-    if not cv_usage_labels:
-        cv_usage_labels = ['No hay CVs utilizados']
-        cv_usage_data = [1] # A small placeholder value for the chart to render
 
     # Lógica para determinar si se muestra el modal
     show_profile_modal = not candidato.rut_candidato or not candidato.telefono
@@ -3532,7 +3533,6 @@ def company_offer_analytics(request, offer_id):
         'offer_avg_time_to_hire_days': offer_avg_time_to_hire_days,
         'peak_application_times_data': peak_times_data,
     }
-
     return JsonResponse(response_data)
 
 def job_offers(request: HttpRequest):

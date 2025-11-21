@@ -500,6 +500,36 @@
                     });
                 }
             }
+            
+            // --- Contact Widget Logic ---
+            const contactWidgetContainer = document.getElementById('contact-widget-container');
+            if (contactWidgetContainer) {
+                const fab = document.getElementById('contact-fab');
+                const widget = document.getElementById('contact-widget');
+                const openIcon = document.getElementById('fab-open-icon');
+                const closeIcon = document.getElementById('fab-close-icon');
+
+                fab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const isHidden = widget.classList.contains('hidden');
+
+                    if (isHidden) {
+                        widget.classList.remove('hidden');
+                        setTimeout(() => {
+                            widget.classList.remove('opacity-0', 'scale-95');
+                        }, 10);
+                        openIcon.classList.add('hidden');
+                        closeIcon.classList.remove('hidden');
+                    } else {
+                        widget.classList.add('opacity-0', 'scale-95');
+                        setTimeout(() => {
+                            widget.classList.add('hidden');
+                        }, 300);
+                        openIcon.classList.remove('hidden');
+                        closeIcon.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
     {% endblock %}
@@ -511,36 +541,34 @@
     
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
-    <!-- Botón de Soporte Flotante -->
-    <style>
-        .support-button {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background-color: #8CA01A; /* Color primario del tema */
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            z-index: 1000;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .support-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-        }
-        .support-button-img {
-            width: 32px;
-            height: 32px;
-        }
-    </style>
-    <a href="#" class="support-button" title="Soporte">
-        <img src="https://jobflex-archives.s3.sa-east-1.amazonaws.com/imgs/message-54.png" alt="Soporte" class="support-button-img">
-    </a>
+    <!-- Contact Widget -->
+    <div id="contact-widget-container" class="hidden md:block fixed bottom-8 right-8 z-[1000]">
+        <!-- Contact Form Panel -->
+        <div id="contact-widget" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-lg shadow-2xl p-4 transition-all duration-300 ease-in-out transform-gpu origin-bottom-right opacity-0 scale-95">
+            <h3 class="text-lg font-bold text-dark mb-4">Ponte en contacto con nosotros</h3>
+            <form action="#" method="POST" class="space-y-3">
+                <div>
+                    <label for="contact-widget-name" class="sr-only">Nombre</label>
+                    <input type="text" id="contact-widget-name" placeholder="Nombre" class="w-full text-sm p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label for="contact-widget-email" class="sr-only">Email</label>
+                    <input type="email" id="contact-widget-email" placeholder="Email" class="w-full text-sm p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label for="contact-widget-message" class="sr-only">Mensaje</label>
+                    <textarea id="contact-widget-message" rows="4" placeholder="Escribe tu mensaje..." class="w-full text-sm p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90">Enviar</button>
+            </form>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button id="contact-fab" class="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-transform transform hover:scale-110" title="Soporte">
+            <img id="fab-open-icon" src="https://jobflex-archives.s3.sa-east-1.amazonaws.com/imgs/message-54.png" alt="Soporte" class="w-8 h-8">
+            <svg id="fab-close-icon" class="w-8 h-8 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
 
 </body>
 </html>
-

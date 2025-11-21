@@ -571,17 +571,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- NEW GENERAL ANALYTICS CHARTS ---
     const generalFunnelData = JSON.parse('{{ general_hiring_funnel_data|safe }}');
-    const funnelLabels = ['Enviada', 'En Proceso', 'Entrevista', 'Aceptada', 'Rechazada'];
-    const funnelCounts = [
-        generalFunnelData['enviada'],
-        generalFunnelData['en proceso'],
-        generalFunnelData['entrevista'],
-        generalFunnelData['aceptada'],
-        generalFunnelData['rechazada']
-    ];
-
     const generalHiringFunnelChartCanvas = document.getElementById('generalHiringFunnelChart');
-    if (generalHiringFunnelChartCanvas) {
+
+    if (generalHiringFunnelChartCanvas && generalFunnelData) {
+        const funnelLabels = ['Enviada', 'En Proceso', 'Entrevista', 'Aceptada', 'Rechazada'];
+        const funnelCounts = [
+            generalFunnelData['enviada'],
+            generalFunnelData['en proceso'],
+            generalFunnelData['entrevista'],
+            generalFunnelData['aceptada'],
+            generalFunnelData['rechazada']
+        ];
         new Chart(generalHiringFunnelChartCanvas, {
             type: 'bar',
             data: {
@@ -607,21 +607,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }]
             },
             options: {
-                indexAxis: 'y', // Make it a horizontal bar chart
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: false,
-                    }
+                    legend: { display: false },
+                    title: { display: false }
                 },
                 scales: {
-                    x: {
-                        beginAtZero: true
-                    }
+                    x: { beginAtZero: true }
                 }
             }
         });
@@ -636,7 +630,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Número de Postulantes',
                     data: JSON.parse('{{ applicant_age_data|safe }}'),
-                    backgroundColor: 'rgba(140, 160, 26, 0.7)', // Primary color
+                    backgroundColor: 'rgba(140, 160, 26, 0.7)',
                     borderColor: 'rgba(140, 160, 26, 1)',
                     borderWidth: 1
                 }]
@@ -645,17 +639,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: false,
-                    }
+                    legend: { display: false },
+                    title: { display: false }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });
@@ -671,30 +659,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     label: 'Postulantes por Región',
                     data: JSON.parse('{{ applicant_region_data|safe }}'),
                     backgroundColor: [
-                        'rgba(140, 160, 26, 0.7)',
-                        'rgba(26, 140, 160, 0.7)',
-                        'rgba(216, 217, 221, 0.7)',
-                        'rgba(245, 158, 11, 0.7)',
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(255, 205, 86, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(201, 203, 207, 0.7)'
+                        'rgba(140, 160, 26, 0.7)', 'rgba(26, 140, 160, 0.7)', 'rgba(216, 217, 221, 0.7)',
+                        'rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 99, 132, 0.7)', 'rgba(255, 205, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                        'rgba(54, 162, 235, 0.7)', 'rgba(201, 203, 207, 0.7)'
                     ],
                     borderColor: [
-                        'rgba(140, 160, 26, 1)',
-                        'rgba(26, 140, 160, 1)',
-                        'rgba(216, 217, 221, 1)',
-                        'rgba(245, 158, 11, 1)',
-                        'rgba(59, 130, 246, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 205, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(201, 203, 207, 1)'
+                        'rgba(140, 160, 26, 1)', 'rgba(26, 140, 160, 1)', 'rgba(216, 217, 221, 1)',
+                        'rgba(245, 158, 11, 1)', 'rgba(59, 130, 246, 1)', 'rgba(153, 102, 255, 1)',
+                        'rgba(255, 99, 132, 1)', 'rgba(255, 205, 86, 1)', 'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)', 'rgba(201, 203, 207, 1)'
                     ],
                     borderWidth: 1
                 }]
@@ -703,284 +677,211 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: false,
-                    }
+                    legend: { position: 'top' },
+                    title: { display: false }
                 }
             }
         });
     }
 
     // --- Populate General Metrics Cards ---
-    document.getElementById('conversion-rate-card').innerText = `{{ general_conversion_rate }}%`;
-    const avgTimeToHire = {{ avg_time_to_hire_days|default_if_none:"null" }};
-    if (avgTimeToHire !== null) {
-        document.getElementById('time-to-hire-card').innerText = `${avgTimeToHire} días`;
-    } else {
-        document.getElementById('time-to-hire-card').innerText = 'N/A';
+    const conversionRateCard = document.getElementById('conversion-rate-card');
+    if (conversionRateCard) {
+        conversionRateCard.innerText = `{{ general_conversion_rate }}%`;
     }
-    document.getElementById('unique_applicants_count').innerText = '{{ unique_applicants_count }}';
+    
+    const timeToHireCard = document.getElementById('time-to-hire-card');
+    if (timeToHireCard) {
+        const avgTimeToHire = {{ avg_time_to_hire_days|default_if_none:"null" }};
+        if (avgTimeToHire !== null) {
+            timeToHireCard.innerText = `${avgTimeToHire} días`;
+        } else {
+            timeToHireCard.innerText = 'N/A';
+        }
+    }
+
+    const uniqueApplicantsCount = document.getElementById('unique_applicants_count');
+    if (uniqueApplicantsCount) {
+        uniqueApplicantsCount.innerText = '{{ unique_applicants_count }}';
+    }
+
 
     // --- Offer-specific Analytics Logic ---
     const offerSelect = document.getElementById('offer-select');
-    const offerAnalysisLoadingSpinner = document.getElementById('offer-analysis-loading-spinner');
-    const selectedOfferAnalyticsData = document.getElementById('selected-offer-analytics-data');
-    const noOfferSelectedMessage = document.getElementById('no-offer-selected');
+    if(offerSelect) {
+        const offerAnalysisLoadingSpinner = document.getElementById('offer-analysis-loading-spinner');
+        const selectedOfferAnalyticsData = document.getElementById('selected-offer-analytics-data');
+        const noOfferSelectedMessage = document.getElementById('no-offer-selected');
 
-    let offerHiringFunnelChartInstance = null;
-    let peakApplicationTimesChartInstance = null;
-    let offerApplicantAgeDistributionChartInstance = null;
-    let offerApplicantRegionDistributionChartInstance = null;
+        let offerHiringFunnelChartInstance = null;
+        let peakApplicationTimesChartInstance = null;
+        let offerApplicantAgeDistributionChartInstance = null;
+        let offerApplicantRegionDistributionChartInstance = null;
 
-    offerSelect.addEventListener('change', function() {
-        const offerId = this.value;
-        if (offerId) {
-            offerAnalysisLoadingSpinner.classList.remove('hidden');
-            selectedOfferAnalyticsData.classList.add('hidden');
-            noOfferSelectedMessage.classList.add('hidden');
+        offerSelect.addEventListener('change', function() {
+            const offerId = this.value;
+            if (offerId) {
+                if(offerAnalysisLoadingSpinner) offerAnalysisLoadingSpinner.classList.remove('hidden');
+                if(selectedOfferAnalyticsData) selectedOfferAnalyticsData.classList.add('hidden');
+                if(noOfferSelectedMessage) noOfferSelectedMessage.classList.add('hidden');
 
-            fetch(`/company/analytics/offer/${offerId}/`) // You'll need to create this URL/view
-                .then(response => response.json())
-                .then(data => {
-                    offerAnalysisLoadingSpinner.classList.add('hidden');
-                    selectedOfferAnalyticsData.classList.remove('hidden');
+                fetch(`/company/analytics/offer/${offerId}/`) // You'll need to create this URL/view
+                    .then(response => response.json())
+                    .then(data => {
+                        if(offerAnalysisLoadingSpinner) offerAnalysisLoadingSpinner.classList.add('hidden');
+                        if(selectedOfferAnalyticsData) selectedOfferAnalyticsData.classList.remove('hidden');
 
-                    // Populate Offer-specific Metrics Cards
-                    document.getElementById('offer-conversion-rate-card').innerText = `${data.offer_conversion_rate}%`;
-                    if (data.offer_avg_time_to_hire_days !== null) {
-                        document.getElementById('offer-time-to-hire-card').innerText = `${data.offer_avg_time_to_hire_days} días`;
-                    } else {
-                        document.getElementById('offer-time-to-hire-card').innerText = 'N/A';
-                    }
-                     document.getElementById('offer-unique-applicants-card').innerText = data.offer_unique_applicants_count;
+                        // Populate Offer-specific Metrics Cards
+                        const offerConversionRateCard = document.getElementById('offer-conversion-rate-card');
+                        if(offerConversionRateCard) offerConversionRateCard.innerText = `${data.offer_conversion_rate}%`;
 
-                    // Destroy old charts if they exist
-                    if (offerHiringFunnelChartInstance) offerHiringFunnelChartInstance.destroy();
-                    if (peakApplicationTimesChartInstance) peakApplicationTimesChartInstance.destroy();
-                    if (offerApplicantAgeDistributionChartInstance) offerApplicantAgeDistributionChartInstance.destroy();
-                    if (offerApplicantRegionDistributionChartInstance) offerApplicantRegionDistributionChartInstance.destroy();
-
-                    // Offer-specific Hiring Funnel Chart
-                    const offerFunnelLabels = ['Enviada', 'En Proceso', 'Entrevista', 'Aceptada', 'Rechazada'];
-                    const offerFunnelCounts = [
-                        data.offer_hiring_funnel_data['enviada'],
-                        data.offer_hiring_funnel_data['en proceso'],
-                        data.offer_hiring_funnel_data['entrevista'],
-                        data.offer_hiring_funnel_data['aceptada'],
-                        data.offer_hiring_funnel_data['rechazada']
-                    ];
-                    offerHiringFunnelChartInstance = new Chart(document.getElementById('offerHiringFunnelChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: offerFunnelLabels,
-                            datasets: [{
-                                label: 'Cantidad de Postulantes',
-                                data: offerFunnelCounts,
-                                backgroundColor: [
-                                    'rgba(59, 130, 246, 0.7)',
-                                    'rgba(245, 158, 11, 0.7)',
-                                    'rgba(168, 85, 247, 0.7)',
-                                    'rgba(34, 197, 94, 0.7)',
-                                    'rgba(239, 68, 68, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(59, 130, 246, 1)',
-                                    'rgba(245, 158, 11, 1)',
-                                    'rgba(168, 85, 247, 1)',
-                                    'rgba(34, 197, 94, 1)',
-                                    'rgba(239, 68, 68, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                title: { display: false }
-                            },
-                            scales: {
-                                x: { beginAtZero: true }
+                        const offerTimeToHireCard = document.getElementById('offer-time-to-hire-card');
+                        if (offerTimeToHireCard) {
+                            if (data.offer_avg_time_to_hire_days !== null) {
+                                offerTimeToHireCard.innerText = `${data.offer_avg_time_to_hire_days} días`;
+                            } else {
+                                offerTimeToHireCard.innerText = 'N/A';
                             }
                         }
-                    });
 
-                    // Peak Application Times Chart (Bubble Chart example)
-                    const peakTimesData = data.peak_application_times_data; // This will be a 2D array or object
-                    const chartData = [];
-                    const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                        const offerUniqueApplicantsCard = document.getElementById('offer-unique-applicants-card');
+                        if(offerUniqueApplicantsCard) offerUniqueApplicantsCard.innerText = data.offer_unique_applicants_count;
 
-                    for (let day = 0; day < 7; day++) { // Loop through days 0-6 (Mon-Sun)
-                        for (let hour = 0; hour < 24; hour++) {
-                            const count = peakTimesData[day] ? peakTimesData[day][hour] || 0 : 0;
-                            if (count > 0) {
-                                chartData.push({
-                                    x: hour,
-                                    y: day,
-                                    r: count * 2 + 5 // Radius based on count, adjust as needed
-                                });
-                            }
-                        }
-                    }
+                        // Destroy old charts if they exist
+                        if (offerHiringFunnelChartInstance) offerHiringFunnelChartInstance.destroy();
+                        if (peakApplicationTimesChartInstance) peakApplicationTimesChartInstance.destroy();
+                        if (offerApplicantAgeDistributionChartInstance) offerApplicantAgeDistributionChartInstance.destroy();
+                        if (offerApplicantRegionDistributionChartInstance) offerApplicantRegionDistributionChartInstance.destroy();
 
-                    peakApplicationTimesChartInstance = new Chart(document.getElementById('peakApplicationTimesChart'), {
-                        type: 'bubble',
-                        data: {
-                            datasets: [{
-                                label: 'Postulaciones',
-                                data: chartData,
-                                backgroundColor: 'rgba(140, 160, 26, 0.7)',
-                                borderColor: 'rgba(140, 160, 26, 1)',
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Hora del Día (0-23)'
-                                    },
-                                    min: -0.5,
-                                    max: 23.5,
-                                    ticks: {
-                                        stepSize: 1
-                                    }
+                        // Offer-specific Hiring Funnel Chart
+                        const offerHiringFunnelChartCanvas = document.getElementById('offerHiringFunnelChart');
+                        if(offerHiringFunnelChartCanvas) {
+                            const offerFunnelLabels = ['Enviada', 'En Proceso', 'Entrevista', 'Aceptada', 'Rechazada'];
+                            const offerFunnelCounts = [
+                                data.offer_hiring_funnel_data['enviada'], data.offer_hiring_funnel_data['en proceso'],
+                                data.offer_hiring_funnel_data['entrevista'], data.offer_hiring_funnel_data['aceptada'],
+                                data.offer_hiring_funnel_data['rechazada']
+                            ];
+                            offerHiringFunnelChartInstance = new Chart(offerHiringFunnelChartCanvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: offerFunnelLabels,
+                                    datasets: [{
+                                        label: 'Cantidad de Postulantes', data: offerFunnelCounts,
+                                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+                                        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(245, 158, 11, 1)', 'rgba(168, 85, 247, 1)', 'rgba(34, 197, 94, 1)', 'rgba(239, 68, 68, 1)'],
+                                        borderWidth: 1
+                                    }]
                                 },
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: 'Día de la Semana'
+                                options: {
+                                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { display: false }, title: { display: false } },
+                                    scales: { x: { beginAtZero: true } }
+                                }
+                            });
+                        }
+
+                        // Peak Application Times Chart
+                        const peakApplicationTimesChartCanvas = document.getElementById('peakApplicationTimesChart');
+                        if(peakApplicationTimesChartCanvas) {
+                            const peakTimesData = data.peak_application_times_data;
+                            const chartData = [];
+                            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                            for (let day = 0; day < 7; day++) {
+                                for (let hour = 0; hour < 24; hour++) {
+                                    const count = peakTimesData[day] ? peakTimesData[day][hour] || 0 : 0;
+                                    if (count > 0) chartData.push({ x: hour, y: day, r: count * 2 + 5 });
+                                }
+                            }
+                            peakApplicationTimesChartInstance = new Chart(peakApplicationTimesChartCanvas, {
+                                type: 'bubble',
+                                data: {
+                                    datasets: [{
+                                        label: 'Postulaciones', data: chartData,
+                                        backgroundColor: 'rgba(140, 160, 26, 0.7)', borderColor: 'rgba(140, 160, 26, 1)',
+                                    }]
+                                },
+                                options: {
+                                    responsive: true, maintainAspectRatio: false,
+                                    scales: {
+                                        x: { title: { display: true, text: 'Hora del Día (0-23)' }, min: -0.5, max: 23.5, ticks: { stepSize: 1 } },
+                                        y: { title: { display: true, text: 'Día de la Semana' }, min: -0.5, max: 6.5, ticks: { stepSize: 1, callback: (value) => daysOfWeek[value] } }
                                     },
-                                    min: -0.5,
-                                    max: 6.5,
-                                    ticks: {
-                                        stepSize: 1,
-                                        callback: function(value, index, ticks) {
-                                            return daysOfWeek[value];
-                                        }
+                                    plugins: {
+                                        tooltip: { callbacks: { label: (context) => `Día: ${daysOfWeek[context.raw.y]}, Hora: ${context.raw.x}, Postulaciones: ${(context.raw.r - 5) / 2}` } }
                                     }
                                 }
-                            },
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            const item = context.raw;
-                                            return `Día: ${daysOfWeek[item.y]}, Hora: ${item.x}, Postulaciones: ${(item.r - 5) / 2}`;
-                                        }
-                                    }
+                            });
+                        }
+
+                        // Offer-specific Applicant Age Distribution Chart
+                        const offerApplicantAgeDistributionChartCanvas = document.getElementById('offerApplicantAgeDistributionChart');
+                        if (offerApplicantAgeDistributionChartCanvas) {
+                            offerApplicantAgeDistributionChartInstance = new Chart(offerApplicantAgeDistributionChartCanvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: data.offer_applicant_age_labels,
+                                    datasets: [{
+                                        label: 'Número de Postulantes', data: data.offer_applicant_age_data,
+                                        backgroundColor: 'rgba(140, 160, 26, 0.7)', borderColor: 'rgba(140, 160, 26, 1)', borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { display: false }, title: { display: false } },
+                                    scales: { y: { beginAtZero: true } }
                                 }
-                            }
+                            });
                         }
-                    });
 
-                    // Offer-specific Applicant Age Distribution Chart
-                    offerApplicantAgeDistributionChartInstance = new Chart(document.getElementById('offerApplicantAgeDistributionChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: data.offer_applicant_age_labels,
-                            datasets: [{
-                                label: 'Número de Postulantes',
-                                data: data.offer_applicant_age_data,
-                                backgroundColor: 'rgba(140, 160, 26, 0.7)',
-                                borderColor: 'rgba(140, 160, 26, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                title: { display: false }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
-                            }
+                        // Offer-specific Applicant Region Distribution Chart
+                        const offerApplicantRegionDistributionChartCanvas = document.getElementById('offerApplicantRegionDistributionChart');
+                        if(offerApplicantRegionDistributionChartCanvas) {
+                            offerApplicantRegionDistributionChartInstance = new Chart(offerApplicantRegionDistributionChartCanvas, {
+                                type: 'pie',
+                                data: {
+                                    labels: data.offer_applicant_region_labels,
+                                    datasets: [{
+                                        label: 'Postulantes por Región', data: data.offer_applicant_region_data,
+                                        backgroundColor: ['rgba(140, 160, 26, 0.7)', 'rgba(26, 140, 160, 0.7)', 'rgba(216, 217, 221, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(255, 205, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(201, 203, 207, 0.7)'],
+                                        borderColor: ['rgba(140, 160, 26, 1)', 'rgba(26, 140, 160, 1)', 'rgba(216, 217, 221, 1)', 'rgba(245, 158, 11, 1)', 'rgba(59, 130, 246, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 205, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)', 'rgba(201, 203, 207, 1)'],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'top' }, title: { display: false } }
+                                }
+                            });
                         }
-                    });
-
-                    // Offer-specific Applicant Region Distribution Chart
-                    offerApplicantRegionDistributionChartInstance = new Chart(document.getElementById('offerApplicantRegionDistributionChart'), {
-                        type: 'pie',
-                        data: {
-                            labels: data.offer_applicant_region_labels,
-                            datasets: [{
-                                label: 'Postulantes por Región',
-                                data: data.offer_applicant_region_data,
-                                backgroundColor: [
-                                    'rgba(140, 160, 26, 0.7)',
-                                    'rgba(26, 140, 160, 0.7)',
-                                    'rgba(216, 217, 221, 0.7)',
-                                    'rgba(245, 158, 11, 0.7)',
-                                    'rgba(59, 130, 246, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)',
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(255, 205, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(201, 203, 207, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(140, 160, 26, 1)',
-                                    'rgba(26, 140, 160, 1)',
-                                    'rgba(216, 217, 221, 1)',
-                                    'rgba(245, 158, 11, 1)',
-                                    'rgba(59, 130, 246, 1)',
-                                    'rgba(153, 102, 255, 1)',
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(255, 205, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(201, 203, 207, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'top' },
-                                title: { display: false }
-                            }
+                    })
+                    .catch(error => {
+                        if(offerAnalysisLoadingSpinner) offerAnalysisLoadingSpinner.classList.add('hidden');
+                        if(selectedOfferAnalyticsData) selectedOfferAnalyticsData.classList.add('hidden');
+                        if(noOfferSelectedMessage) {
+                            noOfferSelectedMessage.classList.remove('hidden');
+                            noOfferSelectedMessage.innerHTML = `<p class="text-red-500">Error al cargar el análisis para la oferta: ${error.message}</p>`;
                         }
+                        console.error('Error fetching offer analytics:', error);
                     });
+            } else {
+                if(selectedOfferAnalyticsData) selectedOfferAnalyticsData.classList.add('hidden');
+                if(noOfferSelectedMessage) {
+                     noOfferSelectedMessage.classList.remove('hidden');
+                    noOfferSelectedMessage.innerHTML = '<p>Por favor, selecciona una oferta para ver su análisis detallado.</p>';
+                }
+                if (offerHiringFunnelChartInstance) offerHiringFunnelChartInstance.destroy();
+                if (peakApplicationTimesChartInstance) peakApplicationTimesChartInstance.destroy();
+                if (offerApplicantAgeDistributionChartInstance) offerApplicantAgeDistributionChartInstance.destroy();
+                if (offerApplicantRegionDistributionChartInstance) offerApplicantRegionDistributionChartInstance.destroy();
+            }
+        });
 
-                })
-                .catch(error => {
-                    offerAnalysisLoadingSpinner.classList.add('hidden');
-                    selectedOfferAnalyticsData.classList.add('hidden');
-                    noOfferSelectedMessage.classList.remove('hidden');
-                    noOfferSelectedMessage.innerHTML = `<p class="text-red-500">Error al cargar el análisis para la oferta: ${error.message}</p>`;
-                    console.error('Error fetching offer analytics:', error);
-                });
-        } else {
-            // No offer selected
-            selectedOfferAnalyticsData.classList.add('hidden');
-            noOfferSelectedMessage.classList.remove('hidden');
-            noOfferSelectedMessage.innerHTML = '<p>Por favor, selecciona una oferta para ver su análisis detallado.</p>';
-            // Destroy charts if they exist
-            if (offerHiringFunnelChartInstance) offerHiringFunnelChartInstance.destroy();
-            if (peakApplicationTimesChartInstance) peakApplicationTimesChartInstance.destroy();
-            if (offerApplicantAgeDistributionChartInstance) offerApplicantAgeDistributionChartInstance.destroy();
-            if (offerApplicantRegionDistributionChartInstance) offerApplicantRegionDistributionChartInstance.destroy();
+        const initialOfferId = urlParams.get('offer_id_for_analytics');
+        if (initialOfferId) {
+            offerSelect.value = initialOfferId;
+            offerSelect.dispatchEvent(new Event('change'));
         }
-    });
-
-    // Initial load for offer analytics if an offer_id is in the URL (e.g., after redirect)
-    const initialOfferId = urlParams.get('offer_id_for_analytics');
-    if (initialOfferId && offerSelect) {
-        offerSelect.value = initialOfferId;
-        // Trigger change event to load data
-        offerSelect.dispatchEvent(new Event('change'));
     }
 });
 </script>
