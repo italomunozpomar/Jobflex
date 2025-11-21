@@ -258,7 +258,6 @@ from .models import Empresa, CVSubido
 
 
 class EmpresaDataForm(forms.ModelForm):
-    # Definimos los campos manualmente para tener control total.
     region = forms.ModelChoiceField(
         queryset=Region.objects.all(),
         required=False,
@@ -270,67 +269,83 @@ class EmpresaDataForm(forms.ModelForm):
         required=False,
         label="Ciudad Principal"
     )
-    # Definimos los campos de imagen explícitamente como ImageField no requerido.
     imagen_perfil = forms.ImageField(
-        required=False,
+        required=False, 
         label="Logo de la empresa (JPG, PNG)",
-        widget=forms.ClearableFileInput # Usamos el widget que permite limpiar la selección
+        widget=forms.ClearableFileInput()
     )
     imagen_portada = forms.ImageField(
-        required=False,
+        required=False, 
         label="Banner/Portada de la empresa (JPG, PNG)",
-        widget=forms.ClearableFileInput
+        widget=forms.ClearableFileInput()
     )
 
     class Meta:
         model = Empresa
-        # Excluimos los campos manuales para que no haya conflictos con el ModelForm
         exclude = ['imagen_perfil', 'imagen_portada']
+        labels = {
+            'rut_empresa': 'RUT de la Empresa',
+            'nombre_comercial': 'Nombre Comercial',
+            'razon_social': 'Razón Social',
+            'telefono': 'Teléfono de Contacto',
+            'sitio_web': 'Sitio Web',
+            'rubro': 'Rubro o Industria',
+            'resumen_empresa': 'Resumen de la Empresa',
+            'mision': 'Misión',
+            'vision': 'Visión',
+        }
+        widgets = {
+            'resumen_empresa': forms.Textarea(attrs={'rows': 5}),
+            'mision': forms.Textarea(attrs={'rows': 5}),
+            'vision': forms.Textarea(attrs={'rows': 5}),
+            'sitio_web': forms.URLInput(attrs={'placeholder': 'https://www.ejemplo.com'}),
+            'telefono': forms.TextInput(attrs={'placeholder': '+56 2 XXXX XXXX'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Hacemos opcionales los campos de texto que pueden estar vacíos
-        optional_fields = ['telefono', 'sitio_web', 'rubro', 'resumen_empresa', 'mision', 'vision']
+        optional_fields = ['telefono', 'sitio_web', 'rubro', 'resumen_empresa', 'mision', 'vision', 'ciudad', 'region']
         for field_name in optional_fields:
             if field_name in self.fields:
                 self.fields[field_name].required = False
         
-        # Campos no editables
         self.fields['rut_empresa'].disabled = True
         self.fields['razon_social'].disabled = True
 
-        # Lógica para el dropdown de ciudad dependiente de región
         self.fields['ciudad'].queryset = Ciudad.objects.none()
         
-        # Si se envía el formulario (POST), poblamos el queryset de ciudad
         prefixed_region_name = self.add_prefix('region')
-        if prefixed_region_name in self.data:
+        if self.is_bound and prefixed_region_name in self.data and self.data[prefixed_region_name]:
             try:
                 region_id = int(self.data[prefixed_region_name])
                 self.fields['ciudad'].queryset = Ciudad.objects.filter(region_id=region_id).order_by('nombre')
             except (ValueError, TypeError):
                 pass
-        # Si se carga el formulario con una instancia (GET), mostramos los datos guardados
-        elif self.instance and self.instance.pk and self.instance.ciudad:
-            self.fields['region'].initial = self.instance.ciudad.region
-            self.fields['ciudad'].queryset = Ciudad.objects.filter(region=self.instance.ciudad.region).order_by('nombre')
-            self.fields['ciudad'].initial = self.instance.ciudad
+        elif self.instance and self.instance.pk and self.instance.ciudad_id:
+            try:
+                ciudad_instance = Ciudad.objects.select_related('region').get(pk=self.instance.ciudad_id)
+                self.fields['region'].initial = ciudad_instance.region
+                self.fields['ciudad'].queryset = Ciudad.objects.filter(region=ciudad_instance.region).order_by('nombre')
+                self.fields['ciudad'].initial = ciudad_instance
+                self.fields['region'].widget.attrs['data-city-id'] = ciudad_instance.id_ciudad
+            except Ciudad.DoesNotExist:
+                pass
 
-        # Restauramos los estilos del formulario
         for field_name, field in self.fields.items():
+            base_class = 'mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
             if field.disabled:
-                field.widget.attrs.update({'class': 'form-control bg-light', 'readonly': True})
-            elif isinstance(field.widget, forms.FileInput):
-                field.widget.attrs.update({'class': 'form-control-file'})
-            else:
-                field.widget.attrs.update({'class': 'form-control'})
+                field.widget.attrs.update({'class': base_class + ' bg-gray-100 cursor-not-allowed'})
+            elif not isinstance(field.widget, (forms.CheckboxInput, forms.ClearableFileInput, forms.FileInput)):
+                field.widget.attrs.update({'class': base_class})
 
     def clean_sitio_web(self):
         sitio_web = self.cleaned_data.get('sitio_web')
         if sitio_web and not sitio_web.startswith(('http://', 'https://')):
             return 'https://' + sitio_web
         return sitio_web
+
+
 
 
 
