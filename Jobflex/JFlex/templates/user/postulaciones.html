@@ -127,9 +127,6 @@
 										{% for e in interviews %}
 										<div class="interview-item flex flex-col sm:flex-row items-center justify-between p-4 bg-light-gray bg-opacity-50 rounded-lg hover:shadow-md transition-shadow duration-300">
                         <div class="flex items-center mb-3 sm:mb-0 flex-grow">
-                            <!-- <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-															<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-														</div> -->
 														<img 
 															src="{% if e.postulacion.oferta.empresa.imagen_perfil %}{{ e.postulacion.oferta.empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}"
 															alt="Logo de {{ e.postulacion.oferta.empresa }}" 
@@ -141,9 +138,17 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0">
-                            <a href="{% if e.modoonline %}{{e.modoonline.url_reunion}}{% else %}https://maps.google.com/?q={{e.modopresencial.direccion}}{% endif %}" target="_blank" rel="noopener noreferrer" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all">
-                                Abrir
-                            </a>
+                            <button type="button" class="open-interview-modal-btn bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all"
+                                data-title="{{ e.postulacion.oferta.titulo_puesto }}"
+                                data-company="{{ e.postulacion.oferta.empresa.nombre_comercial }}"
+                                data-date="{{ e.fecha_entrevista|date:'l, d \d\e F \d\e Y' }}"
+                                data-time="{{ e.hora_entrevista|time:'H:i' }}"
+                                data-recruiter="{{ e.nombre_reclutador }}"
+                                data-modality="{{ e.modalidad }}"
+                                data-url="{% if e.modoonline %}{{ e.modoonline.url_reunion }}{% endif %}"
+                                data-address="{% if e.modopresencial %}{{ e.modopresencial.direccion }}{% endif %}">
+                                Abrir Entrevista
+                            </button>
                         </div>
                     </div>
 										{% empty %}
@@ -157,6 +162,49 @@
             </div>
         </div>
     </main>
+
+    <!-- Interview Details Modal -->
+    <div id="interview-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] hidden">
+        <div id="interview-modal-panel" class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform transition-all duration-300 ease-in-out scale-95 opacity-0">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-6 border-b border-light-gray">
+                <h3 id="modal-title" class="text-xl font-bold text-dark">Detalles de la Entrevista</h3>
+                <button type="button" id="interview-modal-close" class="text-gray-400 hover:text-primary">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-secondary">Para el puesto de <strong id="modal-job-title" class="text-dark"></strong> en <strong id="modal-company" class="text-dark"></strong></p>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p id="modal-date-time" class="font-semibold"></p>
+                    </div>
+                    <div class="flex items-center">
+                         <svg class="w-5 h-5 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <p>Entrevistador: <strong id="modal-recruiter"></strong></p>
+                    </div>
+                </div>
+
+                <div id="modal-online-details" class="hidden">
+                    <h4 class="font-bold text-dark">Entrevista Online</h4>
+                    <div class="mt-2 p-4 border rounded-lg">
+                         <p>Plataforma: <strong id="modal-platform"></strong></p>
+                         <p>Enlace: <a id="modal-online-link" href="#" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Unirse a la reunión</a></p>
+                    </div>
+                </div>
+                <div id="modal-presencial-details" class="hidden">
+                    <h4 class="font-bold text-dark">Entrevista Presencial</h4>
+                    <div class="mt-2 p-4 border rounded-lg">
+                         <p>Dirección: <strong id="modal-address"></strong></p>
+                         <a id="modal-maps-link" href="#" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline mt-2 inline-block">Ver en Google Maps</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Footer -->
     <footer class="bg-dark text-light-gray pt-12">
@@ -212,6 +260,64 @@
     {{ block.super }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // --- Interview Modal Logic ---
+            const interviewModal = document.getElementById('interview-modal');
+            if (interviewModal) {
+                const modalPanel = document.getElementById('interview-modal-panel');
+                const closeModalBtn = document.getElementById('interview-modal-close');
+                
+                const modalTitle = document.getElementById('modal-job-title');
+                const modalCompany = document.getElementById('modal-company');
+                const modalDateTime = document.getElementById('modal-date-time');
+                const modalRecruiter = document.getElementById('modal-recruiter');
+
+                const onlineDetails = document.getElementById('modal-online-details');
+                const platformEl = document.getElementById('modal-platform');
+                const linkEl = document.getElementById('modal-online-link');
+                
+                const presencialDetails = document.getElementById('modal-presencial-details');
+                const addressEl = document.getElementById('modal-address');
+                const mapsLinkEl = document.getElementById('modal-maps-link');
+
+                document.body.addEventListener('click', function(event) {
+                    if (event.target.classList.contains('open-interview-modal-btn')) {
+                        const button = event.target;
+                        
+                        // Populate data
+                        modalTitle.textContent = button.dataset.title;
+                        modalCompany.textContent = button.dataset.company;
+                        modalDateTime.textContent = `${button.dataset.date} a las ${button.dataset.time} hrs.`;
+                        modalRecruiter.textContent = button.dataset.recruiter;
+
+                        if (button.dataset.modality === 'Online') {
+                            platformEl.textContent = button.dataset.platform;
+                            linkEl.href = button.dataset.url;
+                            onlineDetails.classList.remove('hidden');
+                            presencialDetails.classList.add('hidden');
+                        } else { // Presencial
+                            addressEl.textContent = button.dataset.address;
+                            mapsLinkEl.href = `https://maps.google.com/?q=${encodeURIComponent(button.dataset.address)}`;
+                            presencialDetails.classList.remove('hidden');
+                            onlineDetails.classList.add('hidden');
+                        }
+                        
+                        // Open modal
+                        interviewModal.classList.remove('hidden');
+                        setTimeout(() => modalPanel.classList.remove('opacity-0', 'scale-95'), 10);
+                    }
+                });
+
+                const closeInterviewModal = () => {
+                    modalPanel.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => interviewModal.classList.add('hidden'), 300);
+                };
+
+                closeModalBtn.addEventListener('click', closeInterviewModal);
+                interviewModal.addEventListener('click', (e) => {
+                    if (e.target === interviewModal) closeInterviewModal();
+                });
+            }
 
 
             // Filter menu dropdown

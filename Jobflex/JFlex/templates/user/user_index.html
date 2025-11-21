@@ -183,7 +183,7 @@
     background: #f3f4f6;
     padding: 22px 28px;
     border-radius: 20px;
-    width: 420px;
+    /* width: 420px; */ /* This is now handled by Tailwind classes */
     opacity: 0;
     transform: translateY(10px);
     transition: opacity .4s ease, transform .4s ease;
@@ -235,10 +235,10 @@
         <!-- Sección 1: Bienvenida y CV -->
         {% if request.session.show_missy %}
         <section class="bg-white p-8 rounded-xl shadow-lg">
-            <div class="flex flex-col md:flex-row items-start justify-center md:gap-x-12">
+            <div class="flex flex-col md:flex-row items-stretch justify-center md:gap-x-12">
                 <!-- Avatar y Mensaje de Bienvenida -->
-                <div id="avatar-section">
-                    <div id="avatar-stack">
+                <div id="avatar-section" class="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
+                    <div id="avatar-stack" class="flex-shrink-0">
                         <div id="user-circle">
                             <span>{{ user.first_name|first|upper }}</span>
                         </div>
@@ -262,7 +262,7 @@
                         </div>
                     </div>
 
-                    <div id="welcome-textbox" class="shadow-lg">
+                    <div id="welcome-textbox" class="shadow-lg w-full max-w-md">
                         <h4>¡Bienvenid@, <span class="text-primary">{{ user.first_name }}</span>!</h4>
                         <p class="text-secondary"> Soy Missy, tu compañera de aventura y estamos listos para esta travesia.  
                         ¡Encontremos juntos esa oportunidad que estás buscando!</p>
@@ -282,8 +282,8 @@
                 </div>
 
                 <!-- Panel de CV -->
-                <div class="md:w-1/2 flex flex-col">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-light-gray flex-grow">
+                <div class="w-full md:w-auto flex flex-col mt-8 md:mt-0 flex-1">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-light-gray flex-grow flex flex-col">
                         <div class="flex items-start mb-4">
                             <div class="p-3 bg-primary bg-opacity-10 rounded-lg">
                                 <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -293,7 +293,7 @@
                                 <p class="text-secondary text-sm">Actualiza tu CV para destacar entre los candidatos</p>
                             </div>
                         </div>
-                        <div class="space-y-3">
+                        <div class="space-y-3 mt-auto">
                             <div class="relative group w-full">
                                 <a href="{% url 'create_cv' %}" class="w-full">
                                     <button class="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105 flex items-center justify-center">

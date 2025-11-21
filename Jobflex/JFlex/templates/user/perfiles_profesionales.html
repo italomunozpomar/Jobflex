@@ -38,7 +38,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         Subir CV
                     </button>
-                    <button id="toggle-download-column-btn" class="bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all flex items-center">
+                    <button id="toggle-download-column-btn" class="hidden md:flex bg-white text-secondary font-bold py-3 px-6 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-all items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         Descargar CV
                     </button>
@@ -46,9 +46,10 @@
             </div>
         </section>
 
+        <div class="hidden md:grid-cols-11"></div> <!-- JIT Safelist -->
         <div id="cv-table" class="bg-white rounded-xl shadow-lg">
             <!-- Header for Desktop -->
-            <div class="hidden md:grid bg-gray-50 grid-cols-10 text-left text-xs font-semibold text-secondary uppercase tracking-wider rounded-t-xl">
+            <div class="hidden md:grid bg-gray-50 md:grid-cols-10 text-left text-xs font-semibold text-secondary uppercase tracking-wider rounded-t-xl">
                 <div class="p-4 col-span-2">Nombre CV / Cargo</div>
                 <div class="p-4 col-span-1">Tipo</div>
                 <div class="p-4 col-span-2">Última Actualización</div>
@@ -74,12 +75,20 @@
                                 </div>
                             </div>
                             <div class="details-panel hidden p-4 pt-2 space-y-2 md:hidden">
-                                <p><strong>Tipo:</strong> <span class="py-1 px-2 rounded-full bg-green-100 text-green-800 text-xs font-semibold">{{ cv.tipo_cv }}</span></p>
-                                <div class="flex space-x-4 mt-2 pt-2 border-t">
+                                <p><strong>Tipo:</strong> <span class="py-1 px-2 rounded-full text-xs font-semibold {% if cv.tipo_cv == 'creado' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">{{ cv.tipo_cv|capfirst }}</span></p>
+                                <div class="flex items-center space-x-4 mt-2 pt-2 border-t">
                                     <p class="font-semibold text-sm">Acciones:</p>
-                                    <form action="{% url 'delete_cv' cv.id_cv_user %}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este CV?');">
+                                    <button class="view-cv-btn text-secondary hover:underline" data-cv-json='{{ cv.cv_data_json|safe }}' data-cv-id="{{ cv.id_cv_user }}" data-cv-type="{{ cv.tipo_cv }}" data-cv-url="{{ cv.url|default:'' }}">Ver CV</button>
+                                    
+                                    {% if cv.tipo_cv == 'creado' %}
+                                        <button class="download-creado-btn text-dark hover:underline" data-cv-id="{{ cv.id_cv_user }}" data-cv-json='{{ cv.cv_data_json|safe }}'>Descargar</button>
+                                    {% else %}
+                                        <a href="{% url 'download_s3_cv' cv.id_cv_user %}" class="text-dark hover:underline">Descargar</a>
+                                    {% endif %}
+                            
+                                    <form action="{% url 'delete_cv' cv.id_cv_user %}" method="post" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este CV?');" class="inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
+                                        <button type="submit" class="text-red-500 hover:underline">Eliminar</button>
                                     </form>
                                 </div>
                             </div>
@@ -741,8 +750,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     col.classList.toggle('hidden');
                 });
 
-                const gridHeader = cvTable.querySelector('.hidden.md\:grid');
-                const gridRows = cvTable.querySelectorAll('#cv-list .hidden.md\:grid');
+                const gridHeader = cvTable.querySelector('.hidden.md\\:grid');
+                const gridRows = cvTable.querySelectorAll('#cv-list .hidden.md\\:grid');
                 
                 if (isHidden) {
                     console.log('Showing column, changing to grid-cols-11');
