@@ -114,7 +114,7 @@
                 <h2 class="text-3xl font-bold text-dark mb-2 text-center">Crea tu Cuenta</h2>
                 <p class="text-secondary mb-8 text-center">Únete a nuestra comunidad y encuentra tu próximo trabajo.</p>
 
-                <form method="post" class="space-y-6">
+                <form method="post" id="register-form" class="space-y-6">
                     {% csrf_token %}
                     {% if form.non_field_errors %}
                         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -223,6 +223,10 @@
                 <p class="mt-8 text-center text-sm text-dark">
                     ¿Ya tienes cuenta?
                     <a href="{% url 'login'%}" class="font-medium text-primary hover:underline">Inicia sesión aquí</a>
+                </p>
+                <p class="mt-4 text-center text-sm text-dark">
+                    ¿Eres Empresa?
+                    <a href="{% url 'validate'%}" class="font-medium text-primary hover:underline">Crea tu cuenta aquí</a>
                 </p>
             </div>
 

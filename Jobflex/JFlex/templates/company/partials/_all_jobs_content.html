@@ -49,130 +49,131 @@
         </form>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <table class="w-full text-left text-sm">
-            <thead>
-                <tr class="border-b border-gray-200 bg-gray-50">
-                    <th class="py-3 px-4 font-semibold text-gray-700">Título del Puesto</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700">Categoría</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700">Publicado</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700">Estado</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700">Postulantes</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700">Vistas</th>
-                    <th class="py-3 px-4 font-semibold text-gray-700 text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for offer in all_offers %}
-                <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                    <td class="py-4 px-4">
-                        <span class="font-medium text-gray-900">{{ offer.titulo_puesto }}</span>
-                    </td>
-                    <td class="py-4 px-4 text-gray-600">
-                        {{ offer.categoria.tipo_categoria|default:'N/A' }}
-                    </td>
-                    <td class="py-4 px-4 text-gray-600">
-                        {{ offer.fecha_publicacion|date:"d M, Y" }}
-                    </td>
-                    <td class="py-4 px-4">
-                        {% if offer.estado == 'activa' %}
-                            <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Activo</span>
-                        {% elif offer.estado == 'pausada' %}
-                            <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs font-semibold">En Pausa</span>
-                        {% elif offer.estado == 'cerrada' %}
-                            <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs font-semibold">Cerrado</span>
-                        {% endif %}
-                    </td>
-                    <td class="py-4 px-4">
-                        <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="font-semibold text-primary hover:underline">{{ offer.candidate_count }}</a>
-                    </td>
-                    <td class="py-4 px-4 text-gray-600">
-                        {{ offer.vistas }}
-                    </td>
-                    <td class="py-4 px-4 text-center">
-                        <div class="relative inline-block text-left">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors focus:outline-none action-menu-btn">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                                </svg>
-                            </button>
-                            <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10 action-menu-dropdown">
-                                <div class="py-1" role="menu" aria-orientation="vertical">
-                                    <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Ver Postulantes</a>
-                                    <button type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 edit-offer-btn" role="menuitem"
-                                        data-offer-id="{{ offer.id_oferta }}"
-                                        data-titulo="{{ offer.titulo_puesto }}"
-                                        data-categoria-id="{{ offer.categoria_id }}"
-                                        data-jornada-id="{{ offer.jornada_id }}"
-                                        data-modalidad-id="{{ offer.modalidad_id }}"
-                                        data-region-id="{{ offer.ciudad.region.id_region|default_if_none:'' }}"
-                                        data-ciudad-id="{{ offer.ciudad.id_ciudad|default_if_none:'' }}"
-                                        data-salario-min="{{ offer.salario_min }}"
-                                        data-salario-max="{{ offer.salario_max }}"
-                                        data-nivel-experiencia="{{ offer.nivel_experiencia }}"
-                                        data-descripcion='{{ offer.descripcion_puesto|safe }}'
-                                        data-requisitos='{{ offer.requisitos_puesto|safe }}'
-                                        data-habilidades="{{ offer.habilidades_str }}"
-                                        data-beneficios="{{ offer.beneficios_str }}"
-                                        data-duracion-oferta="{{ offer.calculated_duration }}"
-                                        data-fecha-publicacion="{{ offer.fecha_publicacion|date:'Y-m-d' }}"
-                                        data-fecha-cierre="{{ offer.fecha_cierre|date:'Y-m-d' }}">
-                                        Editar
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 bg-gray-50">
+                            <th class="py-3 px-4 font-semibold text-gray-700">Título del Puesto</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700">Categoría</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700">Publicado</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700">Estado</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700">Postulantes</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700">Vistas</th>
+                            <th class="py-3 px-4 font-semibold text-gray-700 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for offer in all_offers %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                            <td class="py-4 px-4">
+                                <span class="font-medium text-gray-900">{{ offer.titulo_puesto }}</span>
+                            </td>
+                            <td class="py-4 px-4 text-gray-600">
+                                {{ offer.categoria.tipo_categoria|default:'N/A' }}
+                            </td>
+                            <td class="py-4 px-4 text-gray-600">
+                                {{ offer.fecha_publicacion|date:"d M, Y" }}
+                            </td>
+                            <td class="py-4 px-4">
+                                {% if offer.estado == 'activa' %}
+                                    <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-semibold">Activo</span>
+                                {% elif offer.estado == 'pausada' %}
+                                    <span class="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full text-xs font-semibold">En Pausa</span>
+                                {% elif offer.estado == 'cerrada' %}
+                                    <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full text-xs font-semibold">Cerrado</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-4">
+                                <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="font-semibold text-primary hover:underline">{{ offer.candidate_count }}</a>
+                            </td>
+                            <td class="py-4 px-4 text-gray-600">
+                                {{ offer.vistas }}
+                            </td>
+                            <td class="py-4 px-4 text-center">
+                                <div class="relative inline-block text-left">
+                                    <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors focus:outline-none action-menu-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                        </svg>
                                     </button>
-                                    <button type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 duplicate-offer-btn" role="menuitem"
-                                        data-offer-id="{{ offer.id_oferta }}"
-                                        data-titulo="{{ offer.titulo_puesto }}"
-                                        data-categoria-id="{{ offer.categoria_id }}"
-                                        data-jornada-id="{{ offer.jornada_id }}"
-                                        data-modalidad-id="{{ offer.modalidad_id }}"
-                                        data-region-id="{{ offer.ciudad.region.id_region|default_if_none:'' }}"
-                                        data-ciudad-id="{{ offer.ciudad.id_ciudad|default_if_none:'' }}"
-                                        data-salario-min="{{ offer.salario_min }}"
-                                        data-salario-max="{{ offer.salario_max }}"
-                                        data-nivel-experiencia="{{ offer.nivel_experiencia }}"
-                                        data-descripcion='{{ offer.descripcion_puesto|safe }}'
-                                        data-requisitos='{{ offer.requisitos_puesto|safe }}'
-                                        data-habilidades="{{ offer.habilidades_str }}"
-                                        data-beneficios="{{ offer.beneficios_str }}"
-                                        data-duracion-oferta="{{ offer.calculated_duration }}">
-                                        Duplicar
-                                    </button>
-                                    <div class="border-t border-gray-100 my-1"></div>
-                                    <form method="POST" action="{% url 'company_index' %}" class="w-full" onsubmit="return confirm('¿Estás seguro de que quieres archivar esta oferta?');">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="archive_offer">
-                                        <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
-                                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-yellow-700 hover:bg-gray-100" role="menuitem">Archivar</button>
-                                    </form>
-                                    <form method="POST" action="{% url 'company_index' %}" class="w-full" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta oferta permanentemente?');">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="delete_offer">
-                                        <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
-                                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-700 hover:bg-gray-100" role="menuitem">Eliminar</button>
-                                    </form>
+                                    <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10 action-menu-dropdown">
+                                        <div class="py-1" role="menu" aria-orientation="vertical">
+                                            <a href="{% url 'view_offer_applicants' offer_id=offer.id_oferta %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Ver Postulantes</a>
+                                            <button type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 edit-offer-btn" role="menuitem"
+                                                data-offer-id="{{ offer.id_oferta }}"
+                                                data-titulo="{{ offer.titulo_puesto }}"
+                                                data-categoria-id="{{ offer.categoria_id }}"
+                                                data-jornada-id="{{ offer.jornada_id }}"
+                                                data-modalidad-id="{{ offer.modalidad_id }}"
+                                                data-region-id="{{ offer.ciudad.region.id_region|default_if_none:'' }}"
+                                                data-ciudad-id="{{ offer.ciudad.id_ciudad|default_if_none:'' }}"
+                                                data-salario-min="{{ offer.salario_min }}"
+                                                data-salario-max="{{ offer.salario_max }}"
+                                                data-nivel-experiencia="{{ offer.nivel_experiencia }}"
+                                                data-descripcion='{{ offer.descripcion_puesto|safe }}'
+                                                data-requisitos='{{ offer.requisitos_puesto|safe }}'
+                                                data-habilidades="{{ offer.habilidades_str }}"
+                                                data-beneficios="{{ offer.beneficios_str }}"
+                                                data-duracion-oferta="{{ offer.calculated_duration }}"
+                                                data-fecha-publicacion="{{ offer.fecha_publicacion|date:'Y-m-d' }}"
+                                                data-fecha-cierre="{{ offer.fecha_cierre|date:'Y-m-d' }}">
+                                                Editar
+                                            </button>
+                                            <button type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 duplicate-offer-btn" role="menuitem"
+                                                data-offer-id="{{ offer.id_oferta }}"
+                                                data-titulo="{{ offer.titulo_puesto }}"
+                                                data-categoria-id="{{ offer.categoria_id }}"
+                                                data-jornada-id="{{ offer.jornada_id }}"
+                                                data-modalidad-id="{{ offer.modalidad_id }}"
+                                                data-region-id="{{ offer.ciudad.region.id_region|default_if_none:'' }}"
+                                                data-ciudad-id="{{ offer.ciudad.id_ciudad|default_if_none:'' }}"
+                                                data-salario-min="{{ offer.salario_min }}"
+                                                data-salario-max="{{ offer.salario_max }}"
+                                                data-nivel-experiencia="{{ offer.nivel_experiencia }}"
+                                                data-descripcion='{{ offer.descripcion_puesto|safe }}'
+                                                data-requisitos='{{ offer.requisitos_puesto|safe }}'
+                                                data-habilidades="{{ offer.habilidades_str }}"
+                                                data-beneficios="{{ offer.beneficios_str }}"
+                                                data-duracion-oferta="{{ offer.calculated_duration }}">
+                                                Duplicar
+                                            </button>
+                                            <div class="border-t border-gray-100 my-1"></div>
+                                            <form method="POST" action="{% url 'company_index' %}" class="w-full" onsubmit="return confirm('¿Estás seguro de que quieres archivar esta oferta?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="archive_offer">
+                                                <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
+                                                <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-yellow-700 hover:bg-gray-100" role="menuitem">Archivar</button>
+                                            </form>
+                                            <form method="POST" action="{% url 'company_index' %}" class="w-full" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta oferta permanentemente?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_offer">
+                                                <input type="hidden" name="offer_id" value="{{ offer.id_oferta }}">
+                                                <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-700 hover:bg-gray-100" role="menuitem">Eliminar</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="py-8 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                            <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="text-gray-500 font-medium">No se encontraron ofertas con los filtros seleccionados.</p>
-                            <a href="?tab=all-jobs" class="text-primary hover:underline mt-1 text-sm">Limpiar filtros</a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="py-8 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-gray-500 font-medium">No se encontraron ofertas con los filtros seleccionados.</p>
+                                    <a href="?tab=all-jobs" class="text-primary hover:underline mt-1 text-sm">Limpiar filtros</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Logic for action menu dropdown

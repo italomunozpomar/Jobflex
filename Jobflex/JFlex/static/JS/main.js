@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Button Loading Spinner and Disabled State
-    const loginForm = document.querySelector('form'); // Assuming one form per page
+    const loginForm = document.getElementById('register-form'); // Use the specific ID
     const submitButton = document.getElementById('login-button') || document.getElementById('register-button');
     const spinner = document.getElementById('login-spinner') || document.getElementById('register-spinner');
 
