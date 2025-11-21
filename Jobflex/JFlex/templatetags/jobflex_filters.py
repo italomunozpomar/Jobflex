@@ -12,10 +12,22 @@ def format_clp(value):
     Example: 1000000 -> "1.000.000"
     """
     try:
-        # The 'de_DE' locale uses dots as thousands separators.
-        locale.setlocale(locale.LC_ALL, 'de_DE')
-        return locale.format_string("%d", value, grouping=True)
-    except (ValueError, TypeError):
+        # Tries to set the locale to Chilean Spanish, which uses dots for thousands.
+        # This is more robust than using a German locale.
+        try:
+            locale.setlocale(locale.LC_ALL, 'es_CL.UTF-8')
+        except locale.Error:
+            try:
+                locale.setlocale(locale.LC_ALL, 'es_CL')
+            except locale.Error:
+                # Fallback to the system's default locale if Chilean Spanish is not available
+                locale.setlocale(locale.LC_ALL, '') 
+        
+        # Format the number with grouping (thousands separators)
+        return locale.format_string("%d", int(value), grouping=True)
+    except (ValueError, TypeError, locale.Error):
+        # If any error occurs (e.g., value is not a number, or all locales fail),
+        # return the original value as a fallback.
         return value
 
 @register.filter
