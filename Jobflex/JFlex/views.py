@@ -731,9 +731,22 @@ def Profile(request):
     from django.db.models.functions import Coalesce
 
     # Order CVs by the most recent date from either CVCreado or CVSubido
-    cvs_qs = CVCandidato.objects.filter(candidato=candidato)        .select_related('cvcreado', 'cvsubido')        .annotate(
+    cvs_qs = CVCandidato.objects.filter(candidato=candidato)\
+        .select_related('cvcreado__datospersonalescv', 'cvcreado__objetivoprofesionalcv', 'cvsubido')\
+        .prefetch_related(
+            'cvcreado__experiencia',
+            'cvcreado__educacion',
+            'cvcreado__habilidades',
+            'cvcreado__idiomas',
+            'cvcreado__certificaciones',
+            'cvcreado__proyectos',
+            'cvcreado__voluntariado',
+            'cvcreado__referencias'
+        )\
+        .annotate(
             latest_date=Coalesce('cvcreado__ultima_actualizacion', 'cvsubido__fecha_subido')
-        )        .order_by('-latest_date')[:3] # Slice to get the latest 3
+        )\
+        .order_by('-latest_date')[:3] # Slice to get the latest 3
     cv_list = []
     for cv in cvs_qs:
         cv_item = {
@@ -781,7 +794,7 @@ def Profile(request):
                         'is_internship': exp.practica,
                         'total_hours': exp.horas_practica,
                         'description': exp.descripcion_cargo
-                    } for exp in ExperienciaLaboralCV.objects.filter(cv_creado=cv_creado)
+                    } for exp in cv_creado.experiencia.all()
                 ],
                 'education': [
                     {
@@ -791,24 +804,24 @@ def Profile(request):
                         'end_year': edu.fecha_termino.year if edu.fecha_termino else '',
                         'currently_studying': edu.cursando,
                         'notes': edu.comentarios
-                    } for edu in EducacionCV.objects.filter(cv_creado=cv_creado)
+                    } for edu in cv_creado.educacion.all()
                 ],
                 'skills': {
-                    'hard': [h.texto_habilidad for h in HabilidadCV.objects.filter(cv_creado=cv_creado, tipo_habilidad='hard')],
-                    'soft': [h.texto_habilidad for h in HabilidadCV.objects.filter(cv_creado=cv_creado, tipo_habilidad='soft')]
+                    'hard': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='hard')],
+                    'soft': [h.texto_habilidad for h in cv_creado.habilidades.filter(tipo_habilidad='soft')]
                 },
                 'languages': [
                     {
                         'language': lang.nombre_idioma,
                         'level': lang.nivel_idioma
-                    } for lang in IdiomaCV.objects.filter(cv_creado=cv_creado)
+                    } for lang in cv_creado.idiomas.all()
                 ],
                 'certifications': [
                     {
                         'cert_name': cert.nombre_certificacion,
                         'issuer': cert.entidad_emisora,
                         'year': cert.fecha_obtencion.year if cert.fecha_obtencion else ''
-                    } for cert in CertificacionesCV.objects.filter(cv_creado=cv_creado)
+                    } for cert in cv_creado.certificaciones.all()
                 ],
                 'projects': [
                     {
@@ -817,7 +830,7 @@ def Profile(request):
                         'role': proj.rol_participacion,
                         'description': proj.descripcion_proyecto,
                         'link': proj.url_proyecto
-                    } for proj in ProyectosCV.objects.filter(cv_creado=cv_creado)
+                    } for proj in cv_creado.proyectos.all()
                 ],
                 'volunteering': [
                     {
@@ -830,7 +843,7 @@ def Profile(request):
                         'start_date': vol.fecha_inicio.isoformat() if vol.fecha_inicio else '',
                         'end_date': vol.fecha_termino.isoformat() if vol.fecha_termino else '',
                         'current': vol.actualmente_activo
-                    } for vol in VoluntariadoCV.objects.filter(cv_creado=cv_creado)
+                    } for vol in cv_creado.voluntariado.all()
                 ],
                 'references': [
                     {
@@ -839,7 +852,7 @@ def Profile(request):
                         'phone': ref.telefono,
                         'email': ref.email,
                         'linkedin_url': ref.url_linkedin
-                    } for ref in ReferenciasCV.objects.filter(cv_creado=cv_creado)
+                    } for ref in cv_creado.referencias.all()
                 ]
             }
             cv_item['cv_data_json'] = json.dumps(cv_data, cls=DjangoJSONEncoder)
@@ -866,19 +879,30 @@ def Profile(request):
         'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 'Thu': 'Jue',
         'Fri': 'Vie', 'Sat': 'Sáb', 'Sun': 'Dom'
     }
+    
+    seven_days_ago = today_local - timedelta(days=6) # Start of the 7-day period
 
+    # Query all applications for the last 7 days in one go
+    applications_last_7_days = Postulacion.objects.using('jflex_db').filter(
+        candidato=candidato,
+        fecha_postulacion__date__gte=seven_days_ago,
+        fecha_postulacion__date__lte=today_local # Ensure it includes today
+    ).annotate(day=TruncDate('fecha_postulacion')) \
+    .values('day') \
+    .annotate(count=Count('id_postulacion')) \
+    .order_by('day')
+
+    # Create a dictionary for quick lookup of counts by date
+    counts_by_date = {item['day']: item['count'] for item in applications_last_7_days}
+
+    # Populate labels and data ensuring all 7 days are represented, even if count is 0
     for i in range(7):
-        current_day = today_local - timedelta(days=i)
-        day_name = current_day.strftime('%a') # e.g., "Mon"
+        current_day = today_local - timedelta(days=6 - i) # Iterate from oldest to newest day in the 7-day span
+        day_name = current_day.strftime('%a')
         display_day_name = spanish_day_map.get(day_name, day_name)
         
-        applications_count = Postulacion.objects.using('jflex_db').filter(
-            candidato=candidato,
-            fecha_postulacion__date=current_day
-        ).count()
-        
-        weekly_submission_labels.insert(0, display_day_name) # Insert at the beginning to reverse order
-        weekly_submission_data.insert(0, applications_count) # Insert at the beginning to reverse order
+        weekly_submission_labels.append(display_day_name)
+        weekly_submission_data.append(counts_by_date.get(current_day, 0)) # Get count or 0 if no applications
 
     # CV Usage
     cv_usage_counts = Postulacion.objects.using('jflex_db').filter(candidato=candidato)        .values('cv_postulado__nombre_cv')        .annotate(count=Count('cv_postulado'))        .order_by('-count')
