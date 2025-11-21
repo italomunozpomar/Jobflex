@@ -63,27 +63,13 @@
 
             <div class="relative" id="company-slider-wrapper">
                 <div class="my-slider">
+                    {% for company in companies_with_logos %}
                     <div class="text-center">
-                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain inline-block">
+                        <a href="{% url 'company_profile' company_id=company.id_empresa %}">
+                            <img src="{{ company.imagen_perfil }}" alt="Logo de {{ company.nombre_comercial }}" class="rounded-full w-40 h-40 object-contain inline-block bg-white">
+                        </a>
                     </div>
-                    <div class="text-center">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Logo_copec_2023_Cielo.jpg" alt="Logo Empresa B" class="rounded-full w-40 h-40 object-contain inline-block" >
-                    </div>
-                    <div class="text-center">
-                        <img src="https://yt3.googleusercontent.com/FfBZauU_gka8Hu-XEIZghGhCTgGbwBSfEJSY3Wc5T5j-6XrT-SUZMQJtuSCbqoPenZ9dX0XVSmg=s900-c-k-c0x00ffffff-no-rj" alt="Logo Empresa C" class="rounded-full w-40 h-40 object-contain inline-block" style="border: rgb(80, 79, 79); border-style: ridge; border-width: 1px;">
-                    </div>
-                    <div class="text-center">
-                        <img src="https://thumbs.dreamstime.com/b/microsoft-logo-editorial-ilustrativo-sobre-fondo-blanco-icono-vectorial-logotipos-iconos-conjunto-redes-sociales-banner-plano-210443215.jpg" alt="Logo Empresa E" class="rounded-full w-40 h-40 object-contain inline-block" >
-                    </div>
-                    <div class="text-center">
-                        <img src="https://logosdechile.cl/cdn/shop/products/codelco_1975_Mesadetrabajo1.jpg?v=1661123452&width=1445" alt="Logo Empresa F" class="rounded-full w-40 h-40 object-contain inline-block" >
-                    </div>
-                    <div class="text-center">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ4AD03MQUEyk-f_VFhF1btszijndmDQkbHQ&s" alt="Logo Empresa D" class="rounded-full w-40 h-40 object-contain inline-block">
-                    </div>
-                    <div class="text-center">
-                        <img src="https://w7.pngwing.com/pngs/497/161/png-transparent-falabella-sears-shopping-gift-card-banco-falabella-cdr-angle-text-thumbnail.png" alt="Logo Empresa A" class="rounded-full w-40 h-40 object-contain inline-block" >
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

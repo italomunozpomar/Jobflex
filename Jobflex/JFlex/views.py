@@ -268,10 +268,15 @@ def index(req):
     all_regions = Region.objects.all()
     all_modalidades = Modalidad.objects.all()
     all_jornadas = Jornada.objects.all()
+    
+    # Fetch companies with logos to display in the carousel
+    companies_with_logos = Empresa.objects.exclude(imagen_perfil__isnull=True).exclude(imagen_perfil='').order_by('?')[:10]
+
     context = {
         'all_regions': all_regions,
         'all_modalidades': all_modalidades,
         'all_jornadas': all_jornadas,
+        'companies_with_logos': companies_with_logos,
     }
     return render(req, 'index.html', context)
 
