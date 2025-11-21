@@ -72,12 +72,12 @@
     {% if messages %}
         <div id="message-container" style="position: fixed; top: 80px; right: 20px; z-index: 2000; max-width: 350px;">
             {% for message in messages %}
-                <div class="bg-white text-dark border-l-4 border-primary p-4 rounded-md shadow-lg mb-2 flex items-start justify-between">
+                <div class="message-item bg-white text-dark border-l-4 border-primary p-4 rounded-md shadow-lg mb-2 flex items-start justify-between animate-fade-in">
                     <div class="flex-grow">
                         <p class="font-bold">Notificación</p>
                         <p class="text-sm">{{ message }}</p>
                     </div>
-                    <button onclick="this.closest('.flex').style.display='none'" class="ml-4 text-gray-400 hover:text-gray-600">
+                    <button onclick="this.closest('.message-item').remove()" class="ml-4 text-gray-400 hover:text-gray-600">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                     </button>
                 </div>
@@ -98,8 +98,8 @@
                     
                     <!-- Notification Icon and Dropdown -->
                     <div class="relative">
-                        <button id="notification-menu-button" class="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
-                            <svg id="nav-notification-icon" class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <button id="notification-menu-button" class="group relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                            <svg id="nav-notification-icon" class="w-6 h-6 text-dark group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             {% if unread_notifications_count > 0 %}
                                 <span class="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 ring-2 ring-white text-xs text-white flex items-center justify-center -mt-1 -mr-1">{{ unread_notifications_count }}</span>
                             {% else %}
@@ -247,6 +247,45 @@
     {% include 'partials/_auth_modal.html' %}
 
     {% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const messages = document.querySelectorAll('.message-item');
+            messages.forEach(function(message) {
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        message.classList.add('animate-fade-out'); // Assuming animate-fade-out is defined
+                        message.addEventListener('animationend', () => message.remove());
+                    }
+                }, 10000); // 10 seconds
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const messages = document.querySelectorAll('.message-item');
+            messages.forEach(function(message) {
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        message.classList.add('animate-fade-out'); // Assuming animate-fade-out is defined
+                        message.addEventListener('animationend', () => message.remove());
+                    }
+                }, 10000); // 10 seconds
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const messages = document.querySelectorAll('.message-item');
+            messages.forEach(function(message) {
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        message.classList.add('animate-fade-out');
+                        message.addEventListener('animationend', () => message.remove());
+                    }
+                }, 10000); // 10 seconds
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // --- Lógica del Modal de Autenticación ---
@@ -455,7 +494,7 @@
                     const navNotificationIcon = document.getElementById('nav-notification-icon');
                     const navDropdownIcon = document.getElementById('nav-dropdown-icon');
                     const navInicio = document.getElementById('nav-inicio');
-                    const mobileMenuBtn = document.getElementById('mobile-menu-btn'); // Added this line
+                    const mobileMenuBtn = document = document.getElementById('mobile-menu-btn'); // Added this line
 
                     window.addEventListener('scroll', () => {
                         const isScrolled = window.scrollY > 50;
@@ -492,6 +531,14 @@
                         if (navInicio) {
                             navInicio.classList.toggle('text-white', isScrolled);
                             navInicio.classList.toggle('text-dark', !isScrolled);
+
+                            if (isScrolled) {
+                                navInicio.classList.remove('hover:text-primary');
+                                navInicio.classList.add('hover:text-gray-300');
+                            } else {
+                                navInicio.classList.remove('hover:text-gray-300');
+                                navInicio.classList.add('hover:text-primary');
+                            }
                         }
                         if (mobileMenuBtn) { // Added this block
                             mobileMenuBtn.classList.toggle('text-white', isScrolled);
