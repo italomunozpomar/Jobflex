@@ -1084,19 +1084,7 @@ def register_emp(request):
             return redirect('validate')
 
 def get_ciudades(request, region_id):
-    try:
-        # This logic is for the search form, which we don't want to break.
-        # The form now excludes "Cualquier Región", so this part of the if will not be hit by the modal.
-        cualquier_region = Region.objects.get(nombre='Cualquier Región')
-        if region_id == cualquier_region.id_region:
-            ciudades = list(Ciudad.objects.filter(region=cualquier_region, nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
-        else:
-            # Exclude "Cualquier comuna" for all other regions.
-            ciudades = list(Ciudad.objects.filter(region_id=region_id).exclude(nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
-    except Region.DoesNotExist:
-        # Also exclude here in the fallback.
-        ciudades = list(Ciudad.objects.filter(region_id=region_id).exclude(nombre='Cualquier comuna').values('id_ciudad', 'nombre').order_by('nombre'))
-    
+    ciudades = list(Ciudad.objects.filter(region_id=region_id).values('id_ciudad', 'nombre').order_by('nombre'))
     return JsonResponse(ciudades, safe=False)
 
 import uuid # Add this import at the top
@@ -3588,6 +3576,7 @@ def job_offers(request: HttpRequest):
     ciudad_id = request.GET.get('ciudad', '')
     mode = request.GET.get('mode', '')
     time_str = request.GET.get('time', '')
+    oferta_id_param = request.GET.get('oferta', None) # Get the specific offer ID
 
     ofertas_query = OfertaLaboral.objects.select_related("empresa", "jornada", "modalidad", "ciudad__region")
 
@@ -3643,6 +3632,20 @@ def job_offers(request: HttpRequest):
     
     paginator = Paginator(ofertas, 6)
     page_number = request.GET.get('page')
+
+    # If a specific offer is requested, find its page
+    if oferta_id_param and not page_number:
+        try:
+            oferta_id_int = int(oferta_id_param)
+            # Find the position of the offer in the ordered list
+            oferta_pks = list(ofertas.values_list('pk', flat=True))
+            if oferta_id_int in oferta_pks:
+                oferta_index = oferta_pks.index(oferta_id_int)
+                # Calculate the page number (1-based index)
+                page_number = (oferta_index // paginator.per_page) + 1
+        except (ValueError, IndexError):
+            pass # If offer_id is invalid or not found, just load the first page
+
     page_obj = paginator.get_page(page_number)
 
     all_regions = Region.objects.all().order_by('nombre')
@@ -3668,12 +3671,13 @@ def job_offers(request: HttpRequest):
         'region_id': region_id,
         'ciudad_id': ciudad_id,
         'mode': mode,
-        'time': time_str
+        'time': time_str,
+        'oferta': oferta_id_param # Pass the offer ID to the template
       },
       'all_regions': all_regions,
       'selected_region': selected_region_obj,
       'selected_ciudad': selected_ciudad_obj,
-      'ofertas': ofertas
+      'ofertas': page_obj.object_list # Pass the objects of the current page
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         html = render(request, 'offers/partials/_job_paginator.html', ctx).content.decode('utf-8')

@@ -517,7 +517,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(response => response.json())
                     .then(data => {
                         if (data.html) {
-                            alert('DEBUG: Injecting the following HTML into edit form container:\n\n' + data.html);
                             formDiv.innerHTML = data.html;
                             displayDiv.classList.add('hidden');
                             formDiv.classList.remove('hidden');
