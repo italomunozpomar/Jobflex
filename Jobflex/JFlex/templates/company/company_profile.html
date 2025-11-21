@@ -16,15 +16,15 @@
         </div>
         
         <div class="p-6 pt-0">
-            <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between sm:space-x-5 relative z-20">
-                <div class="flex items-center space-x-5">
+            <div class="flex flex-col items-center sm:flex-row sm:items-end sm:justify-between relative z-20">
+                <div class="flex flex-col items-center sm:flex-row sm:items-center sm:space-x-5">
                     <!-- Logo de la Empresa -->
                     <div class="w-32 h-32 rounded-full border-4 border-white bg-white shadow-lg flex-shrink-0 -mt-20">
                         <img src="{% if empresa.imagen_perfil %}{{ empresa.imagen_perfil }}{% else %}{% static 'images/default_logo.png' %}{% endif %}" alt="Logo de {{ empresa.nombre_comercial }}" class="w-full h-full rounded-full object-cover">
                     </div>
                     
                     <!-- Nombre, Tagline e Industria -->
-                    <div class="mt-4 sm:mt-0 text-center sm:text-left">
+                    <div class="mt-4 text-center sm:text-left">
                         <h1 class="text-4xl font-extrabold text-dark tracking-tight">{{ empresa.nombre_comercial }}</h1>
                         {% if empresa.razon_social %}
                             <p class="text-xl text-secondary font-light mt-1">{{ empresa.razon_social }}</p>
@@ -186,20 +186,6 @@
 {{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Modal Toggle Logic ---
-    document.addEventListener('click', function(event) {
-        const toggleAttr = event.target.closest('[data-modal-toggle]')?.getAttribute('data-modal-toggle');
-        if (toggleAttr) {
-            const modal = document.getElementById(toggleAttr);
-            if (modal) modal.classList.remove('hidden');
-        }
-        const hideAttr = event.target.closest('[data-modal-hide]')?.getAttribute('data-modal-hide');
-        if (hideAttr) {
-            const modal = document.getElementById(hideAttr);
-            if (modal) modal.classList.add('hidden');
-        }
-    });
-
     // --- Profile Page Tabs ---
     const tabs = document.querySelectorAll('#company-tabs .tab-btn');
     const panels = document.querySelectorAll('#tab-content .tab-panel');

@@ -299,6 +299,20 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // --- Global Modal Toggle Logic ---
+            document.addEventListener('click', function(event) {
+                const toggleAttr = event.target.closest('[data-modal-toggle]')?.getAttribute('data-modal-toggle');
+                if (toggleAttr) {
+                    const modal = document.getElementById(toggleAttr);
+                    if (modal) modal.classList.remove('hidden');
+                }
+                const hideAttr = event.target.closest('[data-modal-hide]')?.getAttribute('data-modal-hide');
+                if (hideAttr) {
+                    const modal = document.getElementById(hideAttr);
+                    if (modal) modal.classList.add('hidden');
+                }
+            });
+
             // --- Lógica del Modal de Autenticación ---
             const authModal = document.getElementById('auth-modal');
             const authModalPanel = document.getElementById('auth-modal-panel');
