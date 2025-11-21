@@ -140,7 +140,6 @@
                         <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 origin-top-right transform transition-all duration-200 ease-out scale-95 opacity-0">
                             {% if user.empresa_profile %}
                                 <!-- Enlaces para Empresa -->
-                                <a href="{% url 'company_index' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Panel de Empresa</a>
                                 <a href="{% url 'company_profile' company_id=user.empresa_profile.empresa.id_empresa %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Perfil Público</a>
                                 <a href="{% url 'settings' %}" class="block px-4 py-2 text-sm text-dark hover:bg-light-gray">Configuración</a>
                             {% else %}
@@ -188,8 +187,20 @@
                         {% if user.is_authenticated %}
                             {% if user.empresa_profile %}
                                 <!-- Enlaces Móvil para Empresa -->
-                                <li><a href="{% url 'company_index' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Panel</a></li>
-                                <li><a href="{% url 'company_profile' company_id=user.empresa_profile.empresa.id_empresa %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Perfil</a></li>
+                                <li><a href="{% url 'company_profile' company_id=user.empresa_profile.empresa.id_empresa %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Perfil Público</a></li>
+                                <li><a href="{% url 'settings' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Configuración</a></li>
+                                
+                                <div class="py-2"><hr class="border-gray-200"></div>
+
+                                <li><a href="{% url 'company_index' %}?tab=dashboard" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Panel Principal</a></li>
+                                <li><a href="{% url 'company_index' %}?tab=all-jobs" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Todos los empleos</a></li>
+                                <li><a href="{% url 'company_index' %}?tab=postulaciones" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Postulaciones</a></li>
+                                {% if user.is_staff or user.empresa_profile.is_admin %}
+                                <li><a href="{% url 'company_index' %}?tab=users" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Gestionar Roles</a></li>
+                                {% endif %}
+                                <li><a href="{% url 'company_index' %}?tab=interviews" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Entrevistas</a></li>
+                                <li><a href="{% url 'company_index' %}?tab=analytics" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Análisis</a></li>
+                                <li><a href="{% url 'company_index' %}?tab=tools" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100">Herramientas</a></li>
                             {% else %}
                                 <!-- Enlaces Móvil para Candidato -->
                                 <li><a href="{% url 'user_index' %}" class="flex items-center p-3 text-base font-semibold text-dark rounded-lg hover:bg-gray-100 group"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span>Inicio</span></a></li>
