@@ -37,7 +37,7 @@ sys.path.insert(0, str(BASE_DIR.parent))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-crw6j)=%6qm9z#)!s%jsigvyt4rkj#@a*#1*^v4_!hw2racfo3'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -49,7 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://www.jobflex.cl', 
     'http://jobflex.cl',
     'http://179.43.127.166',
-    'https://nonrioting-physicochemically-tennille.ngrok-free.dev/',
+    'http://201.241.54.39',
 
 ]
 
@@ -60,7 +60,6 @@ INSTALLED_APPS = [
 		'JFlex.apps.JflexConfig',
 		'sii.apps.SiiConfig',
     'django.contrib.admin',
-    "django_browser_reload",
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -76,6 +75,9 @@ INSTALLED_APPS = [
     'googleapiclient',
     'django.contrib.sitemaps'
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ["django_browser_reload"]
 
 SITE_ID = 1
 
@@ -119,7 +121,6 @@ ACCOUNT_FORMS = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 		'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -128,6 +129,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE += ["django_browser_reload.middleware.BrowserReloadMiddleware"]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -269,4 +273,9 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 AWS_S3_VERIFY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# S3 Caching parameters
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
 
