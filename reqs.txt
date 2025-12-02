@@ -28,3 +28,4 @@ django-storages
 django-browser-reload
 google-api-python-client
 google-auth-oauthlib
+django-compressor

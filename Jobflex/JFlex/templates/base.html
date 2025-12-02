@@ -8,7 +8,6 @@
     <meta name="description" content="{% block description %}Encuentra miles de ofertas de trabajo en Jobflex, la plataforma líder para conectar talento en Chile.{% endblock %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
@@ -25,25 +24,6 @@
     <!-- Main JS -->
     <script src="{% static 'JS/main.js' %}" defer></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#8CA01A',
-                        'secondary': '#1A8CA0',
-                        'light-gray': '#D8D9DD',
-                        'dark': '#101208',
-                    },
-										animation: {
-											//				@keyframe-args..................
-											'fade-in': 'fadeIn 0.2s ease-out forwards',
-											'fade-out':'fadeOut 0.2s ease-out forwards',
-										}
-                }
-            }
-        }
-    </script>
     {% block extra_head %}{% endblock %}
 </head>
 <!-- Loader Overlay -->

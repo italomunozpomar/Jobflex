@@ -1,0 +1,20 @@
+{
+  "name": "jobflex-tailwind",
+  "version": "1.0.0",
+  "description": "Tailwind CSS build for Jobflex",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss -i ./Jobflex/JFlex/static/src/input.css -o ./Jobflex/JFlex/static/CSS/style.css --minify",
+    "watch": "tailwindcss -i ./Jobflex/JFlex/static/src/input.css -o ./Jobflex/JFlex/static/CSS/style.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.19",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.1"
+  }
+}

@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Estilos para la paginación y navegación de Swiper */
+.swiper-pagination-bullet-active {
+    background-color: #8CA01A !important;
+}
+
+.swiper-button-next, .swiper-button-prev {
+    color: #8CA01A !important;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.diagonal-clip-left {
+  clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+.diagonal-clip-right {
+  clip-path: polygon(0 0, 80% 0, 100% 100%, 0% 100%);
+}
+
+/* Floating Label */
+.input-label {
+    transform-origin: left top;
+    cursor: text;
+    pointer-events: none;
+    top: 1.25rem; /* Adjust based on input padding */
+    left: 0.75rem; /* Adjust based on input padding */
+    transition: all 0.2s ease-in-out;
+}
+
+.peer:focus ~ .input-label,
+.peer:not(:placeholder-shown) ~ .input-label {
+    transform: translateY(-0.75rem) scale(0.85);
+    color: var(--color-primary, #8CA01A);
+}
+
+/* Spinner */
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    width: 1em;
+    height: 1em;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+}
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes fadeIn{
+		0% { opacity: 0 }
+		100% { opacity: 1 }
+}
+@keyframes fadeOut{
+		0% { opacity: 1 }
+		100% { opacity: 0 }
+}
+/* Fix for navbar hover issue */
+#nav-register {
+    display: inline-block;
+    transition: transform 0.2s ease-in-out;
+}
+
+#main-nav.bg-primary #nav-register:hover {
+    color: white !important;
+    opacity: 0.8 !important;
+    transform: scale(1.05);
+}
+
+/* Custom class for list formatting with indentation */
+.list-disc-indent ul {
+    list-style-type: disc;
+    margin-left: 1.5em; /* Adjust as needed for indentation */
+}
+
+.list-disc-indent ol {
+    list-style-type: decimal;
+    margin-left: 1.5em; /* Adjust as needed for indentation */
+}
+
+.list-disc-indent li {
+    margin-bottom: 0.5em; /* Spacing between list items */
+}
+
+/* Custom styling for content that might contain "list-like" paragraphs */
+.content-with-bullets p {
+    position: relative;
+    padding-left: 1.5em; /* Space for the bullet */
+    margin-bottom: 0.5em; /* Spacing between "list items" */
+}
+
+.content-with-bullets p::before {
+    content: '•'; /* Bullet character */
+    position: absolute;
+    left: 0;
+    color: #312F32; /* Dark color for bullet */
+    font-weight: bold;
+}
+
+/* Ensure actual ul/ol within this content are also styled */
+.content-with-bullets ul {
+    list-style-type: disc;
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.content-with-bullets ol {
+    list-style-type: decimal;
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.content-with-bullets li {
+    margin-bottom: 0.5em;
+}
+
+/* Estilos para la vista de búsqueda de ofertas */
+#job-search-main {
+    height: calc(100vh - 160px); /* Ajustar altura para la navbar y la barra de búsqueda */
+}
+
+@media (max-width: 767px) {
+    #job-search-main {
+        height: auto;
+    }
+    .mobile-detail-view #job-list-aside {
+        display: none;
+    }
+    .mobile-detail-view #job-detail-section {
+        display: block;
+    }
+}
+
+/* Estilos para el panel de filtros off-canvas */
+#filter-sidebar {
+    transition: transform 0.3s ease-in-out;
+}
+
+#filter-sidebar-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Improved Collapsible Filter Menu */
+.filter-menu-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+    margin-top: 1.5rem; /* mt-6 */
+}
+
+.filter-menu-container.open {
+    max-height: 500px; /* Adjust as needed to fit content */
+}

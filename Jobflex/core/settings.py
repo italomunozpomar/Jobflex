@@ -73,7 +73,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'storages',
     'googleapiclient',
-    'django.contrib.sitemaps'
+    'django.contrib.sitemaps',
+    'compressor',
 ]
 
 if DEBUG:
@@ -278,4 +279,12 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+]
+
+COMPRESS_ENABLED = True
 
