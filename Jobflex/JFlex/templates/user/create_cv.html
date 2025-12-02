@@ -5,244 +5,493 @@
 
 {% block content %}
 
-    <main class="flex-grow flex flex-col md:flex-row ">
+    <div class="flex-grow flex flex-col md:flex-row relative -mt-20">
         <!-- Columna Izquierda: Controles -->
-        <aside class="w-full md:w-1/3 lg:w-1/4 p-6 bg-white shadow-lg self-start sticky top-12 -mt-4">
+        <aside id="cv-controls" class="w-full md:w-1/3 lg:w-1/4 p-6 pt-24 md:pt-20 bg-white shadow-lg self-start md:sticky md:top-0 transition-all z-10">
             <div>
                 <h2 class="text-2xl font-bold text-dark mb-6">Crea tu CV</h2>
-                <p class="text-secondary text-1xl -mt-4" style="font-size: 13px;">El CV creado tendrá formato Harvard y compatibilidad 100% en revisiones ATS.</p>
-                
-                <div class="space-y-4 mt-6">
-                    <div>
-                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Obligatorias</h3>
-                        <nav>
-                            <ul class="space-y-1">
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="personal-data-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-                                        <span class="ml-3">Datos Personales</span>
-                                    </button>
-                                    <input type="checkbox" id="personal-data-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="objective-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.006 3 11.55c0 4.556 4.03 8.25 9 8.25z"></path></svg>
-                                        <span class="ml-3">Objetivo Profesional</span>
-                                    </button>
-                                    <input type="checkbox" id="objective-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="experience-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-13.5a2.25 2.25 0 01-2.25-2.25V6.323a2.25 2.25 0 012.25-2.25h4.073m6.076-1.486a.75.75 0 011.06 0l2.122 2.121a.75.75 0 010 1.06l-6.076 6.075a.75.75 0 01-1.06 0l-2.121-2.12a.75.75 0 010-1.06l6.076-6.076z"></path></svg>
-                                        <span class="ml-3">Experiencia Laboral</span>
-                                    </button>
-                                    <input type="checkbox" id="experience-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="education-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20M1 12v7a2 2 0 002 2h18a2 2 0 002-2v-7"></path></svg>
-                                        <span class="ml-3">Educación</span>
-                                    </button>
-                                    <input type="checkbox" id="education-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="skills-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.991s.145.75.438.99l1.004.827a1.125 1.125 0 01.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.99s-.145-.75-.437-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                        <span class="ml-3">Habilidades</span>
-                                    </button>
-                                    <input type="checkbox" id="skills-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Opcionales</h3>
-                        <nav>
-                            <ul class="space-y-1">
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="languages-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.625M21 21l-5.25-11.625M3.75 5.25h16.5M4.5 5.25l5.25 11.625"></path></svg>
-                                        <span class="ml-3">Idiomas</span>
-                                    </button>
-                                    <input type="checkbox" id="languages-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="certifications-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <span class="ml-3">Certificaciones</span>
-                                    </button>
-                                    <input type="checkbox" id="certifications-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="projects-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0l-3.75 3.75M3.75 21v-1.5m0 1.5v-1.5m0 0h16.5m-16.5 0h1.5m13.5 0l3.75-3.75M3.75 16.5v1.5m0 0v1.5m0 0h16.5m2.25-11.25h-1.5m0 0h-1.5m-12 0h1.5m12 0h-1.5m0 0h-1.5m-1.5 0h-1.5m-6 0h1.5m-6 0h1.5m0 0h-1.5m0 0h-1.5"></path></svg>
-                                        <span class="ml-3">Proyectos</span>
-                                    </button>
-                                    <input type="checkbox" id="projects-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="volunteering-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
-                                        <span class="ml-3">Voluntariado</span>
-                                    </button>
-                                    <input type="checkbox" id="volunteering-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                    <button data-modal-target="references-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0"></path><path stroke-linecap="round" stroke-linejoin="round" d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM21 6a3 3 0 11-6 0 3 3 0 016 0zM12 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                        <span class="ml-3">Referencias</span>
-                                    </button>
-                                    <input type="checkbox" id="references-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-                
-                <div class="mt-8">
-                    <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Progreso</h3>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
-                    </div>
-                    <p id="progress-text" class="text-sm text-center text-secondary mt-2">0% completado</p>
-                </div>
 
-                <div class="mt-8 pt-4 border-t flex space-x-2">
-                    <button class="w-1/2 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Guardar y Salir</button>
-                    <button id="cancel-button" class="w-1/2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition-all">Cancelar y Reiniciar</button>
-                </div>
-            </div>
-        </aside>
-        <!-- Columna Derecha: Vista Previa del CV -->
-        <div class="w-full md:w-2/3 lg:w-3/4 p-8 pt-6">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-dark">Vista Previa</h2>
-                    <div>
-                        <button id="download-pdf-btn" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">Descargar PDF</button>
-                    </div>
-                </div>
-                <div class="bg-white p-12 rounded-lg shadow-lg aspect-[210/297]">
-                    <!-- CV Preview -->
-                    <div id="cv-preview" class="text-gray-800 text-sm">
-                        <!-- Header -->
-                        <header class="text-center border-b-2 border-gray-800 pb-4">
-                            <h1 id="cv-name" class="text-4xl font-bold tracking-widest uppercase">TU NOMBREAQUÍ</h1>
-                            <p id="cv-title" class="text-lg font-medium text-gray-600">Tu Título Profesional</p>
-                            <div id="cv-personal-data" class="flex justify-center items-center flex-wrap space-x-4 mt-2 text-sm">
-                                <span id="cv-phone">Tu Teléfono</span>
-                                <span class="text-gray-300">•</span>
-                                <span id="cv-email">tu.email@example.com</span>
-                                <span class="text-gray-300">•</span>
-                                <a id="cv-website" href="#" class="text-primary hover:underline">tu-sitio-web.com</a>
-                            </div>
-                        </header>
+                    <p class="text-secondary text-1xl -mt-4" style="font-size: 13px;">El CV creado tendrá formato Harvard y compatibilidad 100% en revisiones ATS.</p>
 
-                        <!-- Body -->
-                        <main class="mt-4">
-                            <!-- Objetivo Profesional -->
-                            <section id="cv-section-objective">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2>
-                                <p id="cv-objective-text" class="text-sm placeholder-entry">Un resumen conciso y potente sobre tus aspiraciones y lo que ofreces profesionalmente. Haz clic en la sección para editar este texto.</p>
-                            </section>
+                    
 
-                            <!-- Experiencia Laboral -->
-                            <section id="cv-section-experience" class="mt-4">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>
-                                <div id="cv-experience-list" class="space-y-3">
-                                    <div class="text-sm placeholder-entry">
-                                        <h3 class="font-bold">Nombre de la Empresa Ejemplo</h3>
-                                        <p class="italic text-xs">Enero 2020 - Presente</p>
-                                        <p class="italic font-semibold">Tu Puesto Más Reciente</p>
-                                        <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
-                                            <li>Logro o responsabilidad clave número uno, descrito de forma clara y concisa.</li>
-                                            <li>Otro logro importante, cuantificando el impacto siempre que sea posible.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </section>
+                    <div class="space-y-4 mt-6">
 
-                            <!-- Educación -->
-                            <section id="cv-section-education" class="mt-4">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>
-                                <div id="cv-education-list" class="space-y-2">
-                                    <div class="text-sm placeholder-entry">
-                                        <h3 class="font-bold">Nombre de la Universidad</h3>
-                                        <p class="italic text-xs">2015 - 2019</p>
-                                        <p class="italic">Tu Título o Grado</p>
-                                    </div>
-                                </div>
-                            </section>
+                        <div>
 
-                            <!-- Habilidades -->
-                            <section id="cv-section-skills" class="mt-4">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>
-                                <div id="cv-skills-list" class="text-sm placeholder-entry">
-                                    <p>Habilidad Clave 1 • Habilidad Técnica 2 • Herramienta Específica 3 • Metodología Ágil • Habilidad Blanda 5</p>
-                                </div>
-                            </section>
+                            <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Obligatorias</h3>
 
-                            <!-- Idiomas -->
-                            <section id="cv-section-languages" class="mt-4 hidden">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2>
-                                <ul id="cv-languages-list" class="text-sm space-y-1">
-                                    <li class="placeholder-entry">Idioma 1 (Nivel)</li>
-                                    <li class="placeholder-entry">Idioma 2 (Nivel)</li>
+                            <nav>
+
+                                <ul class="space-y-1">
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="personal-data-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+
+                                            <span class="ml-3">Datos Personales</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="personal-data-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="objective-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.006 3 11.55c0 4.556 4.03 8.25 9 8.25z"></path></svg>
+
+                                            <span class="ml-3">Objetivo Profesional</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="objective-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="experience-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-13.5a2.25 2.25 0 01-2.25-2.25V6.323a2.25 2.25 0 012.25-2.25h4.073m6.076-1.486a.75.75 0 011.06 0l2.122 2.121a.75.75 0 010 1.06l-6.076 6.075a.75.75 0 01-1.06 0l-2.121-2.12a.75.75 0 010-1.06l6.076-6.076z"></path></svg>
+
+                                            <span class="ml-3">Experiencia Laboral</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="experience-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="education-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20M1 12v7a2 2 0 002 2h18a2 2 0 002-2v-7"></path></svg>
+
+                                            <span class="ml-3">Educación</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="education-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="skills-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.991s.145.75.438.99l1.004.827a1.125 1.125 0 01.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.99s-.145-.75-.437-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+
+                                            <span class="ml-3">Habilidades</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="skills-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
                                 </ul>
-                            </section>
 
-                            <!-- Certificaciones -->
-                            <section id="cv-section-certifications" class="mt-4 hidden">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>
-                                <div id="cv-certifications-list" class="space-y-2">
-                                     <div class="text-sm placeholder-entry">
-                                        <p><span class="font-bold">Nombre de la Certificación</span>, Entidad Emisora (Año)</p>
-                                    </div>
-                                </div>
-                            </section>
+                            </nav>
 
-                            <!-- Proyectos -->
-                            <section id="cv-section-projects" class="mt-4 hidden">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>
-                                <div id="cv-projects-list" class="space-y-3">
-                                    <div class="text-sm placeholder-entry">
-                                        <h3 class="font-bold">Proyecto Destacado</h3>
-                                        <p>Breve descripción del proyecto, tu rol, las tecnologías utilizadas y el resultado o impacto del mismo.</p>
-                                    </div>
-                                </div>
-                            </section>
+                        </div>
 
-                            <!-- Voluntariado -->
-                            <section id="cv-section-volunteering" class="mt-4 hidden">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>
-                                <div id="cv-volunteering-list" class="space-y-3">
-                                    <div class="text-sm placeholder-entry">
-                                        <h3 class="font-bold">Nombre de la Organización</h3>
-                                        <p class="italic">Tu Rol</p>
-                                        <p class="mt-1">Descripción de tus actividades y el impacto de tu contribución.</p>
-                                    </div>
-                                </div>
-                            </section>
+                        <div>
 
-                            <!-- Referencias -->
-                            <section id="cv-section-references" class="mt-4 hidden">
-                                <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>
-                                <div id="cv-references-list" class="space-y-3">
-                                    <div class="text-sm placeholder-entry">
-                                        <h3 class="font-bold">Nombre del Referente</h3>
-                                        <p class="italic">Cargo del Referente</p>
-                                        <p class="mt-1">Teléfono: 123456789 | Email: referente@example.com</p>
-                                        <a href="#" class="text-primary hover:underline">Perfil de LinkedIn</a>
-                                    </div>
-                                </div>
-                            </section>
+                            <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Opcionales</h3>
 
-                        </main>
+                            <nav>
+
+                                <ul class="space-y-1">
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="languages-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.625M21 21l-5.25-11.625M3.75 5.25h16.5M4.5 5.25l5.25 11.625"></path></svg>
+
+                                            <span class="ml-3">Idiomas</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="languages-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="certifications-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+                                            <span class="ml-3">Certificaciones</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="certifications-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="projects-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0l-3.75 3.75M3.75 21v-1.5m0 1.5v-1.5m0 0h16.5m-16.5 0h1.5m13.5 0l3.75-3.75M3.75 16.5v1.5m0 0v1.5m0 0h16.5m2.25-11.25h-1.5m0 0h-1.5m-12 0h1.5m12 0h-1.5m0 0h-1.5m-1.5 0h-1.5m-6 0h1.5m-6 0h1.5m0 0h-1.5m0 0h-1.5"></path></svg>
+
+                                            <span class="ml-3">Proyectos</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="projects-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="volunteering-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
+
+                                            <span class="ml-3">Voluntariado</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="volunteering-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+
+                                        <button data-modal-target="references-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0"></path><path stroke-linecap="round" stroke-linejoin="round" d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM21 6a3 3 0 11-6 0 3 3 0 016 0zM12 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+
+                                            <span class="ml-3">Referencias</span>
+
+                                        </button>
+
+                                        <input type="checkbox" id="references-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+
+                                    </li>
+
+                                </ul>
+
+                            </nav>
+
+                        </div>
+
                     </div>
+
+                    
+
+                    <div class="mt-8">
+
+                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Progreso</h3>
+
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+
+                            <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+
+                        </div>
+
+                        <p id="progress-text" class="text-sm text-center text-secondary mt-2">0% completado</p>
+
+                    </div>
+
+    
+
+                    <div class="mt-8 pt-4 border-t flex space-x-2">
+
+                        <button class="w-1/2 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Guardar y Salir</button>
+
+                        <button id="cancel-button" class="w-1/2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition-all">Cancelar y Reiniciar</button>
+
+                    </div>
+
                 </div>
+
+                    </aside>
+
+                    
+
+                    <!-- Columna Derecha: Vista Previa del CV -->
+
+                    <div id="cv-preview-container" class="w-full md:w-2/3 lg:w-3/4 p-8 pt-24 hidden md:block">
+
+                        <div class="max-w-4xl mx-auto">
+
+                            <div class="flex justify-between items-center mb-6">
+
+                        <h2 class="text-2xl font-bold text-dark">Vista Previa</h2>
+
+                        <div>
+
+                            <button id="download-pdf-btn" class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-all text-sm">Descargar PDF</button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="bg-white p-12 rounded-lg shadow-lg aspect-[210/297]">
+
+                                            <!-- CV Preview -->
+
+                                            <div id="cv-preview" class="text-gray-800 text-sm">
+
+                                                                        <!-- Header -->
+
+                                                                        <header class="text-center border-b-2 border-gray-800 pb-4">
+
+                                                                            <h1 id="cv-name" class="text-2xl md:text-4xl font-bold tracking-widest uppercase break-words">TU NOMBRE AQUÍ</h1>
+
+                                                                            <p id="cv-title" class="text-lg font-medium text-gray-600">Tu Título Profesional</p>
+
+                                                                            <div id="cv-personal-data" class="flex justify-center items-center flex-wrap space-x-4 mt-2 text-sm">
+
+                                                        <span id="cv-phone">Tu Teléfono</span>
+
+                                    <span class="text-gray-300">•</span>
+
+                                    <span id="cv-email">tu.email@example.com</span>
+
+                                    <span class="text-gray-300">•</span>
+
+                                    <a id="cv-website" href="#" class="text-primary hover:underline">tu-sitio-web.com</a>
+
+                                </div>
+
+                            </header>
+
+    
+
+                            <!-- Body -->
+
+                            <main class="mt-4">
+
+                                <!-- Objetivo Profesional -->
+
+                                <section id="cv-section-objective">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Objetivo Profesional</h2>
+
+                                    <p id="cv-objective-text" class="text-sm placeholder-entry">Un resumen conciso y potente sobre tus aspiraciones y lo que ofreces profesionalmente. Haz clic en la sección para editar este texto.</p>
+
+                                </section>
+
+    
+
+                                <!-- Experiencia Laboral -->
+
+                                <section id="cv-section-experience" class="mt-4">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Experiencia Profesional</h2>
+
+                                    <div id="cv-experience-list" class="space-y-3">
+
+                                        <div class="text-sm placeholder-entry">
+
+                                            <h3 class="font-bold">Nombre de la Empresa Ejemplo</h3>
+
+                                            <p class="italic text-xs">Enero 2020 - Presente</p>
+
+                                            <p class="italic font-semibold">Tu Puesto Más Reciente</p>
+
+                                            <ul class="list-disc list-inside mt-1 space-y-1 pl-2">
+
+                                                <li>Logro o responsabilidad clave número uno, descrito de forma clara y concisa.</li>
+
+                                                <li>Otro logro importante, cuantificando el impacto siempre que sea posible.</li>
+
+                                            </ul>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Educación -->
+
+                                <section id="cv-section-education" class="mt-4">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Educación</h2>
+
+                                    <div id="cv-education-list" class="space-y-2">
+
+                                        <div class="text-sm placeholder-entry">
+
+                                            <h3 class="font-bold">Nombre de la Universidad</h3>
+
+                                            <p class="italic text-xs">2015 - 2019</p>
+
+                                            <p class="italic">Tu Título o Grado</p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Habilidades -->
+
+                                <section id="cv-section-skills" class="mt-4">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Habilidades</h2>
+
+                                    <div id="cv-skills-list" class="text-sm placeholder-entry">
+
+                                        <p>Habilidad Clave 1 • Habilidad Técnica 2 • Herramienta Específica 3 • Metodología Ágil • Habilidad Blanda 5</p>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Idiomas -->
+
+                                <section id="cv-section-languages" class="mt-4 hidden">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Idiomas</h2>
+
+                                    <ul id="cv-languages-list" class="text-sm space-y-1">
+
+                                        <li class="placeholder-entry">Idioma 1 (Nivel)</li>
+
+                                        <li class="placeholder-entry">Idioma 2 (Nivel)</li>
+
+                                    </ul>
+
+                                </section>
+
+    
+
+                                <!-- Certificaciones -->
+
+                                <section id="cv-section-certifications" class="mt-4 hidden">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Certificaciones</h2>
+
+                                    <div id="cv-certifications-list" class="space-y-2">
+
+                                         <div class="text-sm placeholder-entry">
+
+                                            <p><span class="font-bold">Nombre de la Certificación</span>, Entidad Emisora (Año)</p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Proyectos -->
+
+                                <section id="cv-section-projects" class="mt-4 hidden">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Proyectos</h2>
+
+                                    <div id="cv-projects-list" class="space-y-3">
+
+                                        <div class="text-sm placeholder-entry">
+
+                                            <h3 class="font-bold">Proyecto Destacado</h3>
+
+                                            <p>Breve descripción del proyecto, tu rol, las tecnologías utilizadas y el resultado o impacto del mismo.</p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Voluntariado -->
+
+                                <section id="cv-section-volunteering" class="mt-4 hidden">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Voluntariado</h2>
+
+                                    <div id="cv-volunteering-list" class="space-y-3">
+
+                                        <div class="text-sm placeholder-entry">
+
+                                            <h3 class="font-bold">Nombre de la Organización</h3>
+
+                                            <p class="italic">Tu Rol</p>
+
+                                            <p class="mt-1">Descripción de tus actividades y el impacto de tu contribución.</p>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                                <!-- Referencias -->
+
+                                <section id="cv-section-references" class="mt-4 hidden">
+
+                                    <h2 class="text-base font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2">Referencias</h2>
+
+                                    <div id="cv-references-list" class="space-y-3">
+
+                                        <div class="text-sm placeholder-entry">
+
+                                            <h3 class="font-bold">Nombre del Referente</h3>
+
+                                            <p class="italic">Cargo del Referente</p>
+
+                                            <p class="mt-1">Teléfono: 123456789 | Email: referente@example.com</p>
+
+                                            <a href="#" class="text-primary hover:underline">Perfil de LinkedIn</a>
+
+                                        </div>
+
+                                    </div>
+
+                                </section>
+
+    
+
+                            </main>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-        </div>
-    </main>
+
+    
+
+            <!-- Mobile Preview Toggle FAB -->
+
+            <button id="mobile-preview-toggle" class="md:hidden fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-2xl z-40 flex items-center justify-center transition-transform hover:scale-110">
+
+                <svg id="icon-preview" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+
+                            <svg id="icon-edit" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg>
+
+                        </button>
+
+                    </div>
+
+    
 
     <footer class="bg-dark text-light-gray py-4 mt-auto">
         <div class="container mx-auto text-center text-sm">
@@ -1637,6 +1886,35 @@
 
     // Inicializar la barra de progreso al cargar la página
     updateProgressBar();
+
+    // --- Toggle Vista Previa Móvil ---
+    const mobilePreviewToggleBtn = document.getElementById('mobile-preview-toggle');
+    const cvControls = document.getElementById('cv-controls');
+    const cvPreviewContainer = document.getElementById('cv-preview-container');
+    const iconPreview = document.getElementById('icon-preview');
+    const iconEdit = document.getElementById('icon-edit');
+
+    if (mobilePreviewToggleBtn) {
+        mobilePreviewToggleBtn.addEventListener('click', () => {
+            const isPreviewVisible = !cvPreviewContainer.classList.contains('hidden');
+
+            if (isPreviewVisible) {
+                // Switch to Edit Mode
+                cvPreviewContainer.classList.add('hidden');
+                cvControls.classList.remove('hidden');
+                iconPreview.classList.remove('hidden');
+                iconEdit.classList.add('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // Switch to Preview Mode
+                cvPreviewContainer.classList.remove('hidden');
+                cvControls.classList.add('hidden');
+                iconPreview.classList.add('hidden');
+                iconEdit.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
 });
     </script>
 {% endblock %}
