@@ -65,7 +65,9 @@ function openApplyModal(offerId) {
                 const applyButtonOnPage = document.querySelector(`#open-apply-modal-btn[data-offer-id="${offerId}"]`);
                 if (applyButtonOnPage) {
                     applyButtonOnPage.disabled = true;
-                    applyButtonOnPage.textContent = 'Postulado';
+                    applyButtonOnPage.textContent = 'Ya Postulaste';
+                    applyButtonOnPage.classList.remove('bg-primary', 'hover:bg-opacity-90', 'transform', 'hover:scale-105');
+                    applyButtonOnPage.classList.add('bg-gray-400', 'cursor-not-allowed');
                 }
             } 
             // If the error requires a redirect (e.g., no CV), perform the redirect
@@ -124,7 +126,9 @@ async function handleApplicationSubmit(form, offerId) {
         const applyButtonOnPage = document.querySelector(`#open-apply-modal-btn[data-offer-id="${offerId}"]`);
         if (applyButtonOnPage) {
             applyButtonOnPage.disabled = true;
-            applyButtonOnPage.textContent = 'Postulado';
+            applyButtonOnPage.textContent = 'Ya Postulaste';
+            applyButtonOnPage.classList.remove('bg-primary', 'hover:bg-opacity-90', 'transform', 'hover:scale-105');
+            applyButtonOnPage.classList.add('bg-gray-400', 'cursor-not-allowed');
         }
     } catch (error) {
         alert(error.message || 'Ocurrió un error al postular.');

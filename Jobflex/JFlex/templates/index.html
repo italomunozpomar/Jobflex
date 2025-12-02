@@ -11,7 +11,7 @@
                 <div class="max-w-2xl text-center md:text-left mx-auto md:mx-0">
                     <h2 class="text-5xl md:text-6xl font-bold text-dark mb-4">Encuentra el trabajo de tus <span class="text-primary">sueños</span></h2>
                     <p class="text-secondary mb-8 text-lg">Explora miles de oportunidades laborales y da el siguiente paso en tu carrera profesional.</p>
-                    <form action="{% url 'job_offers' %}" method="get" class="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border">
+                    <form id="hero-search-form" action="{% url 'job_offers' %}" method="get" class="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                             <div class="col-span-1 md:col-span-3">
                                 <label for="search_q_index" class="sr-only">Puesto, palabra clave o empresa</label>
@@ -385,6 +385,29 @@
                 prevEl: '.swiper-button-prev',
             },
         });
+
+        // Form Validation for Hero Search
+        const heroSearchForm = document.getElementById('hero-search-form');
+        if (heroSearchForm) {
+            heroSearchForm.addEventListener('submit', function(event) {
+                const q = document.getElementById('search_q_index').value.trim();
+                const region = document.getElementById('search_region_index').value;
+                const modalidad = document.getElementById('search_modalidad_index').value;
+                const jornada = document.getElementById('search_jornada_index').value;
+
+                if (!q && !region && !modalidad && !jornada) {
+                    event.preventDefault();
+                    // Optional: Add a visual cue or tooltip indicating a field is required
+                    const input = document.getElementById('search_q_index');
+                    input.classList.add('ring-2', 'ring-red-500', 'border-transparent');
+                    input.placeholder = "Por favor ingresa un término de búsqueda...";
+                    setTimeout(() => {
+                         input.classList.remove('ring-2', 'ring-red-500', 'border-transparent');
+                         input.placeholder = "Puesto, palabra clave o empresa";
+                    }, 2000);
+                }
+            });
+        }
     });
     </script>
     <style>

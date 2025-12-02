@@ -35,7 +35,8 @@ urlpatterns = [
     
                 # Notificaciones
                 path('notifications/mark-all-read/', views.mark_all_as_read, name='mark_all_as_read'),
-                path('notifications/delete-all/', views.delete_all_notifications, name='delete_all_notifications'),        
+                path('notifications/delete-all/', views.delete_all_notifications, name='delete_all_notifications'),
+                path('api/get-notifications/', views.get_notifications_api, name='get_notifications_api'),
             
             path('ajax/ciudades/<int:region_id>/', views.get_ciudades, name='get_ciudades'),        # --- Rutas comentadas para funcionalidades futuras o de empresa ---
         path("register_emp/", views.register_emp, name="register_emp"),

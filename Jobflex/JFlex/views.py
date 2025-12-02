@@ -3840,6 +3840,19 @@ def apply_to_offer(request, offer_id):
                 estado_postulacion='enviada'
             )
             
+            # --- Notification Logic ---
+            try:
+                crear_notificacion(
+                    usuario_destino_obj=request.user,
+                    tipo_notificacion_nombre='Postulación',
+                    mensaje_str=f'Te has postulado exitosamente a la oferta: {offer.titulo_puesto}',
+                    link_relacionado_str=reverse('postulaciones'),
+                    motivo_str='Confirmación de Postulación'
+                )
+            except Exception as e:
+                print(f"Error creating notification: {e}")
+            # --- End Notification Logic ---
+
             return JsonResponse({'success': True, 'message': '¡Postulación enviada con éxito!'})
 
         except CVCandidato.DoesNotExist:
@@ -4036,3 +4049,63 @@ def delete_all_notifications(request):
         messages.error(request, f"Ocurrió un error al eliminar las notificaciones: {e}")
     
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@login_required
+def get_notifications_api(request):
+    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    notifications_data = {
+        'unread_notifications_count': 0,
+        'recent_notifications': [],
+    }
+
+    try:
+        # Check user type
+        try:
+            registro_usuario = request.user.registrousuarios
+        except RegistroUsuarios.DoesNotExist:
+            registro_usuario = None
+
+        if registro_usuario:
+            # Fetch generic notifications
+            all_notifications_qs = Notificaciones.objects.filter(
+                usuario_destino=request.user
+            ).select_related('tipo_notificacion').order_by('-fecha_envio')
+
+            # Filter by specialized notification types
+            if registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'candidato':
+                # Only show notifications that have a corresponding NotificacionCandidato entry
+                notifications_for_user = all_notifications_qs.filter(
+                    notificacioncandidato__isnull=False
+                )
+            elif registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'empresa':
+                # Only show notifications that have a corresponding NotificacionEmpresa entry
+                notifications_for_user = all_notifications_qs.filter(
+                    notificacionempresa__isnull=False
+                )
+            else:
+                notifications_for_user = all_notifications_qs.none()
+
+            notifications_data['unread_notifications_count'] = notifications_for_user.filter(leida=False).count()
+            
+            # Fetch a few recent notifications for display
+            for notif in notifications_for_user[:5]: # Limit to 5 recent notifications
+                notifications_data['recent_notifications'].append({
+                    'id': notif.id_notificacion,
+                    'message': notif.mensaje,
+                    'is_read': notif.leida,
+                    'timestamp': notif.fecha_envio,
+                    'link': notif.link_relacionado,
+                    'type': notif.tipo_notificacion.nombre_tipo if notif.tipo_notificacion else 'General'
+                })
+    except Exception as e:
+        print(f"Error in get_notifications_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+    html_content = render_to_string('partials/_notification_items.html', notifications_data, request=request)
+    
+    return JsonResponse({
+        'unread_count': notifications_data['unread_notifications_count'],
+        'html': html_content
+    })

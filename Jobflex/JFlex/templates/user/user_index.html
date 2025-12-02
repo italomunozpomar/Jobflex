@@ -1070,6 +1070,28 @@
                 });
             }
 
+            // Form Validation for User Index Search
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(event) {
+                    const q = document.getElementById('search_query').value.trim();
+                    const region = document.getElementById('search_region') ? document.getElementById('search_region').value : '';
+                    const ciudad = document.getElementById('search_ciudad') ? document.getElementById('search_ciudad').value : '';
+                    const mode = document.getElementById('search_mode') ? document.getElementById('search_mode').value : '';
+                    const time = document.getElementById('time-filter-input').value;
+
+                    if (!q && !region && !ciudad && !mode && !time) {
+                        event.preventDefault();
+                        const input = document.getElementById('search_query');
+                        input.classList.add('ring-2', 'ring-red-500');
+                        input.placeholder = "Ingresa un término para buscar...";
+                        setTimeout(() => {
+                            input.classList.remove('ring-2', 'ring-red-500');
+                            input.placeholder = "Buscar empleo por puesto, palabra clave o empresa...";
+                        }, 2000);
+                    }
+                });
+            }
+
             // --- CV Upload Modal Drag & Drop ---
             const dropArea = document.getElementById('file-drop-area');
             const previewContainer = document.getElementById('pdf-preview-container');

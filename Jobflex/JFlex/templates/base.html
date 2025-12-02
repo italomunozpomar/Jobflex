@@ -101,34 +101,16 @@
                         <button id="notification-menu-button" class="group relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
                             <svg id="nav-notification-icon" class="w-6 h-6 text-dark group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             {% if unread_notifications_count > 0 %}
-                                <span class="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 ring-2 ring-white text-xs text-white flex items-center justify-center -mt-1 -mr-1">{{ unread_notifications_count }}</span>
+                                <span id="notification-badge" class="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-500 ring-2 ring-white text-xs text-white flex items-center justify-center -mt-1 -mr-1">{{ unread_notifications_count }}</span>
                             {% else %}
-                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white hidden"></span>
+                                <span id="notification-badge" class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white hidden"></span>
                             {% endif %}
                         </button>
                         <div id="notification-menu" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-50 origin-top-right transform transition-all duration-200 ease-out scale-95 opacity-0">
                             <div class="block px-4 py-2 text-xs text-gray-400">Notificaciones Recientes</div>
-                            {% if recent_notifications %}
-                                {% for notification in recent_notifications %}
-                                    <a href="{{ notification.link }}" class="block px-4 py-2 text-sm {% if not notification.is_read %}font-semibold bg-blue-50{% endif %} text-dark hover:bg-gray-100">
-                                        <p>{{ notification.message }}</p>
-                                        <p class="text-xs text-gray-500">{{ notification.timestamp|date:"d M Y H:i" }}</p>
-                                    </a>
-                                {% endfor %}
-                            <div class="border-t border-gray-200 my-1"></div>
-                            <div class="flex items-center justify-around py-1">
-                                <form action="{% url 'mark_all_as_read' %}" method="post" class="flex-1">
-                                    {% csrf_token %}
-                                    <button type="submit" class="block w-full text-center px-2 py-1 text-xs text-secondary hover:bg-gray-100 rounded-md">Marcar como leídas</button>
-                                </form>
-                                <form action="{% url 'delete_all_notifications' %}" method="post" class="flex-1" onsubmit="return confirm('¿Seguro que quieres limpiar todas las notificaciones?');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="block w-full text-center px-2 py-1 text-xs text-red-500 hover:bg-gray-100 rounded-md">Limpiar Todas</button>
-                                </form>
+                            <div id="notification-list-container">
+                                {% include "partials/_notification_items.html" %}
                             </div>
-                        {% else %}
-                            <p class="block px-4 py-2 text-sm text-gray-500 text-center">No tienes notificaciones.</p>
-                        {% endif %}
                         </div>
                     </div>
 
@@ -604,6 +586,56 @@
                     }
                 });
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationListContainer = document.getElementById('notification-list-container');
+
+            function fetchNotifications() {
+                fetch('/api/get-notifications/', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.status === 403) {
+                        // User logged out, stop polling
+                        return; 
+                    }
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    // Update badge
+                    if (notificationBadge) {
+                        if (data.unread_count > 0) {
+                            notificationBadge.textContent = data.unread_count;
+                            notificationBadge.classList.remove('hidden');
+                            // Ensure badge styling
+                            notificationBadge.classList.remove('h-2', 'w-2');
+                            notificationBadge.classList.add('h-4', 'w-4', 'text-xs', 'flex', 'items-center', 'justify-center', '-mt-1', '-mr-1');
+                        } else {
+                            notificationBadge.textContent = '';
+                            notificationBadge.classList.add('hidden');
+                        }
+                    }
+
+                    // Update list
+                    if (notificationListContainer) {
+                        notificationListContainer.innerHTML = data.html;
+                    }
+                })
+                .catch(error => console.error('Error fetching notifications:', error));
+            }
+
+            // Poll every 10 seconds
+            setInterval(fetchNotifications, 10000);
         });
     </script>
     {% endblock %}
