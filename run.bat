@@ -40,6 +40,27 @@ IF NOT EXIST "%SCRIPT_DIR%venv" (
     ECHO.
 )
 
+REM Check if node_modules exists
+IF NOT EXIST "%SCRIPT_DIR%node_modules" (
+    ECHO [+] Installing Node.js dependencies...
+    call npm install
+    IF ERRORLEVEL 1 (
+        ECHO [!] Failed to install Node.js dependencies. Make sure Node.js is installed.
+        PAUSE
+        EXIT /B 1
+    )
+    ECHO.
+)
+
+ECHO [+] Building Tailwind CSS...
+call npm run build
+IF ERRORLEVEL 1 (
+    ECHO [!] Failed to build Tailwind CSS.
+    PAUSE
+    EXIT /B 1
+)
+ECHO.
+
 ECHO [+] Starting Django development server...
 ECHO    Access the application at http://127.0.0.1:8000/
 ECHO    Press CTRL+C to stop the server.
