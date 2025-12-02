@@ -3851,6 +3851,20 @@ def apply_to_offer(request, offer_id):
                 )
             except Exception as e:
                 print(f"Error creating notification: {e}")
+            
+            # --- Notification Logic for Company ---
+            try:
+                company_users = EmpresaUsuario.objects.filter(empresa=offer.empresa)
+                for company_user_rel in company_users:
+                    crear_notificacion(
+                        usuario_destino_obj=company_user_rel.id_empresa_user,
+                        tipo_notificacion_nombre='Nueva Postulación',
+                        mensaje_str=f'Nuevo postulante para: {offer.titulo_puesto}',
+                        link_relacionado_str=reverse('view_offer_applicants', kwargs={'offer_id': offer.id_oferta}),
+                        motivo_str='Notificación de Nueva Postulación'
+                    )
+            except Exception as e:
+                print(f"Error creating company notification: {e}")
             # --- End Notification Logic ---
 
             return JsonResponse({'success': True, 'message': '¡Postulación enviada con éxito!'})
@@ -3983,7 +3997,7 @@ def crear_notificacion(usuario_destino_obj, tipo_notificacion_nombre, mensaje_st
     # Assuming usuario_destino_obj is a User instance
     try:
         # Check if the user is a Candidate
-        candidato_profile = Candidato.objects.filter(id_candidato=usuario_destino_obj).first()
+        candidato_profile = Candidato.objects.using('jflex_db').filter(id_candidato=usuario_destino_obj).first()
         if candidato_profile:
             NotificacionCandidato.objects.create(
                 id_notificacion_candidato=notificacion_base,
@@ -3995,7 +4009,7 @@ def crear_notificacion(usuario_destino_obj, tipo_notificacion_nombre, mensaje_st
 
     try:
         # Check if the user is an Employer (EmpresaUsuario)
-        empresa_profile = EmpresaUsuario.objects.filter(id_empresa_user=usuario_destino_obj).first()
+        empresa_profile = EmpresaUsuario.objects.using('jflex_db').filter(id_empresa_user=usuario_destino_obj).first()
         if empresa_profile:
             NotificacionEmpresa.objects.create(
                 id_notificacion_empresa=notificacion_base,
@@ -4063,7 +4077,7 @@ def get_notifications_api(request):
     try:
         # Check user type
         try:
-            registro_usuario = request.user.registrousuarios
+            registro_usuario = RegistroUsuarios.objects.using('jflex_db').get(id_registro=request.user)
         except RegistroUsuarios.DoesNotExist:
             registro_usuario = None
 

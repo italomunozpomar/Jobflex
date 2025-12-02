@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
 /* Estilos para la paginación y navegación de Swiper */
 .swiper-pagination-bullet-active {
     background-color: #8CA01A !important;

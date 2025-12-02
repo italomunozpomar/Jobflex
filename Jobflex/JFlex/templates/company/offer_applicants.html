@@ -218,12 +218,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentInterviewId = null;
 
     // 2. MODAL INSTANCES
+    const modalOptions = {
+        placement: 'center',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-gray-900 bg-opacity-50 fixed inset-0 z-40 backdrop-blur-sm',
+        closable: true
+    };
+
     const cvPreviewModalEl = document.getElementById('cv-preview-modal');
     const scheduleModalEl = document.getElementById('schedule-interview-modal');
     const manageModalEl = document.getElementById('manage-interview-modal');
-    const cvPreviewModal = new Modal(cvPreviewModalEl);
-    const scheduleModal = new Modal(scheduleModalEl);
-    const manageModal = new Modal(manageModalEl);
+    
+    const cvPreviewModal = new Modal(cvPreviewModalEl, modalOptions);
+    const scheduleModal = new Modal(scheduleModalEl, modalOptions);
+    const manageModal = new Modal(manageModalEl, modalOptions);
 
     // 3. UI UPDATE FUNCTIONS
     function showLoader(modalElement) {

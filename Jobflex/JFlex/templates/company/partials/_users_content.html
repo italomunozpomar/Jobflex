@@ -1,5 +1,11 @@
 <div id="users" class="tab-content hidden">
-    <h1 class="text-3xl font-bold text-dark mb-6">Usuarios de la Empresa</h1>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-dark">Usuarios de la Empresa</h1>
+        <button data-modal-toggle="invitation-modal" class="flex items-center space-x-2 bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+            <span>Invitar Usuario</span>
+        </button>
+    </div>
     <div class="bg-white p-6 rounded-lg shadow-md">
         <table class="w-full text-left">
             <thead>
