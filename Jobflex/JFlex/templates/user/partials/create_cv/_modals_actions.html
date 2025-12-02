@@ -1,0 +1,46 @@
+<!-- Modal para Cancelar -->
+<div id="cancel-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center mb-6 flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Confirmar Cancelación</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="overflow-y-auto flex-1 min-h-0">
+            <p class="text-secondary mb-6">¿Estás seguro de que quieres reiniciar tu progreso? Se perderán todos los cambios no guardados y el CV volverá a su estado inicial.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-end gap-4 mt-4 flex-shrink-0">
+            <button id="confirm-cancel-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 w-full sm:w-auto">Sí, Reiniciar</button>
+            <button class="bg-gray-300 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-400 close-modal w-full sm:w-auto">No, continuar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Nuevo Modal para Guardar CV -->
+<div id="save-cv-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center mb-6 flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Guardar CV</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="overflow-y-auto flex-1 min-h-0">
+            <form id="save-cv-form">
+                <input type="hidden" id="next-url-input" value="{{ next_url|default:'' }}">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Nombre del CV <span class="text-red-500">*</span></label>
+                        <input type="text" name="cv_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div id="error-cv_name" class="text-red-500 text-xs mt-1 error-message"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark">Cargo Asociado <span class="text-red-500">*</span></label>
+                        <input type="text" name="cargo_asociado" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div id="error-cargo_asociado" class="text-red-500 text-xs mt-1 error-message"></div>
+                    </div>
+                </div>
+                <div class="mt-8 text-right flex-shrink-0">
+                    <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 w-full sm:w-auto">Confirmar y Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

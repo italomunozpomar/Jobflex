@@ -1,0 +1,50 @@
+<!-- Modal para Referencias -->
+<div id="references-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Referencias</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 min-h-0">
+            <div id="references-tabs-container" class="flex border-b mb-4 overflow-x-auto whitespace-nowrap pb-1"></div>
+            <div id="references-forms-container"></div>
+        </div>
+        <div class="p-6 border-t flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0">
+            <button id="add-reference-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg w-full sm:w-auto">Añadir otra referencia</button>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button id="delete-reference-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 w-full sm:w-auto">Eliminar</button>
+                <button id="save-references-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 w-full sm:w-auto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="reference-tab-template">
+    <button class="reference-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2 flex-shrink-0">Referencia</button>
+</template>
+
+<template id="reference-form-template">
+    <form class="reference-form space-y-4">
+        <h4 class="text-lg font-semibold text-dark">Datos de la Referencia</h4>
+        <div>
+            <label class="block text-sm font-medium text-dark">Nombre del referente <span class="text-red-500">*</span></label>
+            <input type="text" name="name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Cargo del referente <span class="text-red-500">*</span></label>
+            <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Teléfono <span class="text-red-500">*</span></label>
+            <input type="text" name="phone" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Email <span class="text-red-500">*</span></label>
+            <input type="email" name="email" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">URL de LinkedIn</label>
+            <input type="url" name="linkedin_url" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+    </form>
+</template>

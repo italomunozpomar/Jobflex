@@ -1,0 +1,61 @@
+<!-- Modal para Educación -->
+<div id="education-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Educación</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 min-h-0">
+            <div id="education-tabs-container" class="flex border-b mb-4 overflow-x-auto whitespace-nowrap pb-1"></div>
+            <div id="education-forms-container"></div>
+        </div>
+        <div class="p-6 border-t flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0">
+            <button id="add-education-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg w-full sm:w-auto">Añadir otra educación</button>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button id="delete-education-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 w-full sm:w-auto">Eliminar</button>
+                <button id="save-education-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 w-full sm:w-auto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="education-tab-template">
+    <button class="education-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2 flex-shrink-0">Educación</button>
+</template>
+
+<template id="education-form-template">
+    <form class="education-form space-y-4">
+        <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
+        <div>
+            <label class="block text-sm font-medium text-dark">Institución Educativa <span class="text-red-500">*</span></label>
+            <input type="text" name="institution" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Carrera/Título/Nivel <span class="text-red-500">*</span></label>
+            <input type="text" name="degree" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <hr class="my-6">
+        <h4 class="text-lg font-semibold text-dark">Duración</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-dark">Fecha de Inicio (Año) <span class="text-red-500">*</span></label>
+                <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    <option value="">Año</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark">Fecha de Término (Año)</label>
+                <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">Año</option>
+                </select>
+                <div class="flex items-center mt-2">
+                    <input type="checkbox" name="currently_studying" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-dark">Actualmente cursando</label>
+                </div>
+            </div>
+        </div>
+        <hr class="my-6">
+        <h4 class="text-lg font-semibold text-dark">Especificaciones/Notas</h4>
+        <textarea name="notes" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+    </form>
+</template>

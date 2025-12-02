@@ -1,0 +1,110 @@
+<!-- Modal para Experiencia Laboral -->
+<div id="experience-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Experiencia Laboral</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 min-h-0">
+            <div id="experience-tabs-container" class="flex border-b mb-4 overflow-x-auto whitespace-nowrap pb-1"></div>
+            <div id="experience-forms-container"></div>
+        </div>
+        <div class="p-6 border-t flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0">
+            <button id="add-experience-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg w-full sm:w-auto">Añadir otra experiencia</button>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button id="delete-experience-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 w-full sm:w-auto">Eliminar</button>
+                <button id="save-experience-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 w-full sm:w-auto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="experience-tab-template">
+    <button class="experience-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2 flex-shrink-0">Experiencia</button>
+</template>
+
+<template id="experience-form-template">
+    <form class="experience-form space-y-4">
+        <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-dark">Cargo o Puesto <span class="text-red-500">*</span></label>
+                <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark">Empresa y Organización <span class="text-red-500">*</span></label>
+                <input type="text" name="company" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Ubicación (ciudad y/o país) <span class="text-red-500">*</span></label>
+            <input type="text" name="location" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <hr class="my-6">
+        <h4 class="text-lg font-semibold text-dark">Duración del Cargo</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-dark">Fecha de Inicio <span class="text-red-500">*</span></label>
+                <div class="flex space-x-2">
+                    <select name="start_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">Mes</option>
+                        <option value="Enero">Enero</option>
+                        <option value="Febrero">Febrero</option>
+                        <option value="Marzo">Marzo</option>
+                        <option value="Abril">Abril</option>
+                        <option value="Mayo">Mayo</option>
+                        <option value="Junio">Junio</option>
+                        <option value="Julio">Julio</option>
+                        <option value="Agosto">Agosto</option>
+                        <option value="Septiembre">Septiembre</option>
+                        <option value="Octubre">Octubre</option>
+                        <option value="Noviembre">Noviembre</option>
+                        <option value="Diciembre">Diciembre</option>
+                    </select>
+                    <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">Año</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark">Fecha de Término <span class="text-red-500">*</span></label>
+                <div class="flex space-x-2">
+                    <select name="end_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">Mes</option>
+                        <option value="Enero">Enero</option>
+                        <option value="Febrero">Febrero</option>
+                        <option value="Marzo">Marzo</option>
+                        <option value="Abril">Abril</option>
+                        <option value="Mayo">Mayo</option>
+                        <option value="Junio">Junio</option>
+                        <option value="Julio">Julio</option>
+                        <option value="Agosto">Agosto</option>
+                        <option value="Septiembre">Septiembre</option>
+                        <option value="Octubre">Octubre</option>
+                        <option value="Noviembre">Noviembre</option>
+                        <option value="Diciembre">Diciembre</option>
+                    </select>
+                    <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">Año</option>
+                    </select>
+                </div>
+                <div class="flex items-center mt-2">
+                    <input type="checkbox" name="current_job" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-dark">Actualmente trabajo aquí</label>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="is_internship" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+            <label class="ml-2 block text-sm text-dark">Este cargo corresponde a una práctica laboral/profesional</label>
+        </div>
+        <div name="total_hours_container" class="hidden">
+            <label class="block text-sm font-medium text-dark">Cantidad de horas totales</label>
+            <input type="text" name="total_hours" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+        <hr class="my-6">
+        <h4 class="text-lg font-semibold text-dark">Descripción del cargo o responsabilidades</h4>
+        <p class="text-sm text-gray-500">Escribe cada responsabilidad del cargo en una línea separada. Cada salto de línea se mostrará como una viñeta en el CV (Máximo 6 viñetas por cargo).</p>
+        <textarea name="description" rows="6" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+    </form>
+</template>

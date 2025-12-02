@@ -1,0 +1,50 @@
+<!-- Modal para Proyectos -->
+<div id="projects-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Proyectos</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 min-h-0">
+            <div id="projects-tabs-container" class="flex border-b mb-4 overflow-x-auto whitespace-nowrap pb-1"></div>
+            <div id="projects-forms-container"></div>
+        </div>
+        <div class="p-6 border-t flex flex-col sm:flex-row justify-between gap-4 flex-shrink-0">
+            <button id="add-project-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg w-full sm:w-auto">Añadir otro proyecto</button>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button id="delete-project-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 w-full sm:w-auto">Eliminar</button>
+                <button id="save-projects-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 w-full sm:w-auto">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="project-tab-template">
+    <button class="project-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2 flex-shrink-0">Proyecto</button>
+</template>
+
+<template id="project-form-template">
+    <form class="project-form space-y-4">
+        <h4 class="text-lg font-semibold text-dark">Datos del Proyecto</h4>
+        <div>
+            <label class="block text-sm font-medium text-dark">Nombre del Proyecto <span class="text-red-500">*</span></label>
+            <input type="text" name="project_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Año o periodo de ejecución <span class="text-red-500">*</span></label>
+            <input type="text" name="period" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Rol o participación</label>
+            <input type="text" name="role" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Descripción del proyecto <span class="text-red-500">*</span></label>
+            <textarea name="description" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark">Enlace o repositorio</label>
+            <input type="text" name="link" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+    </form>
+</template>

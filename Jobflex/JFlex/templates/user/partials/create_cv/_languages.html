@@ -1,0 +1,39 @@
+<!-- Modal para Idiomas -->
+<div id="languages-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Idiomas</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 min-h-0">
+            <div class="space-y-4">
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <select id="language-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Selecciona un idioma</option>
+                        <option value="Inglés">Inglés</option>
+                        <option value="Chino Mandarín">Chino Mandarín</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Español">Español</option>
+                        <option value="Francés">Francés</option>
+                        <option value="Árabe Estándar">Árabe Estándar</option>
+                        <option value="Bengalí">Bengalí</option>
+                        <option value="Ruso">Ruso</option>
+                        <option value="Portugués">Portugués</option>
+                        <option value="Urdu">Urdu</option>
+                    </select>
+                    <select id="language-level-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="Básico">Básico</option>
+                        <option value="Intermedio">Intermedio</option>
+                        <option value="Avanzado">Avanzado</option>
+                        <option value="Nativo">Nativo</option>
+                    </select>
+                    <button id="add-language-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg w-full sm:w-auto">Añadir</button>
+                </div>
+                <div id="languages-container" class="flex flex-wrap gap-2 mt-4"></div>
+            </div>
+            <div class="mt-8 text-right">
+                <button id="save-languages-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

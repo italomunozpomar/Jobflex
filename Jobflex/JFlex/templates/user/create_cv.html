@@ -7,112 +7,113 @@
 
     <main class="flex-grow flex flex-col md:flex-row ">
         <!-- Columna Izquierda: Controles -->
-                                                        <aside class="w-full md:w-1/3 lg:w-1/4 p-6 bg-white shadow-lg self-start sticky top-12 -mt-4">
-                                                            <div>
-                                                                <h2 class="text-2xl font-bold text-dark mb-6">Crea tu CV</h2>
-                                                                <p class="text-secondary text-1xl -mt-4" style="font-size: 13px;">El CV creado tendrá formato Harvard y compatibilidad 100% en revisiones ATS.</p>
-                                                                
-                                                                <div class="space-y-4 mt-6">
-                                                                    <div>
-                                                                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Obligatorias</h3>
-                                                                        <nav>
-                                                                            <ul class="space-y-1">
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="personal-data-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-                                                                                        <span class="ml-3">Datos Personales</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="personal-data-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="objective-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.006 3 11.55c0 4.556 4.03 8.25 9 8.25z"></path></svg>
-                                                                                        <span class="ml-3">Objetivo Profesional</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="objective-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="experience-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-13.5a2.25 2.25 0 01-2.25-2.25V6.323a2.25 2.25 0 012.25-2.25h4.073m6.076-1.486a.75.75 0 011.06 0l2.122 2.121a.75.75 0 010 1.06l-6.076 6.075a.75.75 0 01-1.06 0l-2.121-2.12a.75.75 0 010-1.06l6.076-6.076z"></path></svg>
-                                                                                        <span class="ml-3">Experiencia Laboral</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="experience-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="education-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20M1 12v7a2 2 0 002 2h18a2 2 0 002-2v-7"></path></svg>
-                                                                                        <span class="ml-3">Educación</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="education-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="skills-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.991s.145.75.438.99l1.004.827a1.125 1.125 0 01.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.99s-.145-.75-.437-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                                                        <span class="ml-3">Habilidades</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="skills-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                            </ul>
-                                                                        </nav>
-                                                                    </div>
-                                                                    <div>
-                                                                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Opcionales</h3>
-                                                                        <nav>
-                                                                            <ul class="space-y-1">
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="languages-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.625M21 21l-5.25-11.625M3.75 5.25h16.5M4.5 5.25l5.25 11.625"></path></svg>
-                                                                                        <span class="ml-3">Idiomas</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="languages-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="certifications-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                                                        <span class="ml-3">Certificaciones</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="certifications-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="projects-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0l-3.75 3.75M3.75 21v-1.5m0 1.5v-1.5m0 0h16.5m-16.5 0h1.5m13.5 0l3.75-3.75M3.75 16.5v1.5m0 0v1.5m0 0h16.5m2.25-11.25h-1.5m0 0h-1.5m-12 0h1.5m12 0h-1.5m0 0h-1.5m-1.5 0h-1.5m-6 0h1.5m-6 0h1.5m0 0h-1.5m0 0h-1.5"></path></svg>
-                                                                                        <span class="ml-3">Proyectos</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="projects-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="volunteering-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
-                                                                                        <span class="ml-3">Voluntariado</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="volunteering-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
-                                                                                    <button data-modal-target="references-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
-                                                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0"></path><path stroke-linecap="round" stroke-linejoin="round" d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM21 6a3 3 0 11-6 0 3 3 0 016 0zM12 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                                                        <span class="ml-3">Referencias</span>
-                                                                                    </button>
-                                                                                    <input type="checkbox" id="references-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
-                                                                                </li>
-                                                                            </ul>
-                                                                        </nav>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div class="mt-8">
-                                                                    <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Progreso</h3>
-                                                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                                                        <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <p id="progress-text" class="text-sm text-center text-secondary mt-2">0% completado</p>
-                                                                </div>
-                                                
-                                                                <div class="mt-8 pt-4 border-t flex space-x-2">
-                                                                    <button class="w-1/2 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Guardar y Salir</button>
-                                                                    <button id="cancel-button" class="w-1/2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition-all">Cancelar y Reiniciar</button>
-                                                                </div>
-                                                            </div>
-                                                        </aside>        <!-- Columna Derecha: Vista Previa del CV -->
+        <aside class="w-full md:w-1/3 lg:w-1/4 p-6 bg-white shadow-lg self-start sticky top-12 -mt-4">
+            <div>
+                <h2 class="text-2xl font-bold text-dark mb-6">Crea tu CV</h2>
+                <p class="text-secondary text-1xl -mt-4" style="font-size: 13px;">El CV creado tendrá formato Harvard y compatibilidad 100% en revisiones ATS.</p>
+                
+                <div class="space-y-4 mt-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Obligatorias</h3>
+                        <nav>
+                            <ul class="space-y-1">
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="personal-data-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+                                        <span class="ml-3">Datos Personales</span>
+                                    </button>
+                                    <input type="checkbox" id="personal-data-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="objective-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.006 3 11.55c0 4.556 4.03 8.25 9 8.25z"></path></svg>
+                                        <span class="ml-3">Objetivo Profesional</span>
+                                    </button>
+                                    <input type="checkbox" id="objective-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="experience-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25h-13.5a2.25 2.25 0 01-2.25-2.25V6.323a2.25 2.25 0 012.25-2.25h4.073m6.076-1.486a.75.75 0 011.06 0l2.122 2.121a.75.75 0 010 1.06l-6.076 6.075a.75.75 0 01-1.06 0l-2.121-2.12a.75.75 0 010-1.06l6.076-6.076z"></path></svg>
+                                        <span class="ml-3">Experiencia Laboral</span>
+                                    </button>
+                                    <input type="checkbox" id="experience-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="education-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20M1 12v7a2 2 0 002 2h18a2 2 0 002-2v-7"></path></svg>
+                                        <span class="ml-3">Educación</span>
+                                    </button>
+                                    <input type="checkbox" id="education-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="skills-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.991s.145.75.438.99l1.004.827a1.125 1.125 0 01.26 1.43l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.99s-.145-.75-.437-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        <span class="ml-3">Habilidades</span>
+                                    </button>
+                                    <input type="checkbox" id="skills-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Secciones Opcionales</h3>
+                        <nav>
+                            <ul class="space-y-1">
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="languages-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.625M21 21l-5.25-11.625M3.75 5.25h16.5M4.5 5.25l5.25 11.625"></path></svg>
+                                        <span class="ml-3">Idiomas</span>
+                                    </button>
+                                    <input type="checkbox" id="languages-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="certifications-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span class="ml-3">Certificaciones</span>
+                                    </button>
+                                    <input type="checkbox" id="certifications-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="projects-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0l-3.75 3.75M3.75 21v-1.5m0 1.5v-1.5m0 0h16.5m-16.5 0h1.5m13.5 0l3.75-3.75M3.75 16.5v1.5m0 0v1.5m0 0h16.5m2.25-11.25h-1.5m0 0h-1.5m-12 0h1.5m12 0h-1.5m0 0h-1.5m-1.5 0h-1.5m-6 0h1.5m-6 0h1.5m0 0h-1.5m0 0h-1.5"></path></svg>
+                                        <span class="ml-3">Proyectos</span>
+                                    </button>
+                                    <input type="checkbox" id="projects-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="volunteering-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"></path></svg>
+                                        <span class="ml-3">Voluntariado</span>
+                                    </button>
+                                    <input type="checkbox" id="volunteering-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                                <li class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100">
+                                    <button data-modal-target="references-modal" class="flex-grow flex items-center text-base font-semibold text-dark group">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0"></path><path stroke-linecap="round" stroke-linejoin="round" d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM21 6a3 3 0 11-6 0 3 3 0 016 0zM12 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                        <span class="ml-3">Referencias</span>
+                                    </button>
+                                    <input type="checkbox" id="references-checkbox" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary-dark" disabled>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold text-dark border-b pb-2 mb-3">Progreso</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p id="progress-text" class="text-sm text-center text-secondary mt-2">0% completado</p>
+                </div>
+
+                <div class="mt-8 pt-4 border-t flex space-x-2">
+                    <button class="w-1/2 bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-all transform hover:scale-105">Guardar y Salir</button>
+                    <button id="cancel-button" class="w-1/2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition-all">Cancelar y Reiniciar</button>
+                </div>
+            </div>
+        </aside>
+        <!-- Columna Derecha: Vista Previa del CV -->
         <div class="w-full md:w-2/3 lg:w-3/4 p-8 pt-6">
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
@@ -251,595 +252,17 @@
 
     <!-- Modals Container -->
     <div id="modals-container">
-        <!-- Modal para Datos Personales -->
-        <div id="personal-data-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Datos Personales</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <form id="personal-data-form">
-                    <div class="space-y-4">
-                        <h4 class="text-lg font-semibold text-dark">Nombre</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Primer Nombre <span class="text-red-500">*</span></label>
-                                <input type="text" name="first_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Segundo Nombre</label>
-                                <input type="text" name="second_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Apellido Paterno <span class="text-red-500">*</span></label>
-                                <input type="text" name="last_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Apellido Materno</label>
-                                <input type="text" name="mother_last_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            </div>
-                        </div>
-                        <hr class="my-6">
-                        <div>
-                            <label class="block text-sm font-medium text-dark">Título Profesional</label>
-                            <input type="text" name="title" placeholder="Ej: Ingeniero en Informática" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <hr class="my-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Correo Electrónico <span class="text-red-500">*</span></label>
-                                <input type="email" name="email" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-dark">Teléfono <span class="text-red-500">*</span></label>
-                                <input type="text" name="phone" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            </div>
-                        </div>
-                        <hr class="my-6">
-                        <div>
-                            <label class="block text-sm font-medium text-dark">Link de LinkedIn</label>
-                            <input type="text" name="linkedin_link" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                    </div>
-                    <div class="mt-8 text-right">
-                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal para Objetivo Profesional -->
-        <div id="objective-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Objetivo Profesional</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <form id="objective-form">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Describe cual es tu objetivo profesional.</label>
-                        <textarea id="objective-summary" name="summary" rows="5" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-                        <div id="word-count-container" class="text-right text-sm text-gray-500 mt-1">
-                            <span id="word-count">0</span>/150 palabras
-                        </div>
-                    </div>
-                    <div class="mt-8 text-right">
-                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal para Experiencia Laboral -->
-        <div id="experience-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Experiencia Laboral</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="experience-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="experience-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-experience-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra experiencia</button>
-                    <div>
-                        <button id="delete-experience-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-experience-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="experience-tab-template">
-            <button class="experience-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Experiencia</button>
-        </template>
-
-        <template id="experience-form-template">
-            <form class="experience-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Cargo o Puesto <span class="text-red-500">*</span></label>
-                        <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Empresa y Organización <span class="text-red-500">*</span></label>
-                        <input type="text" name="company" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Ubicación (ciudad y/o país) <span class="text-red-500">*</span></label>
-                    <input type="text" name="location" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Duración del Cargo</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Inicio <span class="text-red-500">*</span></label>
-                        <div class="flex space-x-2">
-                            <select name="start_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                <option value="">Mes</option>
-                                <option value="Enero">Enero</option>
-                                <option value="Febrero">Febrero</option>
-                                <option value="Marzo">Marzo</option>
-                                <option value="Abril">Abril</option>
-                                <option value="Mayo">Mayo</option>
-                                <option value="Junio">Junio</option>
-                                <option value="Julio">Julio</option>
-                                <option value="Agosto">Agosto</option>
-                                <option value="Septiembre">Septiembre</option>
-                                <option value="Octubre">Octubre</option>
-                                <option value="Noviembre">Noviembre</option>
-                                <option value="Diciembre">Diciembre</option>
-                            </select>
-                            <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                <option value="">Año</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Término <span class="text-red-500">*</span></label>
-                        <div class="flex space-x-2">
-                            <select name="end_month" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                <option value="">Mes</option>
-                                <option value="Enero">Enero</option>
-                                <option value="Febrero">Febrero</option>
-                                <option value="Marzo">Marzo</option>
-                                <option value="Abril">Abril</option>
-                                <option value="Mayo">Mayo</option>
-                                <option value="Junio">Junio</option>
-                                <option value="Julio">Julio</option>
-                                <option value="Agosto">Agosto</option>
-                                <option value="Septiembre">Septiembre</option>
-                                <option value="Octubre">Octubre</option>
-                                <option value="Noviembre">Noviembre</option>
-                                <option value="Diciembre">Diciembre</option>
-                            </select>
-                            <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                <option value="">Año</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center mt-2">
-                            <input type="checkbox" name="current_job" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                            <label class="ml-2 block text-sm text-dark">Actualmente trabajo aquí</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" name="is_internship" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                    <label class="ml-2 block text-sm text-dark">Este cargo corresponde a una práctica laboral/profesional</label>
-                </div>
-                <div name="total_hours_container" class="hidden">
-                    <label class="block text-sm font-medium text-dark">Cantidad de horas totales</label>
-                    <input type="text" name="total_hours" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Descripción del cargo o responsabilidades</h4>
-                <p class="text-sm text-gray-500">Escribe cada responsabilidad del cargo en una línea separada. Cada salto de línea se mostrará como una viñeta en el CV (Máximo 6 viñetas por cargo).</p>
-                <textarea name="description" rows="6" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-            </form>
-        </template>
-
-        <!-- Modal para Educación -->
-        <div id="education-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Educación</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="education-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="education-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-education-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra educación</button>
-                    <div>
-                        <button id="delete-education-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-education-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="education-tab-template">
-            <button class="education-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Educación</button>
-        </template>
-
-        <template id="education-form-template">
-            <form class="education-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos Principales</h4>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Institución Educativa <span class="text-red-500">*</span></label>
-                    <input type="text" name="institution" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Carrera/Título/Nivel <span class="text-red-500">*</span></label>
-                    <input type="text" name="degree" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Duración</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Inicio (Año) <span class="text-red-500">*</span></label>
-                        <select name="start_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <option value="">Año</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Término (Año)</label>
-                        <select name="end_year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="">Año</option>
-                        </select>
-                        <div class="flex items-center mt-2">
-                            <input type="checkbox" name="currently_studying" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                            <label class="ml-2 block text-sm text-dark">Actualmente cursando</label>
-                        </div>
-                    </div>
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Especificaciones/Notas</h4>
-                <textarea name="notes" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-            </form>
-        </template>
-
-        <!-- Modal para Habilidades -->
-        <div id="skills-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Habilidades</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="text-lg font-semibold text-dark">Habilidades Técnicas/Hard Skills</h4>
-                        <div class="flex space-x-2 mt-2">
-                            <input type="text" id="hard-skill-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ej: Python">
-                            <button id="add-hard-skill-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
-                        </div>
-                        <div id="hard-skills-container" class="flex flex-wrap gap-2 mt-4"></div>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold text-dark">Competencias/Soft Skills</h4>
-                        <div class="flex space-x-2 mt-2">
-                            <input type="text" id="soft-skill-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Ej: Comunicación">
-                            <button id="add-soft-skill-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
-                        </div>
-                        <div id="soft-skills-container" class="flex flex-wrap gap-2 mt-4"></div>
-                    </div>
-                </div>
-                <div class="mt-8 text-right">
-                    <button id="save-skills-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para Idiomas -->
-        <div id="languages-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Idiomas</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="space-y-4">
-                    <div class="flex space-x-2">
-                        <select id="language-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="">Selecciona un idioma</option>
-                            <option value="Inglés">Inglés</option>
-                            <option value="Chino Mandarín">Chino Mandarín</option>
-                            <option value="Hindi">Hindi</option>
-                            <option value="Español">Español</option>
-                            <option value="Francés">Francés</option>
-                            <option value="Árabe Estándar">Árabe Estándar</option>
-                            <option value="Bengalí">Bengalí</option>
-                            <option value="Ruso">Ruso</option>
-                            <option value="Portugués">Portugués</option>
-                            <option value="Urdu">Urdu</option>
-                        </select>
-                        <select id="language-level-input" class="block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="Básico">Básico</option>
-                            <option value="Intermedio">Intermedio</option>
-                            <option value="Avanzado">Avanzado</option>
-                            <option value="Nativo">Nativo</option>
-                        </select>
-                        <button id="add-language-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
-                    </div>
-                    <div id="languages-container" class="flex flex-wrap gap-2 mt-4"></div>
-                </div>
-                <div class="mt-8 text-right">
-                    <button id="save-languages-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal para Certificaciones -->
-        <div id="certifications-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-2xl max-h-[80vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Certificaciones</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="certifications-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="certifications-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-certification-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra certificación</button>
-                    <div>
-                        <button id="delete-certification-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-certifications-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="certification-tab-template">
-            <button class="certification-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Certificación</button>
-        </template>
-
-        <template id="certification-form-template">
-            <form class="certification-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos de la Certificación</h4>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Nombre de la Certificación <span class="text-red-500">*</span></label>
-                    <input type="text" name="cert_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Entidad Emisora <span class="text-red-500">*</span></label>
-                    <input type="text" name="issuer" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Año de Obtención <span class="text-red-500">*</span></label>
-                    <select name="year" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                        <option value="">Año</option>
-                    </select>
-                </div>
-            </form>
-        </template>
-
-
-        <!-- Modal para Proyectos -->
-        <div id="projects-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Proyectos</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="projects-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="projects-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-project-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otro proyecto</button>
-                    <div>
-                        <button id="delete-project-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-projects-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="project-tab-template">
-            <button class="project-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Proyecto</button>
-        </template>
-
-        <template id="project-form-template">
-            <form class="project-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos del Proyecto</h4>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Nombre del Proyecto <span class="text-red-500">*</span></label>
-                    <input type="text" name="project_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Año o periodo de ejecución <span class="text-red-500">*</span></label>
-                    <input type="text" name="period" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Rol o participación</label>
-                    <input type="text" name="role" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Descripción del proyecto <span class="text-red-500">*</span></label>
-                    <textarea name="description" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Enlace o repositorio</label>
-                    <input type="text" name="link" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-            </form>
-        </template>
-
-        <!-- Modal para Voluntariado -->
-        <div id="volunteering-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Voluntariado</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="volunteering-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="volunteering-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-volunteering-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otro voluntariado</button>
-                    <div>
-                        <button id="delete-volunteering-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-volunteering-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="volunteering-tab-template">
-            <button class="volunteering-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Voluntariado</button>
-        </template>
-
-        <template id="volunteering-form-template">
-            <form class="volunteering-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos del Voluntariado</h4>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Nombre de la organización <span class="text-red-500">*</span></label>
-                    <input type="text" name="organization" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Puesto / rol desempeñado <span class="text-red-500">*</span></label>
-                    <input type="text" name="role" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Descripción de actividades</label>
-                    <textarea name="description" rows="4" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Ubicación</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Ciudad</label>
-                        <input type="text" name="city" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">País</label>
-                        <input type="text" name="country" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Región/Estado/Provincia</label>
-                        <input type="text" name="region" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                </div>
-                <hr class="my-6">
-                <h4 class="text-lg font-semibold text-dark">Duración del Voluntariado</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Inicio <span class="text-red-500">*</span></label>
-                        <input type="date" name="start_date" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-dark">Fecha de Término</label>
-                        <input type="date" name="end_date" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                </div>
-                <div class="flex items-center mt-2">
-                    <input type="checkbox" name="current" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                    <label class="ml-2 block text-sm text-dark">Actualmente activo</label>
-                </div>
-            </form>
-        </template>
-
-        <!-- Modal para Referencias -->
-        <div id="references-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl flex flex-col w-full max-w-4xl h-full max-h-[90vh]">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-2xl font-bold text-dark">Referencias</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <div class="flex-grow flex flex-col p-6 overflow-y-auto">
-                    <div id="references-tabs-container" class="flex border-b mb-4"></div>
-                    <div id="references-forms-container" class="flex-grow"></div>
-                </div>
-                <div class="p-6 border-t flex justify-between">
-                    <button id="add-reference-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">Añadir otra referencia</button>
-                    <div>
-                        <button id="delete-reference-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Eliminar</button>
-                        <button id="save-references-btn" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <template id="reference-tab-template">
-            <button class="reference-tab bg-gray-200 text-dark py-2 px-4 rounded-t-lg mr-2">Referencia</button>
-        </template>
-
-        <template id="reference-form-template">
-            <form class="reference-form space-y-4">
-                <h4 class="text-lg font-semibold text-dark">Datos de la Referencia</h4>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Nombre del referente <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Cargo del referente <span class="text-red-500">*</span></label>
-                    <input type="text" name="position" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Teléfono <span class="text-red-500">*</span></label>
-                    <input type="text" name="phone" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">Email <span class="text-red-500">*</span></label>
-                    <input type="email" name="email" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-dark">URL de LinkedIn</label>
-                    <input type="url" name="linkedin_url" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-            </form>
-        </template>
-
-        <!-- Modal para Cancelar -->
-        <div id="cancel-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Confirmar Cancelación</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <p class="text-secondary mb-6">¿Estás seguro de que quieres reiniciar tu progreso? Se perderán todos los cambios no guardados y el CV volverá a su estado inicial.</p>
-                <div class="flex justify-end space-x-4">
-                    <button id="confirm-cancel-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600">Sí, Reiniciar</button>
-                    <button class="bg-gray-300 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-400 close-modal">No, continuar editando</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nuevo Modal para Guardar CV -->
-        <div id="save-cv-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-dark">Guardar CV</h3>
-                    <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
-                </div>
-                <form id="save-cv-form">
-                    <input type="hidden" id="next-url-input" value="{{ next_url|default:'' }}">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-dark">Nombre del CV <span class="text-red-500">*</span></label>
-                            <input type="text" name="cv_name" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <div id="error-cv_name" class="text-red-500 text-xs mt-1 error-message"></div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-dark">Cargo Asociado <span class="text-red-500">*</span></label>
-                            <input type="text" name="cargo_asociado" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <div id="error-cargo_asociado" class="text-red-500 text-xs mt-1 error-message"></div>
-                        </div>
-                    </div>
-                    <div class="mt-8 text-right">
-                        <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Confirmar y Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
+        {% include "user/partials/create_cv/_personal_data.html" %}
+        {% include "user/partials/create_cv/_objective.html" %}
+        {% include "user/partials/create_cv/_experience.html" %}
+        {% include "user/partials/create_cv/_education.html" %}
+        {% include "user/partials/create_cv/_skills.html" %}
+        {% include "user/partials/create_cv/_languages.html" %}
+        {% include "user/partials/create_cv/_certifications.html" %}
+        {% include "user/partials/create_cv/_projects.html" %}
+        {% include "user/partials/create_cv/_volunteering.html" %}
+        {% include "user/partials/create_cv/_references.html" %}
+        {% include "user/partials/create_cv/_modals_actions.html" %}
     </div>
 
 {% endblock %}
@@ -872,7 +295,7 @@
         }
     }
 
-    // #region Modals --- MANEJO DE MODALES --- 
+    // #region Modals --- MANEJO DE MODALES ---
     // Función para abrir un modal
     function openModal(modalId) {
         const modal = document.getElementById(modalId);

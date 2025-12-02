@@ -1,0 +1,23 @@
+<!-- Modal para Objetivo Profesional -->
+<div id="objective-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center p-6 border-b flex-shrink-0">
+            <h3 class="text-2xl font-bold text-dark">Objetivo Profesional</h3>
+            <button class="text-gray-500 hover:text-gray-800 text-3xl close-modal">&times;</button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 min-h-0">
+            <form id="objective-form">
+                <div>
+                    <label class="block text-sm font-medium text-dark">Describe cual es tu objetivo profesional.</label>
+                    <textarea id="objective-summary" name="summary" rows="5" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                    <div id="word-count-container" class="text-right text-sm text-gray-500 mt-1">
+                        <span id="word-count">0</span>/150 palabras
+                    </div>
+                </div>
+                <div class="mt-8 text-right">
+                    <button type="submit" class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
