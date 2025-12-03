@@ -87,6 +87,7 @@ LOGIN_REDIRECT_URL = '/user_index/'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email'}
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = 'JFlex.adapters.CustomSocialAccountAdapter'
 
 # Obligar a que los links de login social sean siempre HTTPS
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
