@@ -41,17 +41,12 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = [
-    '*'
-]
+ALLOWED_HOSTS = ['jobflex.cl', 'www.jobflex.cl', '179.43.127.166', 'localhost', '127.0.0.1']
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
     'https://www.jobflex.cl', 
     'https://jobflex.cl',
-    'https://179.43.127.166',
-
 ]
 
 
@@ -89,8 +84,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email'}
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-# Obligar a que los links de login social sean siempre HTTPS
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 #CAMBIAR CONFIGURACION DE GOOGLE DE URIs DE REDIRECCION CUANDO SE ESTE EN PRODUCCION
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
