@@ -1,6 +1,12 @@
 from django.db import transaction
 from django.dispatch import receiver
 from allauth.account.signals import user_signed_up
+from allauth.socialaccount.signals import pre_social_login
+from allauth.exceptions import ImmediateHttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 from JFlex.models import TipoUsuario, RegistroUsuarios, Candidato
 from django.contrib.auth import get_user_model
 import random
@@ -49,3 +55,40 @@ def social_login_profile_creation(sender, request, user, **kwargs):
 
     except Exception as e:
         print(f"ERROR: Fallo al crear perfil para el usuario {user.email} después del social login: {e}")
+
+@receiver(pre_social_login)
+def handle_social_login_2fa(sender, request, sociallogin, **kwargs):
+    """
+    Intercepta un social login para comprobar si el usuario tiene 2FA activado.
+    Si es así, lo redirige a la página de verificación de 2FA en lugar de iniciar sesión.
+    """
+    user = sociallogin.user
+    if not user.pk:
+        # Es un usuario nuevo, la 2FA no puede estar activada todavía.
+        return
+
+    try:
+        registro_usuario = RegistroUsuarios.objects.using('jflex_db').get(id_registro=user)
+        if registro_usuario.autenticacion_dos_factores_activa:
+            # Guardar los datos necesarios para la verificación 2FA en la sesión
+            request.session['2fa_user_pk'] = user.pk
+            
+            code = str(random.randint(100000, 999999))
+            request.session['2fa_code'] = code
+            request.session['2fa_code_expiry'] = (timezone.now() + timedelta(minutes=5)).isoformat()
+
+            # Enviar el código 2FA por correo
+            send_verification_email(
+                user.email,
+                code,
+                f'Tu código de inicio de sesión para JobFlex es {code}',
+                'registration/2fa_login_code_email.html'
+            )
+
+            # Impedir que allauth complete el inicio de sesión y redirigir a nuestra página 2FA
+            raise ImmediateHttpResponse(redirect(reverse('verify_2fa')))
+
+    except RegistroUsuarios.DoesNotExist:
+        # Este usuario no tiene un perfil en jflex_db, por lo que la 2FA no es aplicable.
+        # Esto puede ocurrir en casos excepcionales o para superusuarios.
+        pass
