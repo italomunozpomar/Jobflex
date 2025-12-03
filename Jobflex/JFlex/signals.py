@@ -12,8 +12,8 @@ User = get_user_model()
 @transaction.atomic
 def social_login_profile_creation(sender, request, user, **kwargs):
     """
-    Crea los perfiles de RegistroUsuarios y Candidato, desactiva la cuenta
-    y envía un correo de verificación después de un registro social.
+    Crea los perfiles de RegistroUsuarios y Candidato para un nuevo
+    registro social, manteniendo la cuenta activa.
     """
     
     # Asegurarse de que el usuario no tenga ya un perfil en jflex_db
@@ -44,23 +44,8 @@ def social_login_profile_creation(sender, request, user, **kwargs):
                 ciudad=None
             )
         
-        # 4. Desactivar el usuario hasta que verifique el correo
-        user.is_active = False
-        user.save(using='default')
-
-        # 5. Enviar correo de verificación (lógica del signup normal)
-        code = str(random.randint(100000, 999999))
-        request.session['verification_code'] = code
-        request.session['user_pk_for_verification'] = user.pk
-
-        send_verification_email(
-            user.email,
-            code,
-            'Tu código de activación para JobFlex es {code}',
-            'registration/code_email.html'
-        )
-
-        print(f"DEBUG: Perfil de candidato creado y correo de verificación enviado para {user.email} (Social Login)")
+        # El usuario permanece activo por defecto, según el flujo de allauth.
+        print(f"DEBUG: Perfil de candidato creado para {user.email} (Social Login)")
 
     except Exception as e:
-        print(f"ERROR: Fallo al crear perfil o enviar email para el usuario {user.email} después del social login: {e}")
+        print(f"ERROR: Fallo al crear perfil para el usuario {user.email} después del social login: {e}")
