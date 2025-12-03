@@ -40,7 +40,7 @@ sys.path.insert(0, str(BASE_DIR.parent))
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
     '*'
 ]
