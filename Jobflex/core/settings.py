@@ -48,9 +48,9 @@ ALLOWED_HOSTS = [
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://www.jobflex.cl', 
-    'http://jobflex.cl',
-    'http://179.43.127.166',
+    'https://www.jobflex.cl', 
+    'https://jobflex.cl',
+    'https://179.43.127.166',
 
 ]
 
