@@ -1,4 +1,4 @@
-from .models import Notificaciones, NotificacionCandidato, NotificacionEmpresa, TipoUsuario
+from .models import Notificaciones, NotificacionCandidato, NotificacionEmpresa, TipoUsuario, RegistroUsuarios
 from django.db.models import Q
 
 def notifications_processor(request):
@@ -7,7 +7,7 @@ def notifications_processor(request):
         'recent_notifications': [],
     }
 
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         try:
             # Check user type
             registro_usuario = request.user.registrousuarios
