@@ -18,6 +18,8 @@ import calendar
 from django.utils import timezone
 from datetime import datetime, date, timedelta # Added here
 import random
+from django.db import connections
+import traceback
 from django.db.models import Count, Q, F, Sum
 from django.db.models.functions import ExtractMonth
 from calendar import month_name
@@ -3309,39 +3311,92 @@ def settings(request):
         'form': form
     })
 
+
+# La función completa que reemplaza la existente
 @login_required
 def delete_account(request):
-    if request.method == 'POST':
-        user = request.user
+    if request.method != 'POST':
+        return redirect('settings')
+
+    user = request.user
+    user_id = user.id  # Captura el user_id antes de que el objeto user sea eliminado.
+    
+    # 1. Validar contraseña o texto de confirmación
+    if user.has_usable_password():
         if not user.check_password(request.POST.get('password')):
             messages.error(request, 'Contraseña incorrecta.')
             return redirect('settings')
-
-        try:
-            # Primero, eliminar todos los objetos relacionados en la base de datos 'jflex_db'
-            with transaction.atomic(using='jflex_db'):
-                # Usamos .filter().delete() que es más seguro si el objeto no existe
-                RegistroUsuarios.objects.using('jflex_db').filter(id_registro=user).delete()
-                Candidato.objects.using('jflex_db').filter(id_candidato=user).delete()
-                EmpresaUsuario.objects.using('jflex_db').filter(id_empresa_user=user).delete()
-
-            # Segundo, realizar un "soft delete" en la base de datos 'default'
-            with transaction.atomic(using='default'):
-                user.is_active = False
-                # Anonimizar datos para permitir que se vuelvan a usar en el futuro
-                user.email = f"deleted_{user.id}_{user.email}"
-                user.username = f"deleted_{user.id}_{user.username}"
-                user.save()
-
-            logout(request)
-            messages.success(request, 'Tu cuenta ha sido desactivada y eliminada permanentemente.')
-            return redirect('index')
-
-        except Exception as e:
-            messages.error(request, f'Ocurrió un error al eliminar tu cuenta: {e}')
+    else:
+        if request.POST.get('confirmation_text') != 'ELIMINAR':
+            messages.error(request, 'El texto de confirmación no es correcto. Por favor, escribe ELIMINAR.')
             return redirect('settings')
 
-    return redirect('settings')
+    try:
+        # --- Limpieza de jflex_db ---
+        with transaction.atomic(using='jflex_db'):
+            # Limpieza de archivos S3 del perfil de Candidato
+            candidato = Candidato.objects.filter(id_candidato_id=user_id).first()
+            if candidato:
+                uploaded_cvs = CVSubido.objects.filter(id_cv_subido__candidato=candidato)
+                if uploaded_cvs.exists():
+                    s3 = boto3.client('s3', aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY)
+                    for cv in uploaded_cvs:
+                        if cv.ruta_archivo:
+                            try:
+                                parsed_url = urlparse(cv.ruta_archivo)
+                                object_key = parsed_url.path.lstrip('/')
+                                s3.delete_object(Bucket=django_settings.AWS_STORAGE_BUCKET_NAME, Key=object_key)
+                                print(f"Archivo S3 de CV eliminado: {object_key}")
+                            except Exception as s3_err:
+                                print(f"Fallo al eliminar {cv.ruta_archivo} de S3: {s3_err}")
+            
+            # Limpieza del perfil de EmpresaUsuario y potencialmente la empresa
+            empresa_usuario = EmpresaUsuario.objects.filter(id_empresa_user_id=user_id).first()
+            if empresa_usuario:
+                empresa = empresa_usuario.empresa
+                if EmpresaUsuario.objects.filter(empresa=empresa).count() <= 1:
+                    # Es el último usuario, elimina la empresa y sus assets
+                    print(f"Usuario {user.email} es el último de la empresa {empresa.nombre_comercial}. Eliminando empresa y assets.")
+                    s3 = boto3.client('s3', aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY)
+                    for field in [empresa.imagen_perfil, empresa.imagen_portada]:
+                        if field:
+                            try:
+                                parsed_url = urlparse(field)
+                                object_key = parsed_url.path.lstrip('/')
+                                s3.delete_object(Bucket=django_settings.AWS_STORAGE_BUCKET_NAME, Key=object_key)
+                                print(f"Asset S3 de empresa eliminado: {object_key}")
+                            except Exception as s3_err:
+                                print(f"Fallo al eliminar asset S3 {field}: {s3_err}")
+                    empresa.delete()
+                else:
+                    empresa_usuario.delete()
+
+            # Eliminar otros datos relacionados directamente con el usuario en jflex_db
+            Candidato.objects.filter(id_candidato_id=user_id).delete()
+            RegistroUsuarios.objects.filter(id_registro_id=user_id).delete()
+            Notificaciones.objects.filter(usuario_destino_id=user_id).delete()
+
+        # --- Limpieza de la base de datos default ---
+        with transaction.atomic(using='default'):
+            with connections['default'].cursor() as cursor:
+                # Eliminar de tablas de allauth para prevenir errores de integridad
+                print(f"Eliminando registros de allauth y usuario para user_id: {user_id}")
+                cursor.execute("DELETE FROM socialaccount_socialaccount WHERE user_id = %s", [user_id])
+                cursor.execute("DELETE FROM account_emailaddress WHERE user_id = %s", [user_id])
+                
+                # Finalmente, eliminar el usuario de auth_user
+                cursor.execute("DELETE FROM auth_user WHERE id = %s", [user_id])
+                print(f"Usuario eliminado exitosamente de la BD default.")
+
+        # Logout y redirección
+        logout(request)
+        messages.success(request, 'Tu cuenta ha sido eliminada permanentemente.')
+        return redirect('index')
+
+    except Exception as e:
+        traceback.print_exc()  # Imprime el traceback completo en la consola/log para depuración
+        messages.error(request, f'Ocurrió un error inesperado al eliminar tu cuenta.')
+        return redirect('settings')
 
 class CustomLoginView(auth_views.LoginView):
     def form_invalid(self, form):

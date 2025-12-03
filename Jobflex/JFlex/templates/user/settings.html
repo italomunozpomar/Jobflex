@@ -77,18 +77,33 @@
 <div id="delete-account-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] hidden">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <h3 class="text-xl font-bold text-dark mb-4">¿Estás seguro?</h3>
-        <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Escribe tu contraseña para confirmar.</p>
-        <form method="post" action="{% url 'delete_account' %}" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label for="password-confirmation" class="block text-sm font-medium text-dark">Contraseña</label>
-                <input type="password" name="password" id="password-confirmation" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" required>
-            </div>
-            <div class="flex justify-end items-center space-x-4 pt-4">
-                <button type="button" id="cancel-delete-btn" class="bg-gray-200 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">Confirmar y Eliminar</button>
-            </div>
-        </form>
+        {% if user.has_usable_password %}
+            <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Para confirmar, por favor escribe tu contraseña.</p>
+            <form method="post" action="{% url 'delete_account' %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="password-confirmation" class="block text-sm font-medium text-dark">Contraseña</label>
+                    <input type="password" name="password" id="password-confirmation" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" required>
+                </div>
+                <div class="flex justify-end items-center space-x-4 pt-4">
+                    <button type="button" id="cancel-delete-btn" class="bg-gray-200 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">Confirmar y Eliminar</button>
+                </div>
+            </form>
+        {% else %}
+            <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Como te registraste con un proveedor externo (ej. Google), no tienes contraseña. Para confirmar, por favor escribe <strong>ELIMINAR</strong> en el siguiente campo.</p>
+            <form method="post" action="{% url 'delete_account' %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="text-confirmation" class="block text-sm font-medium text-dark">Confirmación</label>
+                    <input type="text" name="confirmation_text" id="text-confirmation" placeholder="ELIMINAR" class="mt-1 block w-full p-3 border border-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" required>
+                </div>
+                <div class="flex justify-end items-center space-x-4 pt-4">
+                    <button type="button" id="cancel-delete-btn" class="bg-gray-200 text-dark font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">Confirmar y Eliminar</button>
+                </div>
+            </form>
+        {% endif %}
     </div>
 </div>
 
