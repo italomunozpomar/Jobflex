@@ -96,3 +96,15 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             user.username = sociallogin.account.extra_data['email']
         
         return user
+
+    def populate_user(self, request, sociallogin, data):
+        """
+        Populates the user instance with data from the social provider.
+        """
+        user = super().populate_user(request, sociallogin, data)
+        
+        # Use email as username if available
+        if sociallogin.account.extra_data.get('email'):
+            user.username = sociallogin.account.extra_data['email']
+        
+        return user

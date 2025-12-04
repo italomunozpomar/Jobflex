@@ -1153,7 +1153,9 @@ def company_index(request):
                 messages.success(request, "La oferta de trabajo ha sido creada exitosamente.")
                 return redirect('company_index')
             else:
-                messages.error(request, "Error al crear la oferta. Por favor, revisa el formulario.")
+                print("=== ERROR DEBUG OFERTA ===")
+                print(job_offer_form.errors)
+                messages.error(request, f"Error al crear la oferta: {job_offer_form.errors.as_text()}")
 
         elif action == 'edit_job_offer' and is_admin:
             offer_id = request.POST.get('offer_id')
@@ -1411,7 +1413,8 @@ def company_index(request):
 
     invitation_form = InvitationForm()
     company_data_form = EmpresaDataForm(instance=company, prefix="modal")
-    job_offer_form = OfertaLaboralForm()
+    if 'job_offer_form' not in locals():
+        job_offer_form = OfertaLaboralForm()
     
     # Get only the categories that are actually used by the company's offers for the filter dropdown
     used_category_ids = OfertaLaboral.objects.filter(empresa=company).values_list('categoria_id', flat=True).distinct()
@@ -3296,6 +3299,15 @@ def download_s3_cv(request, cv_id):
 
 @login_required
 def settings(request):
+    will_delete_company = False
+    try:
+        empresa_usuario = EmpresaUsuario.objects.get(id_empresa_user=request.user)
+        # Check if this is the last user in the company
+        if EmpresaUsuario.objects.filter(empresa=empresa_usuario.empresa).count() <= 1:
+            will_delete_company = True
+    except EmpresaUsuario.DoesNotExist:
+        pass
+
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -3307,8 +3319,10 @@ def settings(request):
             messages.error(request, 'Please correct the error below.')
     else:
         form = PasswordChangeForm(request.user)
+    
     return render(request, 'user/settings.html', {
-        'form': form
+        'form': form,
+        'will_delete_company': will_delete_company
     })
 
 
