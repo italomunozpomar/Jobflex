@@ -3952,16 +3952,8 @@ def apply_to_offer(request, offer_id):
     # GET request
     user_cvs = CVCandidato.objects.filter(candidato=candidato).order_by('-id_cv_user')
     
-    # If user has no CVs, redirect them to create one, passing the offer URL
-    if not user_cvs.exists():
-        create_cv_url = reverse('create_cv')
-        # Construct the full URL to the current job offer page to be used as 'next'
-        offer_url = request.build_absolute_uri(reverse('job_offers')) + f'?oferta={offer.id_oferta}'
-        return JsonResponse({
-            'error': 'no_cv',
-            'message': 'No tienes CVs. Debes crear uno para poder postular.',
-            'redirect_url': f'{create_cv_url}?next={offer_url}'
-        }, status=400)
+    # NOTE: We removed the 400 error block here to allow the modal to open even with no CVs.
+    # The template will handle the empty state and offer creation/upload options.
 
     context = {
         'offer': offer,
