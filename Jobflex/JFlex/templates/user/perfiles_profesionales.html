@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mx-auto px-4 md:px-6 space-y-8">
+    <div class="container mx-auto px-4 md:px-6 space-y-8 pb-12">
         <!-- New Header Section -->
         <section class="bg-white p-8 rounded-xl shadow-lg">
             <div class="flex flex-col md:flex-row items-center justify-between">
@@ -592,8 +592,23 @@
         document.querySelectorAll('.view-cv-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 console.log('View CV button clicked');
-                const cvData = JSON.parse(e.currentTarget.dataset.cvJson);
-                const cvId = e.currentTarget.dataset.cvId;
+                const button = e.currentTarget;
+                const cvType = button.dataset.cvType;
+                const cvUrl = button.dataset.cvUrl;
+                const cvId = button.dataset.cvId;
+
+                // Handle Uploaded CVs (Mobile & Desktop if using this class)
+                if (cvType === 'subido') {
+                    if (cvUrl) {
+                        window.open(cvUrl, '_blank');
+                    } else {
+                        alert('No se encontró la URL del archivo.');
+                    }
+                    return; // Stop here, don't open the HTML preview modal
+                }
+
+                // Handle Created CVs
+                const cvData = JSON.parse(button.dataset.cvJson);
                 console.log('cvId:', cvId);
                 console.log('cvData:', cvData);
 

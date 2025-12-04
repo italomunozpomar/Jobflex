@@ -10,8 +10,9 @@
         <header class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex flex-col md:flex-row items-center md:items-start">
                 <!-- Icono de usuario (SVG) -->
-                <div class="flex-shrink-0 mb-6 md:mb-0 md:mr-6 text-center">
-                    <svg class="w-32 h-32 text-gray-400 mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <div class="relative w-34 h-34 rounded-full border-4 {% if candidato.disponible %}border-green-500{% else %}border-red-500{% endif %} flex items-center justify-center flex-shrink-0 mb-6 md:mb-0 md:mr-6">
+                    <div class="absolute inset-0 rounded-full bg-white z-0"></div> <!-- Fondo blanco para el círculo -->
+                    <svg class="w-32 h-32 text-gray-400 z-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" />
                     </svg>
                 </div>
@@ -98,9 +99,9 @@
                     </ul>
                 </div>
 
-                <!-- Modal para editar perfil -->
-                <div id="profile-edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50" style="margin-top: 0px;">
-                    <div class="relative top-10 mx-auto p-8 border w-full max-w-2xl shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto" style="margin-top: 32px;">
+                <!-- Modal para editar perfil (Animado y Responsive) -->
+                <div id="profile-edit-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300">
+                    <div id="profile-edit-panel" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform transition-all duration-300 ease-in-out scale-95 opacity-0 max-h-[90vh] overflow-y-auto p-6">
                         <h3 class="text-2xl font-bold text-center text-dark mb-6">Editar Datos Personales</h3>
                         <form method="POST" action="{% url 'profile' %}" class="space-y-4">
                             {% csrf_token %}
@@ -447,13 +448,44 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Profile Edit Modal ---
+            // --- Profile Edit Modal (Animated) ---
             const modal = document.getElementById('profile-edit-modal');
+            const modalPanel = document.getElementById('profile-edit-panel'); // New reference for animation
             const openModalButton = document.getElementById('edit-profile-button');
             const closeModalButton = document.getElementById('cancel-edit-button');
+
+            function openProfileModal() {
+                if (modal && modalPanel) {
+                    modal.classList.remove('hidden');
+                    // Small delay to allow display:block to apply before transition
+                    setTimeout(() => {
+                        modalPanel.classList.remove('scale-95', 'opacity-0');
+                        modalPanel.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                }
+            }
+
+            function closeProfileModal() {
+                if (modal && modalPanel) {
+                    modalPanel.classList.remove('scale-100', 'opacity-100');
+                    modalPanel.classList.add('scale-95', 'opacity-0');
+                    // Wait for transition to finish
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
             if(modal && openModalButton && closeModalButton) {
-                openModalButton.addEventListener('click', () => modal.classList.remove('hidden'));
-                closeModalButton.addEventListener('click', () => modal.classList.add('hidden'));
+                openModalButton.addEventListener('click', openProfileModal);
+                closeModalButton.addEventListener('click', closeProfileModal);
+                
+                // Close on backdrop click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeProfileModal();
+                    }
+                });
             }
 
             // --- Dependent Dropdowns ---
@@ -576,7 +608,7 @@
                     datasets: [{ 
                         label: 'Uso de CVs', 
                         data: JSON.parse('{{ cv_usage_data }}'), 
-                        backgroundColor: ['#8CA01A', '#89746F', '#D8D9DD', '#FFCC00', '#FF6600', '#6699FF', '#99CC33'], // More colors for more CVs
+                        backgroundColor: ['#8CA01A', '#1a8ca0', '#D8D9DD', '#FFCC00', '#FF6600', '#6699FF', '#99CC33'], // More colors for more CVs
                         borderColor: '#FFFFFF', 
                         borderWidth: 2 
                     }] 

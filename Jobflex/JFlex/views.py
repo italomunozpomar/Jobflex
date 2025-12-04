@@ -425,45 +425,69 @@ def user_index(request):
 
             # --- Smarter "Ofertas Destacadas" Carousel ---
             recommended_offers = []
-            latest_cv = CVCandidato.objects.using('jflex_db').filter(candidato=candidato).order_by('-id_cv_user').first()
             
-            if latest_cv and latest_cv.cargo_asociado:
-                offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad')
-                keywords = latest_cv.cargo_asociado.split()
-                q_objects = Q()
-                for keyword in keywords:
-                    q_objects |= (Q(titulo_puesto__icontains=keyword) | Q(descripcion_puesto__icontains=keyword))
-                
-                # Apply keyword filter first
-                base_filtered_offers = offers_query.filter(q_objects)
+            # 1. Recolectar palabras clave de TODOS los CVs del usuario, no solo el último
+            user_cvs = CVCandidato.objects.using('jflex_db').filter(candidato=candidato)
+            search_terms = set()
+            
+            for cv in user_cvs:
+                if cv.cargo_asociado:
+                    # Agregar el cargo completo
+                    search_terms.add(cv.cargo_asociado.strip())
+                    # Agregar palabras individuales significativas (mayor a 3 letras)
+                    for word in cv.cargo_asociado.split():
+                        if len(word) > 3: 
+                            search_terms.add(word)
 
-                # Now try to narrow down by location
-                final_offers_qs = None
+            offers_query = OfertaLaboral.objects.using('jflex_db').filter(estado='activa').select_related('empresa', 'jornada', 'modalidad', 'ciudad')
+            
+            final_offers_qs = OfertaLaboral.objects.none() # Queryset vacío inicial
+
+            if search_terms:
+                q_objects = Q()
+                for term in search_terms:
+                    # Buscamos SOLO en título y habilidades para mayor precisión
+                    # Evitamos descripción para no traer ruido (ej. "apoyo al área de desarrollo")
+                    q_objects |= Q(titulo_puesto__icontains=term)
+                    q_objects |= Q(habilidades_clave__icontains=term)
+                
+                # Base de ofertas que coinciden con keywords
+                keyword_matches = offers_query.filter(q_objects).distinct()
+
+                # Lógica de priorización por ubicación
                 if candidato.ciudad:
-                    # Try city first
-                    city_offers = base_filtered_offers.filter(ciudad=candidato.ciudad).order_by('-fecha_publicacion')[:5]
+                    # 1. Coincidencia exacta: Keyword + Ciudad
+                    city_offers = keyword_matches.filter(ciudad=candidato.ciudad)
                     if city_offers.exists():
                         final_offers_qs = city_offers
-                    # Then try region
-                    elif candidato.ciudad.region:
-                        region_offers = base_filtered_offers.filter(ciudad__region=candidato.ciudad.region).order_by('-fecha_publicacion')[:5]
-                        if region_offers.exists():
-                            final_offers_qs = region_offers
+                    
+                    # 2. Si hay pocas, buscar en la Región
+                    if final_offers_qs.count() < 5 and candidato.ciudad.region:
+                        region_offers = keyword_matches.filter(ciudad__region=candidato.ciudad.region).exclude(id_oferta__in=final_offers_qs.values('id_oferta'))
+                        final_offers_qs = final_offers_qs | region_offers
 
-                # Fallback to keyword-only search if no location match
-                if not final_offers_qs:
-                    final_offers_qs = base_filtered_offers.order_by('-fecha_publicacion')[:5]
+                # 3. Si aún hay pocas (o no hay ubicación), rellenar con coincidencias nacionales
+                if final_offers_qs.count() < 5:
+                    national_offers = keyword_matches.exclude(id_oferta__in=final_offers_qs.values('id_oferta'))
+                    final_offers_qs = final_offers_qs | national_offers
 
-                for offer in final_offers_qs:
-                    recommended_offers.append({
-                        'id': offer.id_oferta,
-                        'title': offer.titulo_puesto,
-                        'company': offer.empresa.nombre_comercial,
-                        'location': offer.ciudad.nombre if offer.ciudad else 'N/A',
-                        'modality': offer.modalidad.tipo_modalidad if offer.modalidad else 'N/A',
-                        'jornada': offer.jornada.tipo_jornada if offer.jornada else 'N/A',
-                        'company_logo': offer.empresa.imagen_perfil
-                    })
+            # Fallback: Si no hay CVs o no hubo ningún match, mostrar las más recientes generales
+            if not final_offers_qs.exists():
+                final_offers_qs = offers_query
+
+            # Limitar a 10 resultados y ordenar por fecha
+            final_offers_qs = final_offers_qs.order_by('-fecha_publicacion')[:10]
+
+            for offer in final_offers_qs:
+                recommended_offers.append({
+                    'id': offer.id_oferta,
+                    'title': offer.titulo_puesto,
+                    'company': offer.empresa.nombre_comercial,
+                    'location': offer.ciudad.nombre if offer.ciudad else 'N/A',
+                    'modality': offer.modalidad.tipo_modalidad if offer.modalidad else 'N/A',
+                    'jornada': offer.jornada.tipo_jornada if offer.jornada else 'N/A',
+                    'company_logo': offer.empresa.imagen_perfil
+                })
 
             # --- Profile Completion ---
             profile_fields = [
@@ -1150,6 +1174,20 @@ def company_index(request):
                 
                 print(f"DEBUG: Creating offer. Selected duration: {duracion}, Calculated fecha_cierre: {new_offer.fecha_cierre}, Fecha Publicacion: {new_offer.fecha_publicacion}")
                 new_offer.save()
+
+                # --- Notificación de Oferta Creada ---
+                try:
+                    crear_notificacion(
+                        usuario_destino_obj=request.user,
+                        tipo_notificacion_nombre='Oferta Creada',
+                        mensaje_str=f"Has publicado una nueva oferta: {new_offer.titulo_puesto}",
+                        link_relacionado_str=reverse('job_details', args=[new_offer.id_oferta]),
+                        motivo_str='Creación de nueva oferta laboral'
+                    )
+                except Exception as e:
+                    print(f"Error creando notificación de oferta: {e}")
+                # -------------------------------------
+
                 messages.success(request, "La oferta de trabajo ha sido creada exitosamente.")
                 return redirect('company_index')
             else:
@@ -1269,18 +1307,46 @@ def company_index(request):
             if form.is_valid():
                 email = form.cleaned_data['email']
                 role = form.cleaned_data['role'] # This is a RolesEmpresa object
+                
+                notification_msg = ""
+                motivo_msg = ""
 
                 try:
                     invited_user = User.objects.get(email=email)
                     if EmpresaUsuario.objects.filter(empresa=company, id_empresa_user=invited_user).exists():
                         messages.warning(request, f"El usuario {email} ya es parte de esta empresa.")
+                        # No notification needed if already exists
                     else:
-                        EmpresaUsuario.objects.create(
-                            id_empresa_user=invited_user,
-                            empresa=company,
-                            rol=role
+                        # --- NEW LOGIC: Create Token and Send Email for EXISTING users too ---
+                        invitation_token = uuid.uuid4().hex
+                        expires_at = timezone.now() + timedelta(days=1)
+
+                        CompanyInvitationToken.objects.using('jflex_db').create(
+                            user_id=invited_user.id,
+                            company=company,
+                            token=invitation_token,
+                            expires_at=expires_at
                         )
-                        messages.success(request, f"El usuario existente {email} ha sido añadido a la empresa como {role.nombre_rol}.")
+
+                        invitation_link = request.build_absolute_uri(
+                            reverse('accept_company_invitation', kwargs={'token': invitation_token})
+                        )
+
+                        mail_subject = f'Invitación para unirte a {company.nombre_comercial} en JobFlex'
+                        message = render_to_string('company/invitation_email.html', {
+                            'company_name': company.nombre_comercial,
+                            'invitation_link': invitation_link,
+                            'invited_email': email,
+                        })
+                        to_email = email
+                        email_message = EmailMessage(mail_subject, message, to=[to_email])
+                        email_message.send()
+
+                        messages.success(request, f"Se ha enviado una invitación a {email} para unirse a la empresa como {role.nombre_rol}.")
+                        notification_msg = f"Has invitado a {email} a unirse al equipo como {role.nombre_rol}"
+                        motivo_msg = "Invitación de miembro existente enviada"
+                        # ---------------------------------------------------------------------
+
                 except User.DoesNotExist:
                     username = f"temp_{uuid.uuid4().hex[:10]}"
                     new_user = User.objects.create_user(username=username, email=email, password="temporarypassword123")
@@ -1320,7 +1386,23 @@ def company_index(request):
                     email_message.send()
 
                     messages.success(request, f"Se ha enviado una invitación a {email} para unirse a la empresa como {role.nombre_rol}.")
+                    notification_msg = f"Has invitado a {email} a unirse al equipo como {role.nombre_rol}"
+                    motivo_msg = "Invitación de nuevo miembro enviada"
                 
+                # --- Crear Notificación Unificada ---
+                if notification_msg:
+                    try:
+                        crear_notificacion(
+                            usuario_destino_obj=request.user,
+                            tipo_notificacion_nombre='Gestión de Equipo',
+                            mensaje_str=notification_msg,
+                            link_relacionado_str='#',
+                            motivo_str=motivo_msg
+                        )
+                    except Exception as e:
+                        print(f"Error creando notificación de invitación: {e}")
+                # ------------------------------------
+
                 return redirect('company_index')
             else:
                 messages.error(request, "Error al invitar usuario. Por favor, revisa los datos.")
@@ -1342,15 +1424,39 @@ def company_index(request):
             member_id = request.POST.get('member_id')
             try:
                 member_to_delete = EmpresaUsuario.objects.get(pk=member_id, empresa=company)
+                
+                # Check if it's the last admin/rep (logic already exists, keep it)
                 if (member_to_delete.rol.nombre_rol == 'Representante' or member_to_delete.rol.nombre_rol == 'Administrador'):
                     admin_count = EmpresaUsuario.objects.filter(empresa=company, rol__nombre_rol__in=['Representante', 'Administrador']).count()
                     if admin_count <= 1:
                         messages.error(request, "No puedes eliminar al último administrador/representante de la empresa.")
                         return redirect('company_index')
 
-                email_deleted = member_to_delete.id_empresa_user.email
+                user_to_demote = member_to_delete.id_empresa_user
+                email_deleted = user_to_demote.email
+                
+                # 1. Revertir rol a 'candidato'
+                try:
+                    registro = RegistroUsuarios.objects.using('jflex_db').get(id_registro=user_to_demote)
+                    tipo_candidato, _ = TipoUsuario.objects.using('jflex_db').get_or_create(nombre_user='candidato')
+                    registro.tipo_usuario = tipo_candidato
+                    registro.save(using='jflex_db')
+                    
+                    # Asegurar que tenga perfil de candidato básico si no lo tiene
+                    if not hasattr(user_to_demote, 'candidato_profile'):
+                         Candidato.objects.using('jflex_db').create(
+                            id_candidato=user_to_demote,
+                            rut_candidato='',
+                            fecha_nacimiento='1900-01-01',
+                            telefono=''
+                        )
+                except RegistroUsuarios.DoesNotExist:
+                    print(f"Advertencia: No se encontró RegistroUsuarios para {email_deleted} al eliminar de empresa.")
+
+                # 2. Eliminar vínculo empresa
                 member_to_delete.delete()
-                messages.success(request, f"Usuario {email_deleted} eliminado de la empresa.")
+                
+                messages.success(request, f"Usuario {email_deleted} eliminado de la empresa y revertido a cuenta de candidato.")
             except EmpresaUsuario.DoesNotExist:
                 messages.error(request, "Error al eliminar usuario. No encontrado.")
             return redirect('company_index')
@@ -3566,31 +3672,85 @@ def accept_company_invitation(request, token):
         invitation_token_obj = CompanyInvitationToken.objects.using('jflex_db').get(token=token)
     except CompanyInvitationToken.DoesNotExist:
         messages.error(request, "El enlace de invitación es inválido o ha expirado.")
-        return redirect('index') # Or a dedicated error page
-
-    user = invitation_token_obj.user # This user is from default DB
-    company = invitation_token_obj.company # This company is from jflex_db
-
-    if not invitation_token_obj.is_valid() or user.is_active:
-        messages.error(request, "El enlace de invitación es inválido o ya ha sido utilizado.")
-        invitation_token_obj.delete() # Invalidate token
         return redirect('index')
 
+    user = invitation_token_obj.user
+    company = invitation_token_obj.company
+
+    if not invitation_token_obj.is_valid():
+        messages.error(request, "El enlace de invitación ha expirado.")
+        invitation_token_obj.delete()
+        return redirect('index')
+
+    # --- Caso: Usuario YA EXISTE (tiene contraseña o auth social) ---
+    if user.is_active and (user.has_usable_password() or SocialAccount.objects.filter(user=user).exists()):
+        if request.method == 'POST':
+            # 1. Actualizar Tipo de Usuario a 'Empresa'
+            try:
+                tipo_usuario_empresa, _ = TipoUsuario.objects.using('jflex_db').get_or_create(nombre_user='empresa')
+                
+                # Intentar obtener el registro existente o crear uno si falta
+                registro, created = RegistroUsuarios.objects.using('jflex_db').get_or_create(
+                    id_registro=user,
+                    defaults={
+                        'nombres': user.first_name,
+                        'apellidos': user.last_name,
+                        'email': user.email,
+                        'tipo_usuario': tipo_usuario_empresa
+                    }
+                )
+                if not created:
+                    registro.tipo_usuario = tipo_usuario_empresa
+                    registro.save(using='jflex_db')
+                
+                # 2. Crear Vínculo con la Empresa
+                # Por defecto asignamos un rol básico si no se especificó en el token (aunque el token no guarda rol actualmente, asumimos Colaborador o similar)
+                # NOTA: El rol idealmente debería venir del proceso de invitación. Como no se guarda en el token,
+                # asignaremos 'Colaborador' por defecto o el primero que encontremos que no sea Representante.
+                rol_colaborador = RolesEmpresa.objects.using('jflex_db').exclude(nombre_rol='Representante').first()
+                if not rol_colaborador:
+                     rol_colaborador, _ = RolesEmpresa.objects.using('jflex_db').get_or_create(nombre_rol='Colaborador')
+
+                EmpresaUsuario.objects.using('jflex_db').get_or_create(
+                    id_empresa_user=user,
+                    empresa=company,
+                    defaults={'rol': rol_colaborador}
+                )
+
+                invitation_token_obj.delete()
+                
+                # Loguear al usuario si no lo está
+                if not request.user.is_authenticated:
+                    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                
+                messages.success(request, f"¡Te has unido a {company.nombre_comercial} exitosamente!")
+                return redirect('company_index')
+
+            except Exception as e:
+                print(f"Error aceptando invitación usuario existente: {e}")
+                messages.error(request, "Ocurrió un error al procesar tu solicitud.")
+                return redirect('index')
+        
+        # GET: Mostrar confirmación simple
+        return render(request, 'company/accept_invitation.html', {
+            'company_name': company.nombre_comercial,
+            'is_existing_user': True
+        })
+
+    # --- Caso: Usuario NUEVO (sin contraseña) ---
     if request.method == 'POST':
         form = SetInvitationPasswordForm(user, request.POST)
         if form.is_valid():
-            form.save() # Saves password and first/last name to the User object in default DB
+            form.save()
             user.is_active = True
-            user.save() # Activates user in default DB
+            user.save()
 
-            # Create RegistroUsuarios entry for the newly activated user
-            # Get or create the 'empresa' TipoUsuario
+            # ... (resto de la lógica de creación de usuario nuevo, RegistroUsuarios, etc.)
+            # ... (copiar lógica existente aquí)
             print(f"Attempting to get or create TipoUsuario 'empresa' for user {user.email}...")
             tipo_usuario_empresa, created_tipo = TipoUsuario.objects.using('jflex_db').get_or_create(nombre_user='empresa')
-            print(f"TipoUsuario 'empresa' retrieved/created: {tipo_usuario_empresa.nombre_user}, created: {created_tipo}")
-
+            
             try:
-                print(f"Attempting to create RegistroUsuarios for user {user.email} (ID: {user.id})...")
                 RegistroUsuarios.objects.using('jflex_db').create(
                     id_registro=user,
                     nombres=user.first_name,
@@ -3598,17 +3758,27 @@ def accept_company_invitation(request, token):
                     email=user.email,
                     tipo_usuario=tipo_usuario_empresa
                 )
-                print(f"RegistroUsuarios created successfully for user {user.email}.")
+                
+                # Asignar rol (misma lógica que arriba o recuperar si se guardara)
+                rol_colaborador = RolesEmpresa.objects.using('jflex_db').exclude(nombre_rol='Representante').first()
+                if not rol_colaborador:
+                     rol_colaborador, _ = RolesEmpresa.objects.using('jflex_db').get_or_create(nombre_rol='Colaborador')
+
+                EmpresaUsuario.objects.using('jflex_db').create(
+                    id_empresa_user=user,
+                    empresa=company,
+                    rol=rol_colaborador
+                )
+
             except Exception as e:
                 print(f"ERROR: Failed to create RegistroUsuarios for user {user.email}: {e}")
-                # Re-raise the exception to ensure the transaction rolls back if this fails
                 raise
 
-            invitation_token_obj.delete() # Delete token from jflex_db
+            invitation_token_obj.delete()
 
             auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, f"¡Bienvenido a {company.nombre_comercial}! Tu cuenta ha sido activada.")
-            return redirect('company_index') # Redirect to company dashboard
+            return redirect('company_index')
         else:
             messages.error(request, "Por favor, corrige los errores en el formulario.")
     else:
@@ -3618,6 +3788,7 @@ def accept_company_invitation(request, token):
         'form': form,
         'company_name': company.nombre_comercial,
         'invited_email': user.email,
+        'is_existing_user': False
     }
     return render(request, 'company/accept_invitation.html', context)
 
@@ -4211,62 +4382,18 @@ def delete_all_notifications(request):
     
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-@login_required
 def get_notifications_api(request):
-    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'error': 'Invalid request'}, status=400)
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=403)
+
+    # Obtener las últimas 5 notificaciones no leídas (o todas las recientes si se prefiere)
+    notificaciones = Notificaciones.objects.filter(usuario_destino=request.user).select_related('tipo_notificacion').order_by('-fecha_envio')[:5]
     
-    notifications_data = {
-        'unread_notifications_count': 0,
-        'recent_notifications': [],
-    }
+    unread_count = Notificaciones.objects.filter(usuario_destino=request.user, leida=False).count()
 
-    try:
-        # Check user type
-        try:
-            registro_usuario = RegistroUsuarios.objects.using('jflex_db').get(id_registro=request.user)
-        except RegistroUsuarios.DoesNotExist:
-            registro_usuario = None
+    html = render_to_string('partials/_notification_items.html', {'notifications': notificaciones}, request=request)
 
-        if registro_usuario:
-            # Fetch generic notifications
-            all_notifications_qs = Notificaciones.objects.filter(
-                usuario_destino=request.user
-            ).select_related('tipo_notificacion').order_by('-fecha_envio')
-
-            # Filter by specialized notification types
-            if registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'candidato':
-                # Only show notifications that have a corresponding NotificacionCandidato entry
-                notifications_for_user = all_notifications_qs.filter(
-                    notificacioncandidato__isnull=False
-                )
-            elif registro_usuario.tipo_usuario and registro_usuario.tipo_usuario.nombre_user == 'empresa':
-                # Only show notifications that have a corresponding NotificacionEmpresa entry
-                notifications_for_user = all_notifications_qs.filter(
-                    notificacionempresa__isnull=False
-                )
-            else:
-                notifications_for_user = all_notifications_qs.none()
-
-            notifications_data['unread_notifications_count'] = notifications_for_user.filter(leida=False).count()
-            
-            # Fetch a few recent notifications for display
-            for notif in notifications_for_user[:5]: # Limit to 5 recent notifications
-                notifications_data['recent_notifications'].append({
-                    'id': notif.id_notificacion,
-                    'message': notif.mensaje,
-                    'is_read': notif.leida,
-                    'timestamp': notif.fecha_envio,
-                    'link': notif.link_relacionado,
-                    'type': notif.tipo_notificacion.nombre_tipo if notif.tipo_notificacion else 'General'
-                })
-    except Exception as e:
-        print(f"Error in get_notifications_api: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
-
-    html_content = render_to_string('partials/_notification_items.html', notifications_data, request=request)
-    
     return JsonResponse({
-        'unread_count': notifications_data['unread_notifications_count'],
-        'html': html_content
+        'html': html,
+        'unread_count': unread_count
     })
