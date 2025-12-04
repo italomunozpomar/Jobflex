@@ -471,9 +471,19 @@ def user_index(request):
                     national_offers = keyword_matches.exclude(id_oferta__in=final_offers_qs.values('id_oferta'))
                     final_offers_qs = final_offers_qs | national_offers
 
-            # Fallback: Si no hay CVs o no hubo ningún match, mostrar las más recientes generales
-            if not final_offers_qs.exists():
-                final_offers_qs = offers_query
+            # Fallback: Solo si buscamos algo (teníamos keywords) pero no encontramos nada,
+            # podríamos mostrar generales. PERO, si el usuario es nuevo (no search_terms),
+            # NO mostramos nada para obligarlo a completar perfil.
+            if not final_offers_qs.exists() and search_terms:
+                 # Opcional: Si prefieres que incluso con keywords si no hay match no muestre nada,
+                 # borra este bloque if completo. 
+                 # Si lo dejas, mostrará genéricas solo si intentó buscar y falló.
+                 # Para "más robusto" y limpio en cuentas nuevas:
+                 pass 
+            
+            # (El código original hacía: final_offers_qs = offers_query si no había resultados.
+            #  Al eliminar/comentar esa línea, si no hay matches, la lista queda vacía, 
+            #  que es lo correcto para un sistema robusto).
 
             # Limitar a 10 resultados y ordenar por fecha
             final_offers_qs = final_offers_qs.order_by('-fecha_publicacion')[:10]
