@@ -1915,6 +1915,19 @@ def get_applicant_details(request, postulacion_id):
             postulacion.cv_visto = True
             postulacion.save(using='jflex_db')
 
+            # --- Enviar Notificación al Candidato (NUEVO) ---
+            try:
+                crear_notificacion(
+                    usuario_destino_obj=user_details,
+                    tipo_notificacion_nombre='CV Visto',
+                    mensaje_str=f'La empresa {postulacion.oferta.empresa.nombre_comercial} ha visto tu CV para la oferta "{postulacion.oferta.titulo_puesto}".',
+                    link_relacionado_str=reverse('postulaciones'),
+                    motivo_str='Tu CV ha sido visto por un reclutador'
+                )
+            except Exception as e:
+                print(f"Error al enviar notificación de CV visto: {e}")
+            # -----------------------------------------------
+
         candidato = postulacion.candidato
         cv = postulacion.cv_postulado
         
@@ -3375,7 +3388,37 @@ def delete_account(request):
             if empresa_usuario:
                 empresa = empresa_usuario.empresa
                 if EmpresaUsuario.objects.filter(empresa=empresa).count() <= 1:
-                    # Es el último usuario, elimina la empresa y sus assets
+                    # Es el último usuario, notificar candidatos y eliminar la empresa
+                    
+                    # --- NOTIFICAR CANDIDATOS (NUEVO) ---
+                    try:
+                        # Obtener IDs de usuarios candidatos con postulaciones activas en esta empresa
+                        candidatos_ids = Postulacion.objects.filter(oferta__empresa=empresa).values_list('candidato__id_candidato', flat=True).distinct()
+                        
+                        if candidatos_ids:
+                            tipo_notif, _ = TipoNotificacion.objects.get_or_create(
+                                nombre_tipo='Cierre de Empresa',
+                                defaults={'descripcion': 'Notificación automática por eliminación de cuenta de empresa.'}
+                            )
+                            
+                            notificaciones_list = []
+                            mensaje_notif = f"La empresa {empresa.nombre_comercial} ha cerrado su cuenta. Las ofertas asociadas han sido canceladas."
+                            
+                            for cand_user_id in candidatos_ids:
+                                notificaciones_list.append(Notificaciones(
+                                    usuario_destino_id=cand_user_id,
+                                    tipo_notificacion=tipo_notif,
+                                    mensaje=mensaje_notif,
+                                    link_relacionado='/user_index/',
+                                    motivo='Cierre de Empresa'
+                                ))
+                            
+                            Notificaciones.objects.bulk_create(notificaciones_list)
+                            print(f"Se han enviado notificaciones de cierre a {len(notificaciones_list)} candidatos.")
+                    except Exception as e_notif:
+                        print(f"Error al notificar candidatos durante cierre de empresa: {e_notif}")
+                    # ------------------------------------
+
                     print(f"Usuario {user.email} es el último de la empresa {empresa.nombre_comercial}. Eliminando empresa y assets.")
                     s3 = boto3.client('s3', aws_access_key_id=django_settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=django_settings.AWS_SECRET_ACCESS_KEY)
                     for field in [empresa.imagen_perfil, empresa.imagen_portada]:
