@@ -452,7 +452,7 @@
                         Buscar
                     </button>
                 </div>
-                <div id="filter-menu" class="hidden mt-6 pt-6 border-t border-gray-200">
+                <div id="filter-menu" class="mt-6 pt-6 border-t border-gray-200">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                         <div>
                             <label for="search_region" class="block text-sm font-medium text-secondary mb-1">Región</label>
@@ -967,14 +967,6 @@
             const filtersActiveFromDjango = {{ filters_active|yesno:"true,false" }}; // New variable from Django
 
             if (filterToggleBtn && filterMenu) {
-                // Determine initial state
-                let shouldBeOpen = filtersActiveFromDjango || (localStorage.getItem('filterMenuOpen') === 'true');
-                if (shouldBeOpen) {
-                    filterMenu.classList.remove('hidden');
-                } else {
-                    filterMenu.classList.add('hidden');
-                }
-
                 filterToggleBtn.addEventListener('click', () => {
                     const isOpen = filterMenu.classList.toggle('hidden'); // This toggles the hidden class
                     localStorage.setItem('filterMenuOpen', isOpen ? 'false' : 'true'); // Save the *new* state
