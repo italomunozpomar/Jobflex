@@ -40,7 +40,7 @@ sys.path.insert(0, str(BASE_DIR.parent))
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['jobflex.cl', 'www.jobflex.cl', '179.43.127.166', 'localhost', '127.0.0.1']
 
 # Seguridad de Proxy y SSL
@@ -86,6 +86,7 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = '/user_index/'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_USERNAME_REQUIRED = False # Allow signup without asking for username
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = 'JFlex.adapters.CustomSocialAccountAdapter'
 
