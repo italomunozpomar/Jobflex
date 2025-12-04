@@ -2,7 +2,7 @@ from django.db import transaction
 from django.dispatch import receiver
 from allauth.account.signals import user_signed_up
 from allauth.socialaccount.signals import pre_social_login
-from allauth.exceptions import ImmediateHttpResponse
+from allauth.core.exceptions import ImmediateHttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone

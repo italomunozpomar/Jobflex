@@ -14,19 +14,39 @@ module.exports = {
         'dark': '#101208',
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease-out forwards',
-        'fade-out':'fadeOut 0.2s ease-out forwards',
+        'marquee-left': 'marquee-left 40s linear infinite',
+        'marquee-right': 'marquee-right 40s linear infinite',
+        'fade-in': 'fadeIn 0.5s ease-out forwards',
+        'fade-out': 'fadeOut 0.5s ease-out forwards',
+        'slide-in-right': 'slideInRight 0.3s ease-out forwards',
+        'slide-out-right': 'slideOutRight 0.3s ease-out forwards',
       },
       keyframes: {
+        'marquee-left': {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+        'marquee-right': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0%)' },
+        },
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
         },
         fadeOut: {
-          '0%': { opacity: '1' },
-          '100%': { opacity: '0' },
-        }
-      }
+          '0%': { opacity: 1 },
+          '100%': { opacity: 0 },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0%)' },
+        },
+        slideOutRight: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
     },
   },
   plugins: [
