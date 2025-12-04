@@ -1890,7 +1890,7 @@ def update_postulacion_status(request, postulacion_id):
                         usuario_destino_obj=candidato_user,
                         tipo_notificacion_nombre='Actualización de Postulación',
                         mensaje_str=mensaje,
-                        link_relacionado=reverse('postulaciones'),
+                        link_relacionado_str=reverse('postulaciones'),
                         motivo_str=f'Cambio de estado a {new_status}'
                     )
             except Exception as e:
@@ -2187,6 +2187,20 @@ def schedule_interview(request, postulacion_id):
             # Update application status
             postulacion.estado_postulacion = 'entrevista'
             postulacion.save(using='jflex_db')
+
+            # --- Enviar Notificación Interna (NUEVO) ---
+            try:
+                mensaje_notif = f"Se ha agendado una entrevista para {postulacion.oferta.titulo_puesto} el {fecha_obj.strftime('%d/%m/%Y')} a las {hora_obj.strftime('%H:%M')}."
+                crear_notificacion(
+                    usuario_destino_obj=candidato_user,
+                    tipo_notificacion_nombre='Entrevista Agendada',
+                    mensaje_str=mensaje_notif,
+                    link_relacionado_str=reverse('postulaciones'),
+                    motivo_str='Nueva entrevista agendada'
+                )
+            except Exception as e:
+                print(f"Error enviando notificación interna de entrevista: {e}")
+            # -------------------------------------------
 
             return JsonResponse({'status': 'success', 'message': 'Entrevista agendada y correo enviado exitosamente.'})
 
