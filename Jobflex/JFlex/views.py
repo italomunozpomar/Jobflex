@@ -1856,7 +1856,7 @@ def update_postulacion_status(request, postulacion_id):
             
             # Get the application and verify it belongs to the user's company
             postulacion = get_object_or_404(
-                Postulacion.objects.using('jflex_db').select_related('oferta__empresa'),
+                Postulacion.objects.using('jflex_db').select_related('oferta__empresa', 'candidato'),
                 pk=postulacion_id
             )
 
@@ -1873,6 +1873,29 @@ def update_postulacion_status(request, postulacion_id):
 
             postulacion.estado_postulacion = new_status
             postulacion.save(using='jflex_db')
+
+            # --- Enviar Notificación de Cambio de Estado (NUEVO) ---
+            try:
+                candidato_user = User.objects.using('default').get(pk=postulacion.candidato.id_candidato_id)
+                msg_map = {
+                    'en proceso': f'Tu postulación para "{postulacion.oferta.titulo_puesto}" está siendo revisada.',
+                    'aceptada': f'¡Felicidades! Has sido aceptado en el proceso para "{postulacion.oferta.titulo_puesto}".',
+                    'rechazada': f'Tu proceso para "{postulacion.oferta.titulo_puesto}" ha finalizado. Gracias por participar.',
+                    'entrevista': f'Se ha agendado una entrevista para "{postulacion.oferta.titulo_puesto}". Revisa tu correo.'
+                }
+                
+                mensaje = msg_map.get(new_status)
+                if mensaje:
+                    crear_notificacion(
+                        usuario_destino_obj=candidato_user,
+                        tipo_notificacion_nombre='Actualización de Postulación',
+                        mensaje_str=mensaje,
+                        link_relacionado=reverse('postulaciones'),
+                        motivo_str=f'Cambio de estado a {new_status}'
+                    )
+            except Exception as e:
+                print(f"Error enviando notificación de estado: {e}")
+            # -------------------------------------------------------
             
             return JsonResponse({'status': 'success', 'message': 'Status updated successfully.'})
 
@@ -1910,6 +1933,10 @@ def get_applicant_details(request, postulacion_id):
         if postulacion.oferta.empresa != empresa_usuario.empresa:
             return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
         
+        candidato = postulacion.candidato
+        # Get User model data from the default database (MOVED UP)
+        user_details = User.objects.using('default').get(pk=candidato.id_candidato_id)
+
         # Mark CV as viewed
         if not postulacion.cv_visto:
             postulacion.cv_visto = True
@@ -1928,11 +1955,7 @@ def get_applicant_details(request, postulacion_id):
                 print(f"Error al enviar notificación de CV visto: {e}")
             # -----------------------------------------------
 
-        candidato = postulacion.candidato
         cv = postulacion.cv_postulado
-        
-        # Get User model data from the default database
-        user_details = User.objects.using('default').get(pk=candidato.id_candidato_id)
 
         # 1. Serialize Personal Data
         today = date.today()
