@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}JobFlex - Mis postulaciones {% endblock %}
 
@@ -37,7 +38,8 @@
         <!-- Sección de Cambio de Contraseña -->
         <div class="bg-white p-8 rounded-xl shadow-lg mb-8">
             <h2 class="text-2xl font-bold text-dark mb-6">Cambiar Contraseña</h2>
-            {% if user.has_usable_password %}
+            {% get_social_accounts user as accounts %}
+            {% if not accounts and user.has_usable_password %}
             <form method="post" action="{% url 'settings' %}" class="space-y-6">
                 {% csrf_token %}
                 {% for field in form %}
@@ -59,7 +61,7 @@
             {% else %}
             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
                 <p class="font-bold">No es posible cambiar la contraseña</p>
-                <p>Iniciaste sesión con un proveedor externo (como Google), por lo que no administras una contraseña directamente en JobFlex.</p>
+                <p>Tu cuenta está vinculada a un proveedor externo (Google) o no tienes una contraseña establecida.</p>
             </div>
             {% endif %}
         </div>
@@ -104,7 +106,8 @@
         </div>
         {% endif %}
 
-        {% if user.has_usable_password %}
+        {% get_social_accounts user as accounts %}
+        {% if not accounts and user.has_usable_password %}
             <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Para confirmar, por favor escribe tu contraseña.</p>
             <form method="post" action="{% url 'delete_account' %}" class="space-y-4">
                 {% csrf_token %}
@@ -118,7 +121,7 @@
                 </div>
             </form>
         {% else %}
-            <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Como te registraste con un proveedor externo (ej. Google), no tienes contraseña. Para confirmar, por favor escribe <strong>ELIMINAR</strong> en el siguiente campo.</p>
+            <p class="text-secondary mb-6">Estás a punto de eliminar tu cuenta permanentemente. Como te registraste con un proveedor externo (ej. Google) o no tienes contraseña establecida, para confirmar, por favor escribe <strong>ELIMINAR</strong> en el siguiente campo.</p>
             <form method="post" action="{% url 'delete_account' %}" class="space-y-4">
                 {% csrf_token %}
                 <div>
