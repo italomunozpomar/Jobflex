@@ -42,20 +42,6 @@
             100% { transform: rotate(360deg); }
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#8CA01A',
-                        'secondary': '#89746F',
-                        'light-gray': '#D8D9DD',
-                        'dark': '#312F32',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-gray-50 font-sans min-h-screen flex flex-col">
 
@@ -103,7 +89,6 @@
         </div>
 
         <!-- Panel Derecho (Formulario) -->
-        <!-- Espaciado Móvil: pt-24 (Navbar 20 + 4 aire). justify-start para evitar cortes. h-calc para scroll interno. -->
         <div class="w-full md:w-3/5 flex flex-col items-center justify-start p-4 md:p-0 md:mt-20 md:pt-8 h-[calc(100vh-5rem)] overflow-y-auto bg-gray-50 pt-8">
             
             <div class="w-full max-w-md xl:max-w-2xl bg-white rounded-3xl shadow-xl p-8 mx-4 mb-8 md:my-0 md:p-16 transition-all duration-300">
@@ -208,8 +193,8 @@
                                     <input type="password" name="password1" id="id_password1" placeholder="••••••••"
                                         class="block w-full pl-10 pr-10 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-2-input">
                                     <button type="button" id="togglePassword1" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                     </button>
                                 </div>
                                 {% for error in form.password1.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
@@ -223,13 +208,17 @@
                                     </div>
                                     <input type="password" name="password2" id="id_password2" placeholder="Confirmar Contraseña"
                                         class="block w-full pl-10 pr-10 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-2-input">
+                                    <button type="button" id="togglePassword2" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    </button>
                                 </div>
                                 {% for error in form.password2.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
                             </div>
 
                             <div class="flex items-center">
                                 <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary step-2-input">
-                                <label for="terms" class="ml-2 block text-sm text-gray-600">Acepto los <a href="#" class="font-medium text-primary hover:text-opacity-80 transition-colors">Términos y Condiciones</a></label>
+                                <label for="terms" class="ml-2 block text-sm text-gray-600">Acepto los <a href="{% url 'terms_and_conditions' %}" class="font-medium text-primary hover:text-opacity-80 transition-colors">Términos y Condiciones</a></label>
                             </div>
 
                             <button type="submit" id="register-button" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-sm font-bold text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/30 transition-all transform hover:scale-[1.02] active:scale-95">
@@ -276,15 +265,15 @@
             </div>
 
             <footer class="w-full mt-auto pt-8 pb-4 md:pb-8">
-                <!-- Footer horizontal, flex-row para que no se apile -->
-                <div class="text-center text-xs text-gray-400 flex flex-row justify-center items-center space-x-4 gap-4">
-                    <a href="#" class="hover:text-dark transition-colors">Privacidad</a>
-                    <span class="text-gray-300">|</span>
-                    <a href="#" class="hover:text-dark transition-colors">Términos</a>
-                    <span class="text-gray-300">|</span>
-                    <a href="#" class="hover:text-dark transition-colors">Ayuda</a>
-                    <span class="text-gray-300">|</span>
-                    <p>&copy; 2025 JobFlex.</p>
+                <div class="container mx-auto text-center text-sm">
+                    <div class="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4 mb-2">
+                        <a href="{% url 'privacy_policy' %}" class="text-secondary hover:text-primary">Políticas de Privacidad</a>
+                        <span class="hidden md:inline text-gray-300">|</span>
+                        <a href="{% url 'terms_and_conditions' %}" class="text-secondary hover:text-primary">Términos y Condiciones</a>
+                        <span class="hidden md:inline text-gray-300">|</span>
+                        <a href="{% url 'contact_us' %}" class="text-secondary hover:text-primary">Soporte</a>
+                    </div>
+                    <p class="text-xs text-gray-500">&copy; 2025 JobFlex. Todos los derechos reservados.</p>
                 </div>
             </footer>
         </div>
@@ -334,14 +323,14 @@
             });
         }
 
-        // --- Password Toggle Logic ---
+        // Password Toggle Function
         function setupPasswordToggle(toggleButtonId, passwordInputId) {
             const toggleButton = document.getElementById(toggleButtonId);
             const passwordInput = document.getElementById(passwordInputId);
             
             if (toggleButton && passwordInput) {
-                const eyeIcon = toggleButton.querySelector('svg:first-child');
-                const eyeSlashIcon = toggleButton.querySelector('svg:last-child');
+                const eyeSlashIcon = toggleButton.querySelector('svg:first-child');
+                const eyeIcon = toggleButton.querySelector('svg:last-child');
 
                 toggleButton.addEventListener('click', function () {
                     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';

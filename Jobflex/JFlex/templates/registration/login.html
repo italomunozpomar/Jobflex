@@ -26,18 +26,7 @@
         }
     </style>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#8CA01A',
-                        'secondary': '#89746F',
-                        'light-gray': '#D8D9DD',
-                        'dark': '#312F32',
-                    }
-                }
-            }
-        }
+        
         // Show/Hide Password Toggle
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
@@ -175,10 +164,10 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between mt-2">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2">
                             <label class="flex items-center cursor-pointer">
                                 <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
-                                <span class="ml-2 text-gray-600">Recordarme</span>
+                                <span class="ml-2 text-gray-600 text-sm">Recordarme</span>
                             </label>
                             <div class="text-sm">
                                 <a href="{% url 'password_reset' %}" class="font-medium text-primary hover:underline">¿Olvidaste tu contraseña?</a>
@@ -225,11 +214,11 @@
             <footer class="w-full mt-auto pt-8 pb-4 md:pb-8">
                 <div class="container mx-auto text-center text-sm">
                     <div class="flex flex-col md:flex-row justify-center items-center space-y-2 md:space-y-0 md:space-x-4 mb-2">
-                        <a href="#" class="text-secondary hover:text-primary">Políticas de Privacidad</a>
+                        <a href="{% url 'privacy_policy' %}" class="text-secondary hover:text-primary">Políticas de Privacidad</a>
                         <span class="hidden md:inline text-gray-300">|</span>
-                        <a href="#" class="text-secondary hover:text-primary">Términos y Condiciones</a>
+                        <a href="{% url 'terms_and_conditions' %}" class="text-secondary hover:text-primary">Términos y Condiciones</a>
                         <span class="hidden md:inline text-gray-300">|</span>
-                        <a href="#" class="text-secondary hover:text-primary">Soporte</a>
+                        <a href="{% url 'contact_us' %}" class="text-secondary hover:text-primary">Soporte</a>
                     </div>
                     <p class="text-xs text-gray-500">&copy; 2025 JobFlex. Todos los derechos reservados.</p>
                 </div>
