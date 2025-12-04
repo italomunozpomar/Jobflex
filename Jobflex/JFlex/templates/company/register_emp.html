@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{% static '/CSS/style.css'%}">
     <style>
+        /* Custom styles for animations */
         @keyframes marquee-left {
             0% { transform: translateX(0%); }
             100% { transform: translateX(-100%); }
@@ -27,32 +28,23 @@
         .animate-marquee-right {
             animation: marquee-right 40s linear infinite;
         }
-    </style>
-    <script>
-        // Password Toggle Function
-        function setupPasswordToggle(toggleButtonId, passwordInputId) {
-            const toggleButton = document.getElementById(toggleButtonId);
-            const passwordInput = document.getElementById(passwordInputId);
-            
-            if (toggleButton && passwordInput) {
-                const eyeIcon = toggleButton.querySelector('svg:first-child');
-                const eyeSlashIcon = toggleButton.querySelector('svg:last-child');
-
-                toggleButton.addEventListener('click', function () {
-                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordInput.setAttribute('type', type);
-
-                    eyeSlashIcon.classList.toggle('hidden');
-                    eyeIcon.classList.toggle('hidden');
-                });
-            }
+        .step-content {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            setupPasswordToggle('togglePassword1', 'id_password1');
-            setupPasswordToggle('togglePassword2', 'id_password2');
-        });
-    </script>
+        /* Spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            width: 1em;
+            height: 1em;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans min-h-screen flex flex-col">
 
@@ -71,6 +63,7 @@
         </div>
     </nav>
 
+    <!-- Main Container -->
     <main class="flex flex-col md:flex-row min-h-screen pt-20 md:pt-0">
 
         <!-- Panel Decorativo (Izquierda - Escritorio) -->
@@ -98,135 +91,183 @@
             </div>
         </div>
 
-        <!-- Panel de Formulario (Derecha) -->
+        <!-- Panel Derecho (Formulario) -->
         <div class="w-full md:w-3/5 flex flex-col items-center justify-start p-4 md:p-0 md:mt-20 md:pt-8 h-[calc(100vh-5rem)] overflow-y-auto bg-gray-50 pt-8">
             
-            <div class="w-full max-w-md xl:max-w-2xl bg-white rounded-3xl shadow-xl p-8 mx-4 my-auto md:mb-8 md:my-0 md:p-16 transition-all duration-300">
+            <div class="w-full max-w-md xl:max-w-2xl bg-white rounded-3xl shadow-xl p-8 mx-4 mb-8 md:my-0 md:p-16 transition-all duration-300">
                 <div class="w-full md:max-w-lg m-auto">
-                    <div class="text-center mb-8">
+                    <div class="text-center mb-6">
                          <h1 class="text-3xl font-bold tracking-tight text-dark">
                             <span class="text-gray-400 text-xl block mb-1 font-normal">Registro de</span>
                             <span class="text-primary">Representante</span>
                         </h1>
                     </div>
 
-                    <h2 class="text-2xl font-bold text-dark mb-2 text-center">Crea tu Cuenta</h2>
-                    <p class="text-secondary mb-8 text-center text-sm">Completa tus datos para gestionar la empresa.</p>
-
                     {% if messages %}
+                    <div class="space-y-2 mb-4">
                         {% for message in messages %}
-                            <div class="p-3 rounded-lg text-sm {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %} mb-6" role="alert">
-                                <span class="font-bold block sm:inline">{{ message }}</span>
-                            </div>
+                        <div class="p-4 rounded-lg text-sm {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}" role="alert">
+                            <p class="font-bold">{{ message }}</p>
+                        </div>
                         {% endfor %}
+                    </div>
                     {% endif %}
 
-                    <form method="POST" action="{% url 'register_emp' %}" class="space-y-5">
+                    <h2 class="text-2xl font-bold text-dark mb-2 text-center">Crea tu Cuenta</h2>
+                    <p class="text-secondary mb-4 text-center text-sm">Completa tus datos para gestionar la empresa.</p>
+                    
+                    <!-- Indicador de Pasos -->
+                    <div class="flex justify-center items-center gap-2 mb-6 mt-4">
+                        <div id="step-indicator-1" class="h-2 w-8 rounded-full bg-primary transition-all duration-300"></div>
+                        <div id="step-indicator-2" class="h-2 w-8 rounded-full bg-gray-200 transition-all duration-300"></div>
+                    </div>
+
+                    <form method="post" action="{% url 'register_emp' %}" id="register-form" class="space-y-5">
                         {% csrf_token %}
                         {{ form.rut }} <!-- Campo oculto -->
-
-                        <div class="space-y-1">
-                            <label for="id_razon_social" class="block text-sm font-medium text-dark ml-1">Razón Social</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                                </div>
-                                <input type="text" id="id_razon_social" readonly value="{{ emp_validation.razon_social }}" 
-                                    class="block w-full pl-10 pr-3 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed focus:outline-none">
+                        
+                        {% if form.non_field_errors %}
+                            <div class="bg-red-50 border-l-4 border-red-400 text-red-700 p-3 rounded-lg text-sm mb-4">
+                                {% for error in form.non_field_errors %}
+                                    <span class="block">{{ error }}</span>
+                                {% endfor %}
                             </div>
-                        </div>
+                        {% endif %}
 
-                        <div class="space-y-1">
-                            <label for="{{ form.nombres.id_for_label }}" class="block text-sm font-medium text-dark ml-1">{{ form.nombres.label }}</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        <!-- PASO 1: Datos Personales y Empresa -->
+                        <div id="step-1" class="step-content space-y-5">
+                            <p class="text-secondary mb-4 text-center text-sm">Paso 1: Datos de la Empresa y Contacto</p>
+                            
+                            <div class="space-y-1">
+                                <label for="id_razon_social" class="block text-sm font-medium text-dark ml-1">Razón Social</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    <input type="text" id="id_razon_social" readonly value="{{ emp_validation.razon_social }}" 
+                                        class="block w-full pl-10 pr-3 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed focus:outline-none">
                                 </div>
-                                {{ form.nombres }}
                             </div>
-                            {% for error in form.nombres.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
-                        </div>
 
-                        <div class="space-y-1">
-                            <label for="{{ form.apellidos.id_for_label }}" class="block text-sm font-medium text-dark ml-1">{{ form.apellidos.label }}</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            <div class="space-y-1">
+                                <label for="id_nombres" class="block text-sm font-medium text-dark ml-1">Nombres</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    </div>
+                                    <input type="text" name="nombres" id="id_nombres" placeholder="Tus Nombres" value="{{ form.nombres.value|default:'' }}"
+                                        class="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-1-input">
                                 </div>
-                                {{ form.apellidos }}
+                                {% for error in form.nombres.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
                             </div>
-                            {% for error in form.apellidos.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
-                        </div>
 
-                        <div class="space-y-1">
-                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-dark ml-1">{{ form.email.label }}</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                            <div class="space-y-1">
+                                <label for="id_apellidos" class="block text-sm font-medium text-dark ml-1">Apellidos</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    </div>
+                                    <input type="text" name="apellidos" id="id_apellidos" placeholder="Tus Apellidos" value="{{ form.apellidos.value|default:'' }}"
+                                        class="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-1-input">
                                 </div>
-                                {{ form.email }}
+                                {% for error in form.apellidos.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
                             </div>
-                            {% for error in form.email.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
-                        </div>
 
-                        <div class="space-y-1">
-                            <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-dark ml-1">{{ form.password1.label }}</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            <div class="space-y-1">
+                                <label for="id_email" class="block text-sm font-medium text-dark ml-1">Correo Electrónico</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                                    </div>
+                                    <input type="email" name="email" id="id_email" placeholder="ejemplo@correo.com" value="{{ form.email.value|default:'' }}"
+                                        class="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-1-input">
                                 </div>
-                                {{ form.password1 }}
-                                <button type="button" id="togglePassword1" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                {% for error in form.email.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="button" id="next-step-btn" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-sm font-bold text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/30 transition-all transform hover:scale-[1.02] active:scale-95">
+                                    Siguiente <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                             </div>
-                            {% if form.password1.help_text %}<p class="text-xs text-gray-500 mt-1">{{ form.password1.help_text }}</p>{% endif %}
-                            {% for error in form.password1.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
                         </div>
 
-                        <div class="space-y-1">
-                            <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-dark ml-1">{{ form.password2.label }}</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                </div>
-                                {{ form.password2 }}
-                                <button type="button" id="togglePassword2" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                    <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                        <!-- PASO 2: Seguridad -->
+                        <div id="step-2" class="step-content space-y-5 hidden">
+                            <div class="flex items-center mb-4">
+                                <button type="button" id="prev-step-btn" class="text-gray-400 hover:text-dark transition-colors mr-2">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
+                                <p class="text-secondary text-sm flex-grow text-center pr-8">Paso 2: Seguridad</p>
                             </div>
-                            {% for error in form.password2.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
-                        </div>
 
-                        <div class="flex items-center">
-                            {{ form.terms }}
-                            <label for="{{ form.terms.id_for_label }}" class="ml-2 block text-sm text-gray-600">Acepto los <a href="{% url 'terms_and_conditions' %}" class="font-medium text-primary hover:text-opacity-80 transition-colors">Términos y Condiciones</a></label>
-                        </div>
-                         {% for error in form.terms.errors %}
-                            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-                        {% endfor %}
+                            <div class="space-y-1">
+                                <label for="id_password1" class="block text-sm font-medium text-dark ml-1">Contraseña</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                    </div>
+                                    <input type="password" name="password1" id="id_password1" placeholder="••••••••"
+                                        class="block w-full pl-10 pr-10 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-2-input">
+                                    <button type="button" id="togglePassword1" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    </button>
+                                </div>
+                                {% for error in form.password1.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
+                            </div>
 
-                        <div>
+                            <div class="space-y-1">
+                                <label for="id_password2" class="block text-sm font-medium text-dark ml-1">Confirmar Contraseña</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                    </div>
+                                    <input type="password" name="password2" id="id_password2" placeholder="Confirmar Contraseña"
+                                        class="block w-full pl-10 pr-10 py-3 bg-gray-50 border border-transparent focus:border-primary/30 focus:bg-white rounded-xl text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 step-2-input">
+                                    <button type="button" id="togglePassword2" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-400 hover:text-primary focus:outline-none">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                        <svg class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    </button>
+                                </div>
+                                {% for error in form.password2.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
+                            </div>
+
+                            <div class="flex items-center">
+                                <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary step-2-input">
+                                <label for="terms" class="ml-2 block text-sm text-gray-600">Acepto los <a href="{% url 'terms_and_conditions' %}" class="font-medium text-primary hover:text-opacity-80 transition-colors">Términos y Condiciones</a></label>
+                            </div>
+                            {% for error in form.terms.errors %}<p class="text-red-500 text-xs mt-1 ml-1">{{ error }}</p>{% endfor %}
+
                             <button type="submit" id="register-button" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-sm font-bold text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/30 transition-all transform hover:scale-[1.02] active:scale-95">
                                 Crear Cuenta de Representante
+                                <span id="register-spinner" class="hidden ml-2 spinner"></span>
                             </button>
                         </div>
                     </form>
 
-                    <div class="mt-8 border-t border-gray-200 pt-6">
-                        <p class="text-center text-sm text-gray-500">
-                            ¿Ya tienes una cuenta de representante?
-                            <a href="{% url 'login' %}" class="font-medium text-primary hover:underline ml-1">Inicia Sesión</a>
-                        </p>
+                    <div class="mt-8">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-200"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-400">Opciones adicionales</span>
+                            </div>
+                        </div>
 
-                        <p class="mt-4 text-center text-sm text-gray-500">
-                            ¿Buscas trabajo?
-                            <a href="{% url 'signup' %}" class="font-medium text-primary hover:underline ml-1">Regístrate como candidato</a>
-                        </p>
+                        <div class="mt-6 border-gray-200 pt-2 flex flex-col gap-2 items-center">
+                            <p class="text-center text-sm text-gray-500">
+                                ¿Ya tienes una cuenta de representante?
+                                <a href="{% url 'login' %}" class="font-medium text-primary hover:underline ml-1">Inicia Sesión</a>
+                            </p>
+
+                            <p class="text-center text-sm text-gray-500">
+                                ¿Buscas trabajo?
+                                <a href="{% url 'signup' %}" class="font-medium text-primary hover:underline ml-1">Regístrate como candidato</a>
+                            </p>
+                        </div>
                     </div>
-
                 </div>
             </div>
 
@@ -244,5 +285,84 @@
             </footer>
         </div>
     </main>
+
+    <script>
+        // --- Multi-step Logic ---
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const nextBtn = document.getElementById('next-step-btn');
+        const prevBtn = document.getElementById('prev-step-btn');
+        const indicator1 = document.getElementById('step-indicator-1');
+        const indicator2 = document.getElementById('step-indicator-2');
+
+        if (step1 && step2 && nextBtn && prevBtn) {
+            nextBtn.addEventListener('click', () => {
+                // Simple validation for Step 1
+                const inputs = step1.querySelectorAll('input');
+                let isValid = true;
+                inputs.forEach(input => {
+                    // Validar todos menos el readonly razon_social que siempre tiene valor si llegamos aqui
+                    if (!input.value.trim() && !input.hasAttribute('readonly')) {
+                        input.classList.add('border-red-500');
+                        input.classList.remove('border-transparent');
+                        isValid = false;
+                    } else {
+                        input.classList.remove('border-red-500');
+                        input.classList.add('border-transparent');
+                    }
+                });
+
+                if (isValid) {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    indicator1.classList.add('bg-primary');
+                    indicator2.classList.remove('bg-gray-200');
+                    indicator2.classList.add('bg-primary');
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                indicator2.classList.remove('bg-primary');
+                indicator2.classList.add('bg-gray-200');
+            });
+        }
+
+        // Password Toggle Function
+        function setupPasswordToggle(toggleButtonId, passwordInputId) {
+            const toggleButton = document.getElementById(toggleButtonId);
+            const passwordInput = document.getElementById(passwordInputId);
+            
+            if (toggleButton && passwordInput) {
+                const eyeSlashIcon = toggleButton.querySelector('svg:first-child');
+                const eyeIcon = toggleButton.querySelector('svg:last-child');
+
+                toggleButton.addEventListener('click', function () {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    eyeSlashIcon.classList.toggle('hidden');
+                    eyeIcon.classList.toggle('hidden');
+                });
+            }
+        }
+        setupPasswordToggle('togglePassword1', 'id_password1');
+        setupPasswordToggle('togglePassword2', 'id_password2');
+
+        // --- Spinner Logic ---
+        const registerForm = document.getElementById('register-form');
+        const registerButton = document.getElementById('register-button');
+        const registerSpinner = document.getElementById('register-spinner');
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', function() {
+                if(registerButton) {
+                    registerButton.disabled = true;
+                    if(registerSpinner) registerSpinner.classList.remove('hidden');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
