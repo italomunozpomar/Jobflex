@@ -3326,6 +3326,8 @@ def settings(request):
     })
 
 
+from allauth.socialaccount.models import SocialAccount
+
 # La función completa que reemplaza la existente
 @login_required
 def delete_account(request):
@@ -3335,12 +3337,16 @@ def delete_account(request):
     user = request.user
     user_id = user.id  # Captura el user_id antes de que el objeto user sea eliminado.
     
+    has_social_account = SocialAccount.objects.filter(user=user).exists()
+
     # 1. Validar contraseña o texto de confirmación
-    if user.has_usable_password():
+    if not has_social_account and user.has_usable_password():
+        # Caso: Usuario normal con contraseña
         if not user.check_password(request.POST.get('password')):
             messages.error(request, 'Contraseña incorrecta.')
             return redirect('settings')
     else:
+        # Caso: Usuario social (Google) o sin contraseña usable
         if request.POST.get('confirmation_text') != 'ELIMINAR':
             messages.error(request, 'El texto de confirmación no es correcto. Por favor, escribe ELIMINAR.')
             return redirect('settings')
