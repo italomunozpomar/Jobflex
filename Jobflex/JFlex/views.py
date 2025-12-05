@@ -1882,7 +1882,6 @@ def view_offer_applicants(request, offer_id):
     STATUS_CHOICES = [
         ('enviada', 'Nuevos Postulantes'),
         ('en proceso', 'En Revisión'),
-        ('entrevista', 'Entrevistas'),
         ('aceptada', 'Aceptados'),
         ('rechazada', 'Rechazados'),
     ]
@@ -2299,10 +2298,6 @@ def schedule_interview(request, postulacion_id):
             email_message = EmailMessage(subject, message, to=[to_email])
             email_message.content_subtype = "html"
             email_message.send()
-
-            # Update application status
-            postulacion.estado_postulacion = 'entrevista'
-            postulacion.save(using='jflex_db')
 
             # --- Enviar Notificación Interna (NUEVO) ---
             try:
