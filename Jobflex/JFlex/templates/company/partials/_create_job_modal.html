@@ -1,210 +1,268 @@
 {% load static %}
 
-<div id="create-job-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-5 mx-auto p-5 border w-[80vw] shadow-lg rounded-md bg-white">
-        <!-- Close button -->
-        <div class="absolute top-0 right-0 pt-4 pr-4">
-            <button type="button" data-modal-hide="create-job-modal" class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+<!-- Modal Container: fixed on mobile for wizard, centered overlay on desktop -->
+<div id="create-job-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center sm:items-start sm:pt-10 overflow-hidden sm:overflow-y-auto">
+    
+    <!-- Modal Box -->
+    <div class="relative bg-white w-full h-full sm:h-auto sm:w-[90vw] md:w-[80vw] sm:rounded-md shadow-lg flex flex-col sm:block overflow-hidden">
+        
+        <!-- Header (Sticky on Mobile) -->
+        <div class="flex justify-between items-center p-4 border-b bg-white shrink-0 sm:relative">
+            <h3 id="modal-title" class="text-lg sm:text-2xl font-bold text-dark truncate pr-4">Crear Nueva Oferta Laboral</h3>
+            <button type="button" data-modal-hide="create-job-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none p-2 sm:bg-white sm:rounded-md sm:hover:text-gray-500 sm:focus:ring-2 sm:focus:ring-offset-2 sm:focus:ring-primary sm:absolute sm:top-0 sm:right-0 sm:pt-4 sm:pr-4">
                 <span class="sr-only">Close</span>
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
-        <form id="create-job-form" method="POST" action="{% url 'company_index' %}">
-            {% csrf_token %}
-            <input type="hidden" name="action" id="form-action" value="create_job_offer">
-            <input type="hidden" name="offer_id" id="offer-id-input" value="">
-            <div class="grid grid-cols-10 gap-6">
-                <!-- Left Column: Form -->
-                <div class="col-span-6 p-4 border-r">
-                    <h3 id="modal-title" class="text-2xl font-bold text-dark mb-6">Crear Nueva Oferta Laboral</h3>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-hidden sm:overflow-visible relative">
+            <form id="create-job-form" method="POST" action="{% url 'company_index' %}" class="h-full flex flex-col sm:block">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="form-action" value="create_job_offer">
+                <input type="hidden" name="offer_id" id="offer-id-input" value="">
+
+                <div class="grid grid-cols-1 lg:grid-cols-10 h-full sm:h-auto gap-6">
                     
-                    <!-- Información Principal -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-semibold text-primary mb-3">Información Principal</h4>
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label for="id_titulo_puesto" class="block text-sm font-medium text-dark">Título del Puesto</label>
-                                {{ job_offer_form.titulo_puesto }}
+                    <!-- Left Column: Form -->
+                    <div class="col-span-1 lg:col-span-6 flex flex-col h-full sm:h-auto sm:border-r relative overflow-hidden sm:overflow-visible sm:p-4">
+                        
+                        <!-- Mobile Step Indicator -->
+                        <div class="lg:hidden flex justify-between items-center px-4 py-3 bg-gray-50 border-b shrink-0">
+                            <span id="mobile-step-indicator" class="text-sm font-medium text-secondary">Paso 1 de 4</span>
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 rounded-full bg-primary step-dot transition-colors duration-300" data-step="1"></div>
+                                <div class="w-2 h-2 rounded-full bg-gray-300 step-dot transition-colors duration-300" data-step="2"></div>
+                                <div class="w-2 h-2 rounded-full bg-gray-300 step-dot transition-colors duration-300" data-step="3"></div>
+                                <div class="w-2 h-2 rounded-full bg-gray-300 step-dot transition-colors duration-300" data-step="4"></div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 mt-4">
-                            <div id="categoria-fields">
-                                <div id="categoria-select-container">
-                                    <label for="id_categoria" class="block text-sm font-medium text-dark">Categoría</label>
-                                    {{ job_offer_form.categoria }}
+
+                        <!-- Scrollable Content -->
+                        <div class="p-4 sm:p-0 flex-1 overflow-y-auto sm:overflow-visible scroll-smooth" id="form-steps-container">
+                            
+                            <!-- SECTION 1: Información Principal -->
+                            <div id="step-1" class="form-step block lg:block mb-6">
+                                <h4 class="text-lg font-semibold text-primary mb-3">Información Principal</h4>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label for="id_titulo_puesto" class="block text-sm font-medium text-dark">Título del Puesto</label>
+                                        {{ job_offer_form.titulo_puesto }}
+                                    </div>
                                 </div>
-                                <div id="nueva-categoria-container" class="hidden">
-                                    <label for="id_nueva_categoria" class="block text-sm font-medium text-dark">Nueva Categoría</label>
-                                    {{ job_offer_form.nueva_categoria }}
-                                </div>
-                                <div class="mt-2">
-                                    <input type="checkbox" id="crear-nueva-categoria-checkbox" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
-                                    <label for="crear-nueva-categoria-checkbox" class="ml-2 text-sm text-dark">Crear nueva categoría</label>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="id_jornada" class="block text-sm font-medium text-dark">Jornada</label>
-                                {{ job_offer_form.jornada }}
-                            </div>
-                            <div>
-                                <label for="id_modalidad" class="block text-sm font-medium text-dark">Modalidad</label>
-                                {{ job_offer_form.modalidad }}
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <div class="flex items-center mb-1">
-                                    <label for="id_region" class="block text-sm font-medium text-dark mr-2">Región</label>
-                                    <span class="relative group cursor-pointer text-gray-500 hover:text-gray-700">
-                                        <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.125-.9.52-.9.913v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <div class="absolute z-10 invisible group-hover:visible left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:bg-gray-700">
-                                            Selecciona "Cualquier Región" para que la oferta sea válida a nivel nacional.
-                                            <div class="tooltip-arrow" data-popper-arrow></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                    <div id="categoria-fields">
+                                        <div id="categoria-select-container">
+                                            <label for="id_categoria" class="block text-sm font-medium text-dark">Categoría</label>
+                                            {{ job_offer_form.categoria }}
                                         </div>
-                                    </span>
-                                </div>
-                                {{ job_offer_form.region }}
-                            </div>
-                            <div>
-                                <div class="flex items-center mb-1">
-                                    <label for="id_ciudad" class="block text-sm font-medium text-dark mr-2">Ciudad</label>
-                                    <span class="relative group cursor-pointer text-gray-500 hover:text-gray-700">
-                                        <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.125-.9.52-.9.913v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <div class="absolute z-10 invisible group-hover:visible left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:bg-gray-700">
-                                            Si deseas que la oferta sea válida para todas las comunas de la región seleccionada, elige "Cualquier comuna".
-                                            <div class="tooltip-arrow" data-popper-arrow></div>
+                                        <div id="nueva-categoria-container" class="hidden">
+                                            <label for="id_nueva_categoria" class="block text-sm font-medium text-dark">Nueva Categoría</label>
+                                            {{ job_offer_form.nueva_categoria }}
                                         </div>
-                                    </span>
+                                        <div class="mt-2">
+                                            <input type="checkbox" id="crear-nueva-categoria-checkbox" class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary">
+                                            <label for="crear-nueva-categoria-checkbox" class="ml-2 text-sm text-dark">Crear nueva categoría</label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="id_jornada" class="block text-sm font-medium text-dark">Jornada</label>
+                                        {{ job_offer_form.jornada }}
+                                    </div>
+                                    <div>
+                                        <label for="id_modalidad" class="block text-sm font-medium text-dark">Modalidad</label>
+                                        {{ job_offer_form.modalidad }}
+                                    </div>
                                 </div>
-                                {{ job_offer_form.ciudad }}
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <div class="flex items-center mb-1">
+                                            <label for="id_region" class="block text-sm font-medium text-dark mr-2">Región</label>
+                                            <span class="relative group cursor-pointer text-gray-500 hover:text-gray-700 hidden sm:inline-block">
+                                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.125-.9.52-.9.913v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <div class="absolute z-10 invisible group-hover:visible left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:bg-gray-700">
+                                                    Selecciona "Cualquier Región" para que la oferta sea válida a nivel nacional.
+                                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                                </div>
+                                            </span>
+                                        </div>
+                                        {{ job_offer_form.region }}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center mb-1">
+                                            <label for="id_ciudad" class="block text-sm font-medium text-dark mr-2">Ciudad</label>
+                                            <span class="relative group cursor-pointer text-gray-500 hover:text-gray-700 hidden sm:inline-block">
+                                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.125-.9.52-.9.913v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <div class="absolute z-10 invisible group-hover:visible left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:bg-gray-700">
+                                                    Si deseas que la oferta sea válida para todas las comunas de la región seleccionada, elige "Cualquier comuna".
+                                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                                </div>
+                                            </span>
+                                        </div>
+                                        {{ job_offer_form.ciudad }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECTION 2: Detalles del Puesto -->
+                            <div id="step-2" class="form-step hidden lg:block mb-6">
+                                <h4 class="text-lg font-semibold text-primary mb-3">Detalles del Puesto</h4>
+                                <div>
+                                     <label for="id_descripcion_puesto" class="block text-sm font-medium text-dark">Descripción</label>
+                                    <div id="quill-descripcion" style="height: 150px;"></div>
+                                    {{ job_offer_form.descripcion_puesto }}
+                                </div>
+                                <div class="mt-4">
+                                    <label for="id_requisitos_puesto" class="block text-sm font-medium text-dark">Requisitos</label>
+                                    <div id="quill-requisitos" style="height: 150px;"></div>
+                                    {{ job_offer_form.requisitos_puesto }}
+                                </div>
+                            </div>
+
+                            <!-- SECTION 3: Condiciones -->
+                            <div id="step-3" class="form-step hidden lg:block mb-6">
+                                <h4 class="text-lg font-semibold text-primary mb-3">Condiciones</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="id_salario_min" class="block text-sm font-medium text-dark">Salario Mínimo (CLP)</label>
+                                        {{ job_offer_form.salario_min }}
+                                    </div>
+                                    <div>
+                                        <label for="id_salario_max" class="block text-sm font-medium text-dark">Salario Máximo (CLP)</label>
+                                        {{ job_offer_form.salario_max }}
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="id_nivel_experiencia" class="block text-sm font-medium text-dark">Nivel de Experiencia</label>
+                                    {{ job_offer_form.nivel_experiencia }}
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label for="id_duracion_oferta" class="block text-sm font-medium text-dark">Duración de la Oferta</label>
+                                        {{ job_offer_form.duracion_oferta }}
+                                    </div>
+                                    <div id="custom-date-container" class="hidden">
+                                        <label for="id_fecha_cierre_personalizada" class="block text-sm font-medium text-dark">Fecha de Cierre</label>
+                                        {{ job_offer_form.fecha_cierre_personalizada }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECTION 4: Habilidades y Beneficios -->
+                            <div id="step-4" class="form-step hidden lg:block mb-6">
+                                <h4 class="text-lg font-semibold text-primary mb-3">Habilidades y Beneficios</h4>
+                                <div class="mt-4">
+                                    <label for="id_habilidades_clave" class="block text-sm font-medium text-dark">Habilidades Clave (separadas por coma)</label>
+                                    {{ job_offer_form.habilidades_clave }}
+                                </div>
+                                <div class="mt-4">
+                                    <label for="id_beneficios" class="block text-sm font-medium text-dark">Beneficios (separados por coma)</label>
+                                    {{ job_offer_form.beneficios }}
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Mobile Navigation (Sticky Bottom) -->
+                        <div class="p-4 border-t bg-white shrink-0 lg:hidden flex justify-between gap-3">
+                            <button type="button" id="mobile-prev-btn" class="hidden px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white font-medium text-sm">
+                                Atrás
+                            </button>
+                            
+                            <div class="flex gap-2 ml-auto w-full sm:w-auto">
+                                <button type="button" id="mobile-preview-toggle" class="flex-1 sm:flex-none px-4 py-2 border border-primary text-primary rounded-lg font-medium text-sm whitespace-nowrap">
+                                    Vista Previa
+                                </button>
+                                
+                                <button type="button" id="mobile-next-btn" class="flex-1 sm:flex-none px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-md text-sm">
+                                    Siguiente
+                                </button>
+                                
+                                <button type="submit" id="mobile-submit-btn" class="hidden flex-1 sm:flex-none px-6 py-2 bg-green-600 text-white rounded-lg font-bold shadow-md text-sm">
+                                    Publicar
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <!-- Detalles del Puesto -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-semibold text-primary mb-3">Detalles del Puesto</h4>
-                        <div>
-                             <label for="id_descripcion_puesto" class="block text-sm font-medium text-dark">Descripción</label>
-                            <div id="quill-descripcion" style="height: 150px;"></div>
-                            {{ job_offer_form.descripcion_puesto }}
+                    <!-- Right Column: Live Preview -->
+                    <!-- Hidden on mobile default, toggled by button. Block on desktop. -->
+                    <div id="preview-container" class="hidden lg:block col-span-4 p-4 bg-gray-50 sm:rounded-r-md h-full overflow-y-auto absolute inset-0 z-20 lg:relative lg:inset-auto lg:z-0">
+                        
+                        <!-- Mobile Header for Preview -->
+                        <div class="lg:hidden sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10 shadow-sm mb-4">
+                            <h3 class="text-lg font-bold text-dark">Vista Previa</h3>
+                            <button type="button" id="close-preview-mobile-btn" class="text-gray-500 p-1">
+                                <span class="sr-only">Cerrar</span>
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
                         </div>
-                        <div class="mt-4">
-                            <label for="id_requisitos_puesto" class="block text-sm font-medium text-dark">Requisitos</label>
-                            <div id="quill-requisitos" style="height: 150px;"></div>
-                            {{ job_offer_form.requisitos_puesto }}
-                        </div>
-                    </div>
 
-                    <!-- Condiciones -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-semibold text-primary mb-3">Condiciones</h4>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="id_salario_min" class="block text-sm font-medium text-dark">Salario Mínimo (CLP)</label>
-                                {{ job_offer_form.salario_min }}
+                        <h3 class="text-xl font-bold text-dark mb-4 hidden lg:block">Vista Previa</h3>
+                        <div class="border p-4 rounded-lg bg-white shadow-md">
+                            <!-- Header -->
+                            <div class="flex items-center mb-4">
+                                <img src="{% if company_logo_url %}{{ company_logo_url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
+                                <div>
+                                    <h4 id="preview-titulo" class="text-lg font-bold text-dark">Título de la Oferta</h4>
+                                    <p class="text-sm text-secondary">{{ company.nombre_comercial }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <label for="id_salario_max" class="block text-sm font-medium text-dark">Salario Máximo (CLP)</label>
-                                {{ job_offer_form.salario_max }}
+                            <!-- Details -->
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-4">
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> <span id="preview-categoria">Categoría</span></span>
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> <span id="preview-modalidad">Modalidad</span></span>
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="preview-jornada">Jornada</span></span>
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                                                    CLP <span id="preview-sal-min">Salario Min</span> - <span id="preview-sal-max">Salario Max</span>
+                                </span>
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> <span id="preview-experiencia">Experiencia</span></span>
+                                <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> <span id="preview-location">Ubicación</span></span>
                             </div>
-                        </div>
-                        <div class="mt-4">
-                            <label for="id_nivel_experiencia" class="block text-sm font-medium text-dark">Nivel de Experiencia</label>
-                            {{ job_offer_form.nivel_experiencia }}
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="id_duracion_oferta" class="block text-sm font-medium text-dark">Duración de la Oferta</label>
-                                {{ job_offer_form.duracion_oferta }}
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <h5 class="font-bold text-dark mb-2">Descripción del Puesto</h5>
+                                <div id="preview-descripcion" class="text-sm text-dark prose">
+                                    <p>Aquí aparecerá la descripción del puesto...</p>
+                                </div>
                             </div>
-                            <div id="custom-date-container" class="hidden">
-                                <label for="id_fecha_cierre_personalizada" class="block text-sm font-medium text-dark">Fecha de Cierre</label>
-                                {{ job_offer_form.fecha_cierre_personalizada }}
+                            <!-- Requirements -->
+                            <div class="mb-4">
+                                <h5 class="font-bold text-dark mb-2">Requisitos</h5>
+                                <div id="preview-requisitos" class="text-sm text-dark prose">
+                                    <p>Aquí aparecerán los requisitos del puesto...</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                            <!-- Skills -->
+                            <div class="mb-4">
+                                <h5 class="font-bold text-dark mb-2">Habilidades Clave</h5>
+                                <div id="preview-habilidades" class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Habilidad 1</span>
+                                </div>
+                            </div>
 
-                     <!-- Habilidades y Beneficios -->
-                     <div class="mb-6">
-                        <h4 class="text-lg font-semibold text-primary mb-3">Habilidades y Beneficios</h4>
-                        <div class="mt-4">
-                            <label for="id_habilidades_clave" class="block text-sm font-medium text-dark">Habilidades Clave (separadas por coma)</label>
-                            {{ job_offer_form.habilidades_clave }}
-                        </div>
-                        <div class="mt-4">
-                            <label for="id_beneficios" class="block text-sm font-medium text-dark">Beneficios (separados por coma)</label>
-                            {{ job_offer_form.beneficios }}
+                             <!-- Benefits -->
+                             <div class="mb-4">
+                                <h5 class="font-bold text-dark mb-2">Beneficios</h5>
+                                <div id="preview-beneficios" class="flex flex-wrap gap-2">
+                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Beneficio 1</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Right Column: Live Preview -->
-                <div class="col-span-4 p-4 bg-gray-50 rounded-r-md">
-                    <h3 class="text-xl font-bold text-dark mb-4">Vista Previa</h3>
-                    <div class="border p-4 rounded-lg bg-white shadow-md">
-                        <!-- Header -->
-                        <div class="flex items-center mb-4">
-                            <img src="{% if company_logo_url %}{{ company_logo_url }}{% else %}https://via.placeholder.com/48{% endif %}" alt="Logo" class="w-12 h-12 rounded-full mr-4">
-                            <div>
-                                <h4 id="preview-titulo" class="text-lg font-bold text-dark">Título de la Oferta</h4>
-                                <p class="text-sm text-secondary">{{ company.nombre_comercial }}</p>
-                            </div>
-                        </div>
-                        <!-- Details -->
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-secondary mb-4">
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> <span id="preview-categoria">Categoría</span></span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> <span id="preview-modalidad">Modalidad</span></span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="preview-jornada">Jornada</span></span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                                                CLP <span id="preview-sal-min">Salario Min</span> - <span id="preview-sal-max">Salario Max</span>
-                            </span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> <span id="preview-experiencia">Experiencia</span></span>
-                            <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> <span id="preview-location">Ubicación</span></span>
-                        </div>
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <h5 class="font-bold text-dark mb-2">Descripción del Puesto</h5>
-                            <div id="preview-descripcion" class="text-sm text-dark prose">
-                                <p>Aquí aparecerá la descripción del puesto...</p>
-                            </div>
-                        </div>
-                        <!-- Requirements -->
-                        <div class="mb-4">
-                            <h5 class="font-bold text-dark mb-2">Requisitos</h5>
-                            <div id="preview-requisitos" class="text-sm text-dark prose">
-                                <p>Aquí aparecerán los requisitos del puesto...</p>
-                            </div>
-                        </div>
-                        <!-- Skills -->
-                        <div class="mb-4">
-                            <h5 class="font-bold text-dark mb-2">Habilidades Clave</h5>
-                            <div id="preview-habilidades" class="flex flex-wrap gap-2">
-                                <span class="bg-gray-200 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Habilidad 1</span>
-                            </div>
-                        </div>
-
-                         <!-- Benefits -->
-                         <div class="mb-4">
-                            <h5 class="font-bold text-dark mb-2">Beneficios</h5>
-                            <div id="preview-beneficios" class="flex flex-wrap gap-2">
-                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Beneficio 1</span>
-                            </div>
-                        </div>
+                <!-- Desktop Modal Footer (Hidden on Mobile) -->
+                <div class="hidden lg:flex items-center justify-between pt-4 mt-4 border-t sm:px-4">
+                    <button id="clear-form-btn" type="button" class="px-6 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none">Limpiar Campos</button>
+                    <div class="space-x-4">
+                        <button data-modal-hide="create-job-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none">Cancelar</button>
+                        <button id="submit-btn" type="submit" class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none">Publicar Oferta</button>
                     </div>
                 </div>
-            </div>
-            <!-- Modal Footer -->
-            <div class="flex items-center justify-between pt-4 mt-4 border-t">
-                <button id="clear-form-btn" type="button" class="px-6 py-2 bg-red-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none">Limpiar Campos</button>
-                <div class="space-x-4">
-                    <button data-modal-hide="create-job-modal" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none">Cancelar</button>
-                    <button id="submit-btn" type="submit" class="px-6 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none">Publicar Oferta</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
